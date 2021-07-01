@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // プレイヤー処理 [player.cpp]
-// Author : GP11A132 24 立石大智
+// Author : 立石大智, 杉本幸宏
 //
 //=============================================================================
 #include "main.h"
@@ -31,23 +31,37 @@
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer				*g_VertexBuffer = NULL;		// 頂点情報
+static ID3D11Buffer				*g_VertexBuffer = NULL;				// 頂点情報
 static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
 static char *g_TexturName[] = {
 	"data/TEXTURE/player.png",
 };
 
-static PLAYER	g_Player[PLAYER_MAX];						// エネミー構造体
-
+static CPlayer	g_aPlayer[PLAYER_MAX];								// プレイヤーインスタンス
 
 //=============================================================================
-// 初期化処理
+// コンストラクタ
 //=============================================================================
-HRESULT InitPlayer(void)
+CPlayer::CPlayer()
 {
-	ID3D11Device *pDevice = GetDevice();
+	// プレイヤー構造体の初期化
+	for (int i = 0; i < PLAYER_MAX; i++)
+	{
+		g_aPlayer[i].use = true;
+		g_aPlayer[i].w   = TEXTURE_WIDTH;
+		g_aPlayer[i].h   = TEXTURE_HEIGHT;
+		g_aPlayer[i].pos = D3DXVECTOR3(500.0f, 500.0f, 0.0f);	// 中心点から表示にした
+		g_aPlayer[i].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		g_aPlayer[i].texNo = 0;
 
+		g_aPlayer[i].countAnim = 0;
+		g_aPlayer[i].patternAnim = 0;
+	}
+}
+
+void InitPlayer()
+{
 	//テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
 	{
@@ -69,31 +83,17 @@ HRESULT InitPlayer(void)
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
-
-
-	// プレイヤー構造体の初期化
-	for (int i = 0; i < PLAYER_MAX; i++)
-	{
-		g_Player[i].use = true;
-		g_Player[i].w   = TEXTURE_WIDTH;
-		g_Player[i].h   = TEXTURE_HEIGHT;
-		g_Player[i].pos = D3DXVECTOR3(500.0f, 500.0f, 0.0f);	// 中心点から表示にした
-		g_Player[i].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		g_Player[i].texNo = 0;
-
-		g_Player[i].countAnim = 0;
-		g_Player[i].patternAnim = 0;
-
-	}
-
-
-	return S_OK;
 }
 
 //=============================================================================
 // 終了処理
 //=============================================================================
-void UninitPlayer(void)
+CPlayer::~CPlayer()
+{
+
+}
+
+void UninitPlayer()
 {
 	if (g_VertexBuffer)
 	{
@@ -112,132 +112,109 @@ void UninitPlayer(void)
 
 }
 
+
 //=============================================================================
 // 更新処理
 //=============================================================================
-void UpdatePlayer(void)
+void CPlayer::Update()
 {
-	for (int i = 0; i < PLAYER_MAX; i++)
-	{
-		if (g_Player[i].use == true)	// このプレイヤーが使われている？
-		{								// Yes
-			// アニメーション  (wait値)
-			g_Player[i].countAnim++;
-			if ((g_Player[i].countAnim % ANIM_WAIT) == 0)
-			{
-				// パターンの切り替え
-				g_Player[i].patternAnim = (g_Player[i].patternAnim + 1) % ANIM_PATTERN_NUM;
-			}
-
-			// キー入力で移動 
-			if (GetKeyboardPress(DIK_DOWN))
-			{
-				g_Player[i].pos.y += 10.0f;
-			}
-			else if (GetKeyboardPress(DIK_UP))
-			{
-				g_Player[i].pos.y -= 10.0f;
-			}
-			if (GetKeyboardPress(DIK_RIGHT))
-			{
-				g_Player[i].pos.x += 10.0f;
-			}
-			else if (GetKeyboardPress(DIK_LEFT))
-			{
-				g_Player[i].pos.x -= 10.0f;
-			}
-
-			// ゲームパッドでで移動処理
-			if (IsButtonPressed(0, BUTTON_DOWN))
-			{
-				g_Player[i].pos.y += 2.0f;
-			}
-			else if (IsButtonPressed(0, BUTTON_UP))
-			{
-				g_Player[i].pos.y -= 2.0f;
-			}
-
-			if (IsButtonPressed(0, BUTTON_RIGHT))
-			{
-				g_Player[i].pos.x += 2.0f;
-			}
-			else if (IsButtonPressed(0, BUTTON_LEFT))
-			{
-				g_Player[i].pos.x -= 2.0f;
-			}
-
-			// 弾発射
-		    // if (GetKeyboardTrigger(DIK_SPACE))	// トリガーだと単発
-			if (GetKeyboardPress(DIK_SPACE))	    // プレスだと連射
-			{
-				D3DXVECTOR3 pos = g_Player[i].pos;
-				//pos.y += g_Player[i].h/2;			// プレイヤーの足元の位置から発射
-			//	SetBullet(pos);						// １発目
-			}
-
+	if (use == true)	// このプレイヤーが使われている？
+	{								// Yes
+		// アニメーション  (wait値)
+		countAnim++;
+		if ((countAnim % ANIM_WAIT) == 0)
+		{
+			// パターンの切り替え
+			patternAnim = (patternAnim + 1) % ANIM_PATTERN_NUM;
 		}
 
-		//	//プレイヤーを左右に移動
-		//	if (player[i].left == true)
-		//	{	//左へ移動
-		//		player[i].pos.x -= PLAYER_SPEED;
+		// キー入力で移動 
+		if (GetKeyboardPress(DIK_DOWN))
+		{
+			pos.y += 10.0f;
+		}
+		else if (GetKeyboardPress(DIK_UP))
+		{
+			pos.y -= 10.0f;
+		}
+		if (GetKeyboardPress(DIK_RIGHT))
+		{
+			pos.x += 10.0f;
+		}
+		else if (GetKeyboardPress(DIK_LEFT))
+		{
+			pos.x -= 10.0f;
+		}
 
-		//		//左端？
-		//		float pLeft = player[i].pos.x - (player[i].w / 2);
-		//		if (pLeft <= 0.0f)
-		//		{
-		//			player[i].left = false;//次は右
-		//		}
-		//	}
-		//	else
-		//	{	//右へ移動
-		//		player[i].pos.x += PLAYER_SPEED;
+		// ゲームパッドでで移動処理
+		if (IsButtonPressed(0, BUTTON_DOWN))
+		{
+			pos.y += 2.0f;
+		}
+		else if (IsButtonPressed(0, BUTTON_UP))
+		{
+			pos.y -= 2.0f;
+		}
 
-		//		//左端？
-		//		float pRight = player[i].pos.x + (player[i].w / 2);
-		//		if (pRight >= SCREEN_WIDTH)
-		//		{
-		//			player[i].left = true;
-		//		}
-		//	}
-
-		//	//プレイヤーを左右に移動
-		//	if (player[i].down == true)
-		//	{	//下へ移動
-		//		player[i].pos.y -= PLAYER_SPEED;
-
-		//		//下端？
-		//		float pDown = player[i].pos.y - (player[i].h / 2);
-		//		if (pDown <= 0.0f)
-		//		{
-		//			player[i].down = false;//次は上
-		//		}
-		//	}
-		//	else
-		//	{	//上へ移動
-		//		player[i].pos.y += PLAYER_SPEED;
-
-		//		//上端？
-		//		float pUp = player[i].pos.y + (player[i].h / 2);
-		//		if (pUp >= SCREEN_HEIGHT)
-		//		{
-		//			player[i].down = true;
-		//		}
-		//	}
+		if (IsButtonPressed(0, BUTTON_RIGHT))
+		{
+			pos.x += 2.0f;
+		}
+		else if (IsButtonPressed(0, BUTTON_LEFT))
+		{
+			pos.x -= 2.0f;
+		}
 
 	}
 
 #ifdef _DEBUG	// デバッグ情報を表示する
 //	char *str = GetDebugStr();
-//	sprintf(&str[strlen(str)], " PX:%.2f PY:%.2f", g_Player[0].pos.x, g_Player[0].pos.y);
-	
+//	sprintf(&str[strlen(str)], " PX:%.2f PY:%.2f", g_aPlayer[0].pos.x, g_aPlayer[0].pos.y);
 #endif
+
+}
+
+void UpdatePlayer(void)
+{
+	for (int i = 0; i < PLAYER_MAX; i++)
+	{
+		g_aPlayer[i].Update();
+	}
 
 }
 
 //=============================================================================
 // 描画処理
 //=============================================================================
+void CPlayer::Draw()
+{
+	if (use == true)
+		{
+			// テクスチャ設定
+			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[texNo]);
+
+			//プレイヤーの位置やテクスチャー座標を反映
+			float px = pos.x;	// プレイヤーの表示位置X
+			float py = pos.y;	// プレイヤーの表示位置Y
+			float pw = w;		// プレイヤーの表示幅
+			float ph = h;		// プレイヤーの表示高さ
+
+			float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// テクスチャの幅
+			float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// テクスチャの高さ
+			float tx = (float)(patternAnim % TEXTURE_PATTERN_DIVIDE_X) * tw;	// テクスチャの左上X座標
+			float ty = (float)(patternAnim / TEXTURE_PATTERN_DIVIDE_X) * th;	// テクスチャの左上Y座標
+
+			// １枚のポリゴンの頂点とテクスチャ座標を設定
+			SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
+				D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
+				rot.z);
+
+			// ポリゴン描画
+			GetDeviceContext()->Draw(4, 0);
+		}
+}
+
+
 void DrawPlayer(void)
 {
 	// 頂点バッファ設定
@@ -257,49 +234,18 @@ void DrawPlayer(void)
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
 
+
 	for (int i = 0; i < PLAYER_MAX; i++)
 	{
-		if (g_Player[i].use == true)		// このプレイヤーが使われている？
-		{									// Yes
-			// テクスチャ設定
-			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[g_Player[i].texNo]);
-
-			//プレイヤーの位置やテクスチャー座標を反映
-			float px = g_Player[i].pos.x;	// プレイヤーの表示位置X
-			float py = g_Player[i].pos.y;	// プレイヤーの表示位置Y
-			float pw = g_Player[i].w;		// プレイヤーの表示幅
-			float ph = g_Player[i].h;		// プレイヤーの表示高さ
-
-			float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// テクスチャの幅
-			float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// テクスチャの高さ
-			float tx = (float)(g_Player[i].patternAnim % TEXTURE_PATTERN_DIVIDE_X) * tw;	// テクスチャの左上X座標
-			float ty = (float)(g_Player[i].patternAnim / TEXTURE_PATTERN_DIVIDE_X) * th;	// テクスチャの左上Y座標
-
-			// １枚のポリゴンの頂点とテクスチャ座標を設定
-			SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
-				D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
-				g_Player[i].rot.z);
-
-			// ポリゴン描画
-			GetDeviceContext()->Draw(4, 0);
-		}
+		g_aPlayer[i].Draw();
 	}
-}
-
-
-//=============================================================================
-// プレイヤーの座標を取得
-//=============================================================================
-D3DXVECTOR3 GetPlayerPosition(void)
-{
-	return g_Player[0].pos;
 }
 
 
 //=============================================================================
 // プレイヤー構造体の先頭アドレスを取得
 //=============================================================================
-PLAYER *GetPlayer(void)
-{
-	return &g_Player[0];
-}
+//PLAYER *GetPlayer(void)
+//{
+//	return &g_aPlayer[0];
+//}

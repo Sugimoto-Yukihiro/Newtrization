@@ -18,7 +18,7 @@
 #include "player.h"		// プレイヤー
 #include "renderer.h"	// レンダリング処理
 //#include "score.h"	// スコア
-//#include "sound.h"		// サウンド
+#include "sound.h"		// サウンド
 
 //#include "debugproc.h"	// デバッグ表示
 
