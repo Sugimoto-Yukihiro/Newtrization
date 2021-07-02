@@ -444,3 +444,217 @@ MODE GetMode(void)
 {
 	return g_Mode;
 }
+
+/*******************************************************************************
+関数名	:	void LoadCsvData( void )
+引数	:	読み込むファイル名, 作成データの先頭アドレスを格納するポインタ, 1つのセルごとの最大文字数, 区切り文字（指定無ければNULL）
+返り値	:	格納データの総文字数。エラー時は「-1」
+説明	:	カンマ区切りのcsvファイルを、文字列のまま読み込む
+			"new演算子"でメモリを確保しているため、使った後は必ず"delete"すること
+*******************************************************************************/
+#define	MAX_COLUMN			(64)								// セルの最大列数<横の数>
+#define	MAX_ROW				(64)								// セルの最大行数<縦の数>
+#define	SizeOfCell(wordCnt)	(sizeof(char) * wordCnt)			// 1つのセルに使うchar型メモリ
+#define	SizeOfLine(wordCnt)	(SizeOfCell(wordCnt) * MAX_COLUMN)	// 1行あたりに使うchar型メモリ
+#define	MAX_SIZE(wordCnt)	(SizeOfLine(wordCnt) * MAX_ROW)		// 使用する最大char型メモリ（= 1つのcsvファイルに記載されている最大文字列）
+#define	CommentsSymbol		'#'									// コメント記号
+#define	DefaultDivMark		"#"									// デフォルトの区切り記号
+
+int LoadCsvFile(const char* pCsvFileName, char* &pFirst, int MaxCharCell, char* DivMark)
+{
+	FILE*	csvFile = fopen(pCsvFileName, "r");					// ファイルのオープン<fclose記載済み>
+
+	// 読み込み失敗時(エラーチェック)
+	if (csvFile == NULL) {
+		fclose(csvFile);
+		printf("オープンエラー！");
+		return -1;	// エラーを返して終了
+	}
+
+	// 成功したらロード
+	// 区切り記号に指定が無かった場合、"#"にする
+	if (DivMark == NULL)
+	{
+		DivMark = DefaultDivMark;
+	}
+
+	// 動的配列の生成
+	char*	pTmpArray = NULL;
+	pTmpArray = (char*)malloc(MAX_SIZE(MaxCharCell) + NULL_SIZE);			// char型配列を使用する最大メモリ数分だけ確保<free記載済み>
+	if (pTmpArray == NULL) {	// 確保できなかったら
+		fclose(csvFile);		// ファイルのクローズ
+		return -1;				// エラー出して終了
+	}
+
+	memset(pTmpArray, '\0', MAX_SIZE(MaxCharCell) + NULL_SIZE);			// 初期化
+
+	// ファイルへのアクセスに使用するchar型変数
+	char	OneLineStr[1024] = { NULL };								// 読み取るファイルの、一行分の文字列を格納するためのchar型配列
+	char*	pDivideStr = NULL;											// str配列へのアクセス用char型ポインタ
+
+	// 読み込んだデータの数をカウントする変数
+	//int		storeCharCnt = 0;
+
+	// 配列に数値を格納する作業
+	while (fgets(&OneLineStr[0], (MaxCharCell * MAX_COLUMN), csvFile) != NULL)		// 読み取るファイルの、一行分の文字列を格納
+	{	// 一行単位の読み取り作業を、ファイル終了まで繰り返す
+		pDivideStr = strtok(OneLineStr, ",");							// １列目の文字列を取り出す
+		if (pDivideStr == NULL) break;									// NULLならループを抜ける
+
+		do
+		{
+			int comOffset = SerchWordOffset(pDivideStr, CommentsSymbol);	// コメント記号の位置を取得
+
+			// コメント記号が先頭にあるときはそのセルに書かれている内容は飛ばす
+			if (comOffset != 0 && pDivideStr != NULL)
+			{	// データの格納
+				char*	pBuf = NULL;
+
+				int		bufNum = MaxCharCell + NULL_SIZE;				// pBufの要素数
+				pBuf = new char[bufNum];								// 一時的な文字列コピー用の配列<delete記載済み>
+				memset(pBuf, '\0', bufNum);								// 初期化
+
+				// pDivideStrの文字列をコピー
+				strncpy_s(pBuf, bufNum, pDivideStr, MaxCharCell);
+
+				// 取り出した文字列の文字数を取得
+				int		len = (int)strlen(pBuf);
+				// コメント記号以下の文字は、全て"\0"に置き換える（→コメント以下のものは格納しないようにするため）
+				if (comOffset != -1) {						// コメント記号が書かれていない場合は行わない
+
+					//		コメント記号の場所から	  コメント記号以下の文字数分だけ置き換える
+					memset(pBuf + comOffset, '\0', (len - comOffset));
+
+					len = (int)strlen(pBuf);				// 置き換え後の文字数を入れる
+				}
+
+				strncat_s(pTmpArray, MAX_SIZE(MaxCharCell), pBuf, MaxCharCell - sizeof(DivMark));	// 区切り記号を入れられるように、pBufに空きを作る
+				strncat_s(pTmpArray, MAX_SIZE(MaxCharCell), DivMark, sizeof(DivMark));			// 区切り記号を語尾につける
+			//	storeCharCnt += (int)(strlen(pBuf) + strlen(DivMark));							// 文字数のカウント
+
+				if (pBuf != NULL) delete[] pBuf;
+			}
+
+			pDivideStr = strtok(NULL, ",");					// 2列目以降の文字列を取り出す
+		} while (pDivideStr != NULL);						// 取り出す文字列がなくなるまで繰り返し
+
+	}
+
+	// 配列を最低限のメモリサイズだけコピー
+	size_t	BufSize = strlen(pTmpArray);					// データの総メモリサイズ(文字数)を取得
+	pFirst = new char[(int)BufSize + NULL_SIZE];			// メモリを必要分だけ新たに確保(NULLの格納を考慮)
+	memset(pFirst, '\0', BufSize + NULL_SIZE);				// 初期化
+
+	// 必要分だけコピー
+	strncpy(pFirst, pTmpArray, BufSize);
+
+	// mallocで確保した"pTmpArray"のメモリを解放
+	free(pTmpArray);
+
+	// ファイルのクローズかつエラーチェック
+	if (fclose(csvFile) == EOF) {
+		// エラー時の処理
+		printf("クローズドエラー！");
+		//	exit(1);			// クローズ失敗時、OSに「1」を返して正常終了させる
+		return -1;
+	}
+
+	return (int)BufSize;	// 総文字数を返す
+	//return storeCharCnt;
+}
+
+
+/*******************************************************************************
+* 関数名	: int SerchWordOffset(char* String, const char SingleWord)
+* 引数		: 文字列, 指定文字
+* 返り値	: 指定文字の、先頭から数えたときの位置		見つからなかった時・エラー : -1
+* 説明		: 文字列"String"の中から、指定文字が先頭からどの位置にあるのかを返す
+*******************************************************************************/
+int SerchWordOffset(const char* String, const char SingleWord)
+{
+	// 文字列が見つからない時
+	if (String == NULL) return -1;	// エラーを返す
+
+	// 指定文字の位置を格納する変数(返り値)
+	int		offset = 0;
+
+	// Bufに記載された文字列を先頭から一文字ずつ判別する
+	// 継続条件:Stringの終端まで 変数の更新内容:「String」が指すアドレスと「offset」の値をそれぞれ加算
+	for (; *String; ++String, ++offset)
+	{
+		// 1文字格納用のchar型配列
+		char singleWord[2] = { "\0" };
+
+		// １文字を抽出
+		strncat(singleWord, String, 1);
+
+		// 抽出した１文字によって処理を変える
+		if (strcmp(singleWord, &SingleWord) == 0)
+		{	// 指定した文字列が見つかれば、その位置を返す
+			return offset;
+		}
+
+	}
+
+	return -1;	// 見つからなかった時、-1を返す
+}
+
+
+/*******************************************************************************
+* 関数名		:	int DivideString(const char* String, int* Col, int* Row, char* DivMark)
+* 引数		:	座標番号, 最大列数を格納する番地, 行数を格納する番地, 区切り記号
+* 返り値		:	成功 → 1		失敗 → 0
+* 説明		:	読み込んだ文字列の縦横の分割数を、"\n"(改行コード)から求める
+********************************************************************************/
+int DivideString(const char* String, int* Col, int* Row, char* DivMark)
+{
+	// 文字列が見つからない時(エラーチェック)
+	if (String == NULL) return 0;
+
+	// char型ポインタ
+	char*	Buf;
+
+	// 「String」の文字列を「Buf」にコピー
+	{
+		int	BufSize = (int)strlen(String);			// stringのメモリ数を出す
+
+		int		idxNum = BufSize + NULL_SIZE;		// 必要な要素数
+		Buf = new char[idxNum];						// 文字型配列を必要メモリ分用意
+		memset(Buf, '\0', sizeof(char) * idxNum);	// 初期化
+
+		strncpy(Buf, String, BufSize);				// 文字列のコピー
+	}
+
+	int		ColCnt = 0, RowCnt = 0;						// 行と列それぞれのカウント用変数
+	int		MaxCol = -1;								// 最大列数の比較用の変数
+
+	// 一列目の文字列を格納
+	char*	divideBuf = NULL;							// 区切った文字列を示すポインタ
+	char*	p = NULL;									// strtok_s用のポインタ
+	divideBuf = strtok_s(&Buf[0], DivMark, &p);
+
+	do
+	{
+		// 列数のカウント
+		ColCnt++;
+
+		if (SerchWordOffset(divideBuf, '\n') >= 0)		// 改行コードがあったら
+		{
+			RowCnt++;									// 次の行へ行くので、行数をプラス
+
+			if (ColCnt > MaxCol) MaxCol = ColCnt;		// 最大数を超えていたら、最大列数を更新
+			ColCnt = 0;									// 列数カウントのリセット
+		}
+
+		divideBuf = strtok_s(NULL, DivMark, &p);		// ２列目以降の文字列を取りだす
+	} while (divideBuf != NULL);				// divideBufに入る文字列が無くなるまで繰り返し
+
+	// それぞれ代入
+	*Row = RowCnt;
+	*Col = MaxCol;
+
+	// メモリの解放
+	if (Buf != NULL) delete[] Buf;
+
+	return 1;
+}

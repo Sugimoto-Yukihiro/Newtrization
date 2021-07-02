@@ -6,7 +6,7 @@
 #include "bg.h"
 
 #include "renderer.h"
-#include "sprite.h"
+#include "texture.h"
 
 //*****************************************************************************
 // ƒ}ƒNƒ’è‹`

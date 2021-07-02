@@ -1,6 +1,8 @@
 //==================================================================
+//
 // マップチップ処理 [mapchip.h]
 // Auther : 杉本幸宏
+//
 //==================================================================
 #pragma once
 
@@ -15,15 +17,17 @@ public:
 	~CMapchip();		// デストラクタ
 
 	//------------------- メンバ関数
+	void Init(char* pFileName, int* pChipArray);		// 初期化
 	void Draw();		// 描画処理
 	void Update();		// 更新処理
+	void Uninit();
 
 private:
-	D3DXVECTOR2		m_vPosition;				// マップチップ変数の座標
-	int				m_nIndLink_y, indLink_x;	// マップチップ配列の添字の保存(yは二次元目、xは一次元目)
-	int				m_nChipNum;				// マップチップの番号
-	bool			m_bUse;					// このマップチップ変数が使われているか
-	float			m_fHp;
+	//------------------- メンバ変数
+	D3DXVECTOR2		m_vPosition;	// マップチップ変数の座標
+	float			m_fU, m_fV;		// マップチップ配列の添字の保存(yは二次元目、xは一次元目)
+	int				m_nChipNum;		// マップチップの番号
+	bool			m_bUse;			// このマップチップ変数が使われているか
 };
 
 

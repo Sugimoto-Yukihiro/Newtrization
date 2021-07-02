@@ -8,7 +8,7 @@
 #include "renderer.h"
 #include "input.h"
 #include "player.h"
-#include "sprite.h"
+#include "texture.h"
 
 //*****************************************************************************
 // ƒ}ƒNƒ’è‹`

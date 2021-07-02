@@ -9,7 +9,7 @@
 #include "renderer.h"
 #include "sound.h"
 //#include "score.h"
-#include "sprite.h"
+#include "texture.h"
 
 //*****************************************************************************
 // ƒ}ƒNƒ’è‹`

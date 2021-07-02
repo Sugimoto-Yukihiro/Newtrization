@@ -11,7 +11,7 @@
 #include "input.h"		// キー・ゲームパッド入力処理
 #include "renderer.h"	// レンダリング処理
 //#include "sound.h"	// サウンド
-#include "sprite.h"		// スプライト
+#include "texture.h"		// スプライト
 //#include "score.h"	// スコア
 
 //*****************************************************************************

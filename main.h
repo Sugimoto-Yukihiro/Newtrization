@@ -50,6 +50,8 @@
 
 #define	FPS_RATE		(60)				// FPS値（1秒ごとに描画・更新処理を行う回数）
 
+#define NULL_SIZE		(1)
+
 //*****************************************************************************
 // 構造体定義
 //*****************************************************************************
@@ -72,3 +74,6 @@ char *GetDebugStr(void);
 
 void SetMode(MODE mode);
 MODE GetMode(void);
+
+int DivideString(const char* String, int* Col, int* Row, char* DivMark);
+int SerchWordOffset(const char* String, const char SingleWord);
