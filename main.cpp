@@ -8,6 +8,7 @@
 #include "main.h"
 
 #include "title.h"		// タイトル画面
+#include "tutorial.h"	// チュートリアル画面
 #include "game.h"		// ゲーム画面
 #include "result.h"		// リザルト画面
 
@@ -258,7 +259,7 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 
 	//------------------- モードに応じた初期化
 	if (g_Mode == MODE_TITLE) InitTitle();				// タイトル画面の終了処理
-//	else if(g_Mode == MODE_TUTORIAL) InitTutorial();	// チュートリアル画面の終了処理
+	else if(g_Mode == MODE_TUTORIAL) InitTutorial();	// チュートリアル画面の終了処理
 	else if (g_Mode == MODE_GAME) InitGame();			// ゲーム画面の終了処理
 	else if (g_Mode == MODE_RESULT) InitResult();		// リザルト画面の終了処理
 
@@ -273,7 +274,7 @@ void Uninit(void)
 {
 	//------------------- モードに応じたメモリ解放
 	if (g_Mode == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
-//	else if(g_Mode == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
+	else if(g_Mode == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
 	else if (g_Mode == MODE_GAME) UninitGame();			// ゲーム画面の終了処理
 	else if (g_Mode == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
 
@@ -312,7 +313,7 @@ void Update(void)
 		break;
 
 	case MODE_TUTORIAL:
-	//	UpdateTutorial();
+		UpdateTutorial();
 		break;
 
 	case MODE_GAME:
@@ -354,7 +355,7 @@ void Draw(void)
 		break;
 
 	case MODE_TUTORIAL:
-	//	DrawTutorial();
+		DrawTutorial();
 		break;
 
 	case MODE_GAME:
@@ -384,7 +385,7 @@ void SetMode(MODE mode)
 {
 	//------------------- モードを変える前にメモリを解放しちゃう
 	if(g_Mode == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
-//	else if(g_Mode == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
+	else if(g_Mode == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
 	else if(g_Mode == MODE_GAME) UninitGame();			// ゲーム画面の終了処理
 	else if(g_Mode == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
 
@@ -401,7 +402,7 @@ void SetMode(MODE mode)
 
 	case MODE_TUTORIAL:
 		// ゲーム画面の初期化
-	//	InitTutorial();
+		InitTutorial();
 		break;
 
 	case MODE_GAME:

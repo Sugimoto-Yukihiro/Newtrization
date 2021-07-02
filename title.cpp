@@ -24,7 +24,7 @@
 #define TEXTURE_WIDTH_LOGO			(480)			// ロゴサイズ
 #define TEXTURE_HEIGHT_LOGO			(80)			// 
 
-#define NEXT_MODE					MODE_GAME		// 次のモード
+#define NEXT_MODE					MODE_TUTORIAL		// 次のモード
 #define KEY_MODE_CHANGE				GetKeyboardTrigger(DIK_RETURN)
 #define PAD_MODE_CHANGE				IsButtonTriggered(0, BUTTON_START) || IsButtonTriggered(0, BUTTON_B)
 
