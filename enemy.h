@@ -6,9 +6,6 @@
 //=============================================================================
 #pragma once
 
-#include "main.h"
-#include "renderer.h"
-
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
@@ -17,19 +14,27 @@
 
 
 //*****************************************************************************
-// 構造体定義
+// クラス
 //*****************************************************************************
-struct ENEMY
+class CEnemy
 {
-	bool			use;			// true:使っている  false:未使用
-	float			w, h;			// 幅と高さ
+public:
+	CEnemy();
+	~CEnemy();
+
+	void Update();
+	void Draw();
+
+private:
 	D3DXVECTOR3		pos;			// ポリゴンの座標
 	D3DXVECTOR3		rot;			// ポリゴンの回転量
+	float			w, h;			// 幅と高さ
+	float			time;			// 線形補間の時間管理用
 	int				countAnim;		// アニメーションカウント
 	int				patternAnim;	// アニメーションパターンナンバー
 	int				texNo;			// テクスチャ番号
 	bool			left;			// true:左へ移動
-	float			time;			// 線形補間の時間管理用
+	bool			use;			// true:使っている  false:未使用
 };
 
 
@@ -37,11 +42,11 @@ struct ENEMY
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-HRESULT InitEnemy(void);
+void InitEnemy(void);
 void UninitEnemy(void);
 void UpdateEnemy(void);
 void DrawEnemy(void);
 
-ENEMY *GetEnemy(void);
+//ENEMY *GetEnemy(void);
 
 

@@ -4,6 +4,10 @@
 // Author : 稲垣佑二郎
 //
 //=============================================================================
+
+#include "main.h"
+#include "renderer.h"
+
 #include "enemy.h"
 #include "texture.h"
 
@@ -35,7 +39,7 @@ static char *g_TexturName[] = {
 	"data/TEXTURE/enemy/enemy01.png",
 };
 
-static ENEMY g_Enemy[ENEMY_MAX];							// エネミー構造体
+CEnemy g_Enemy[ENEMY_MAX];							// エネミー構造体
 
 // エネミーの線形移動用の移動座標テーブル
 static D3DXVECTOR3 g_MoveTbl[] = {
@@ -53,22 +57,37 @@ static float g_MoveSpd[] = {
 
 
 //=============================================================================
-// 初期化処理
+// コンストラクタ
 //=============================================================================
-HRESULT InitEnemy(void)
+CEnemy::CEnemy()
 {
-	ID3D11Device *pDevice = GetDevice();
+	// エネミー構造体の初期化
+	use = true;
+	w = TEXTURE_WIDTH;
+	h = TEXTURE_HEIGHT;
+	pos = D3DXVECTOR3((float)SCREEN_CENTER_X, 300.0f, 0.0f);
+	rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	texNo = 0;
 
-	//テクスチャ生成
+	countAnim = 0;
+	patternAnim = 0;
+
+	time = 0.0f;
+	
+}
+
+void InitEnemy(void)
+{
 	for (int i = 0; i < TEXTURE_MAX; i++)
 	{
-		g_Texture[i] = NULL;
-		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-			g_TexturName[i],
-			NULL,
-			NULL,
-			&g_Texture[i],
-			NULL);
+		//テクスチャ生成
+			g_Texture[i] = NULL;
+			D3DX11CreateShaderResourceViewFromFile(GetDevice(),
+				g_TexturName[i],
+				NULL,
+				NULL,
+				&g_Texture[i],
+				NULL);
 	}
 
 
@@ -81,32 +100,17 @@ HRESULT InitEnemy(void)
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
 
+}
+//=============================================================================
+// デストラクタ
+//=============================================================================
+CEnemy::~CEnemy()
+{
 
-	// エネミー構造体の初期化
-	for (int i = 0; i < ENEMY_MAX; i++)
-	{
-		g_Enemy[i].use   = true;
-		g_Enemy[i].w     = TEXTURE_WIDTH;
-		g_Enemy[i].h     = TEXTURE_HEIGHT;
-		g_Enemy[i].pos   = D3DXVECTOR3(200.0f+i*150, 300.0f, 0.0f);
-		g_Enemy[i].rot   = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		g_Enemy[i].texNo = 0;
-
-		g_Enemy[i].countAnim = 0;
-		g_Enemy[i].patternAnim = 0;
-
-		g_Enemy[i].time = 0.0f;
-
-	}
-	
-
-	return S_OK;
 }
 
-//=============================================================================
-// 終了処理
-//=============================================================================
-void UninitEnemy(void)
+
+void UninitEnemy()
 {
 	if (g_VertexBuffer)
 	{
@@ -128,40 +132,37 @@ void UninitEnemy(void)
 //=============================================================================
 // 更新処理
 //=============================================================================
-void UpdateEnemy(void)
+void CEnemy::Update(void)
 {
-	for (int i = 0; i < ENEMY_MAX; i++)
-	{
-		if (g_Enemy[i].use == true)		// このエネミーが使われている？
-		{								// Yes
-			// アニメーション  
-			g_Enemy[i].countAnim++;
-			if ((g_Enemy[i].countAnim % ANIM_WAIT) == 0)
-			{
-				// パターンの切り替え
-				g_Enemy[i].patternAnim = (g_Enemy[i].patternAnim + 1) % ANIM_PATTERN_NUM;
-			}
-
-			if (i == 0)
-			{	// エネミー０番だけテーブルに従って座標移動（線形移動）
-				int nowNo = (int)g_Enemy[i].time;		// 整数分であるテーブルを取り出している
-				int maxNo = (sizeof(g_MoveTbl) / sizeof(D3DXVECTOR3));	// 登録テーブル数を数えている
-				int nextNo = (nowNo + 1) % maxNo;						// 移動先テーブルの番号を求めている
-				D3DXVECTOR3 pos = g_MoveTbl[nextNo] - g_MoveTbl[nowNo];	// XYZ移動量を計算している
-				float nowTime = g_Enemy[i].time - nowNo;				// 時間部分である少数を取り出している
-				pos *= nowTime;											// 現在の移動量を計算している
-
-				// 計算して求めた移動量を現在の移動テーブルXYZに足している
-				g_Enemy[i].pos = g_MoveTbl[nowNo] + pos;
-
-				g_Enemy[i].time += g_MoveSpd[nowNo];					// 時間を進めている
-				if ((int)g_Enemy[i].time >= maxNo)						// 登録テーブル最後まで移動したか？
-				{
-					g_Enemy[i].time -= maxNo;							// ０番目にリセットしつつも少数部分を引き継いでいる
-				}
-
-			}
+	if (use == true)		// このエネミーが使われている？
+	{								// Yes
+		// アニメーション  
+		countAnim++;
+		if ((countAnim % ANIM_WAIT) == 0)
+		{
+			// パターンの切り替え
+			patternAnim = (patternAnim + 1) % ANIM_PATTERN_NUM;
 		}
+
+		//if (i == 0)
+		//{	// エネミー０番だけテーブルに従って座標移動（線形移動）
+		//	int nowNo = (int)time;		// 整数分であるテーブルを取り出している
+		//	int maxNo = (sizeof(g_MoveTbl) / sizeof(D3DXVECTOR3));	// 登録テーブル数を数えている
+		//	int nextNo = (nowNo + 1) % maxNo;						// 移動先テーブルの番号を求めている
+		//	D3DXVECTOR3 pos = g_MoveTbl[nextNo] - g_MoveTbl[nowNo];	// XYZ移動量を計算している
+		//	float nowTime = time - nowNo;				// 時間部分である少数を取り出している
+		//	pos *= nowTime;											// 現在の移動量を計算している
+
+		//	// 計算して求めた移動量を現在の移動テーブルXYZに足している
+		//	pos = g_MoveTbl[nowNo] + pos;
+
+		//	time += g_MoveSpd[nowNo];					// 時間を進めている
+		//	if ((int)time >= maxNo)						// 登録テーブル最後まで移動したか？
+		//	{
+		//		time -= maxNo;							// ０番目にリセットしつつも少数部分を引き継いでいる
+		//	}
+
+		//}
 	}
 
 
@@ -174,10 +175,19 @@ void UpdateEnemy(void)
 
 }
 
+void UpdateEnemy(void)
+{
+	for (int i = 0; i < ENEMY_MAX; i++)
+	{
+		g_Enemy[i].Update();		// エネミーの数だけ呼び出すマン
+	}
+}
+
+
 //=============================================================================
 // 描画処理
 //=============================================================================
-void DrawEnemy(void)
+void CEnemy::Draw(void)
 {
 	// 頂点バッファ設定
 	UINT stride = sizeof(VERTEX_3D);
@@ -196,43 +206,46 @@ void DrawEnemy(void)
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
 
-	for (int i = 0; i < ENEMY_MAX; i++)
-	{
-		if (g_Enemy[i].use == true)		// このエネミーが使われている？
-		{								// Yes
-			// テクスチャ設定
-			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[g_Enemy[i].texNo]);
+	if (use == true)		// このエネミーが使われている？
+	{								// Yes
+		// テクスチャ設定
+		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[texNo]);
 
-			//エネミーの位置やテクスチャー座標を反映
-			float px = g_Enemy[i].pos.x;	// エネミーの表示位置X
-			float py = g_Enemy[i].pos.y;	// エネミーの表示位置Y
-			float pw = g_Enemy[i].w;		// エネミーの表示幅
-			float ph = g_Enemy[i].h;		// エネミーの表示高さ
+		//エネミーの位置やテクスチャー座標を反映
+		float px = pos.x;	// エネミーの表示位置X
+		float py = pos.y;	// エネミーの表示位置Y
+		float pw = w;		// エネミーの表示幅
+		float ph = h;		// エネミーの表示高さ
 
-			float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// テクスチャの幅
-			float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// テクスチャの高さ
-			float tx = (float)(g_Enemy[i].patternAnim % TEXTURE_PATTERN_DIVIDE_X) * tw;	// テクスチャの左上X座標
-			float ty = (float)(g_Enemy[i].patternAnim / TEXTURE_PATTERN_DIVIDE_X) * th;	// テクスチャの左上Y座標
+		float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// テクスチャの幅
+		float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// テクスチャの高さ
+		float tx = (float)(patternAnim % TEXTURE_PATTERN_DIVIDE_X) * tw;	// テクスチャの左上X座標
+		float ty = (float)(patternAnim / TEXTURE_PATTERN_DIVIDE_X) * th;	// テクスチャの左上Y座標
 
-			// １枚のポリゴンの頂点とテクスチャ座標を設定
-			SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
-				D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
-				g_Enemy[i].rot.z);
+		// １枚のポリゴンの頂点とテクスチャ座標を設定
+		SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
+			D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
+			rot.z);
 
-			// ポリゴン描画
-			GetDeviceContext()->Draw(4, 0);
-		}
+		// ポリゴン描画
+		GetDeviceContext()->Draw(4, 0);
 	}
 
 }
 
-
+void DrawEnemy(void)
+{
+	for (int i = 0; i < ENEMY_MAX; i++)
+	{
+		g_Enemy[i].Draw();			// エネミーの数だけ呼び出すマン
+	}
+}
 //=============================================================================
 // エネミー構造体の先頭アドレスを取得
 //=============================================================================
-ENEMY *GetEnemy(void)
-{
-	return &g_Enemy[0];
-}
+//ENEMY *GetEnemy(void)
+//{
+//	return &g_Enemy[0];
+//}
 
 
