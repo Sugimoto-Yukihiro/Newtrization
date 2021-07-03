@@ -28,31 +28,55 @@
 // 引数 :	テクスチャのファイル名, 描画座標, 頂点色, 回転角
 // 説明 :	テクスチャを、引数に指定された値に描画する処理
 //=============================================================================
-void CTexture::DrawTexture(ID3D11ShaderResourceView* Texture, D3DXVECTOR2 Position, D3DXCOLOR Color, float Rotation)
+//void CTexture::DrawTexture(D3DXVECTOR2 Position, D3DXVECTOR2 Size, D3DXCOLOR Color, float Rotation)
+void CTexture::DrawTexture(ID3D11Buffer* VertexBuffer, ID3D11ShaderResourceView* TextureData)
 {
 	// テクスチャ設定
-	GetDeviceContext()->PSSetShaderResources(0, 1, &Texture);
+	GetDeviceContext()->PSSetShaderResources(0, 1, &TextureData);
 
 	//プレイヤーの位置やテクスチャー座標を反映
-	float px = pos.x;	// プレイヤーの表示位置X
-	float py = pos.y;	// プレイヤーの表示位置Y
-	float pw = w;		// プレイヤーの表示幅
-	float ph = h;		// プレイヤーの表示高さ
-
 	float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// テクスチャの幅
 	float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// テクスチャの高さ
 	float tx = (float)(patternAnim % TEXTURE_PATTERN_DIVIDE_X) * tw;	// テクスチャの左上X座標
 	float ty = (float)(patternAnim / TEXTURE_PATTERN_DIVIDE_X) * th;	// テクスチャの左上Y座標
 
 	// １枚のポリゴンの頂点とテクスチャ座標を設定
-	SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
+	SetSpriteColorRotation(VertexBuffer, Position.x, Position.y, Size.x, Size.y, tx, ty, tw, th,
 		D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
-		rot.z);
+		Rotation);
 
 	// ポリゴン描画
 	GetDeviceContext()->Draw(4, 0);
 }
 
+//=============================================================================
+// アニメーション番号の更新関数
+// 引数 :	アニメーションの始点番号, アニメーションの終点番号
+// 説明 :	アニメーション番号の更新。
+//			Wait値と現在のフレーム値を比較して、アニメーション番号の加算を行う。
+//=============================================================================
+void CAnimation::UpdateAnimIndex(int MotionStartIndex, int MotionEndIndex)
+{
+	// 1フレーム加算
+	m_nCurrentFlame++;
+
+	// 切り替えるフレームになったか判別
+	if (m_nCurrentFlame >= m_nAnimWait)
+	{
+		// アニメーション番号の更新
+		m_nCurrentAnimIndex++;
+
+		// 終点番号をオーバーしていた時
+		if (m_nCurrentAnimIndex > MotionEndIndex)
+		{
+			m_nCurrentAnimIndex = MotionStartIndex;	// 始点にセット
+		}
+
+		// 経過フレーム数のリセット
+		m_nCurrentFlame = 0;
+	}
+
+}
 
 
 //=============================================================================
