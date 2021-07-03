@@ -13,7 +13,7 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define TEXTURE_WIDTH				(100.0f)	// キャラサイズ	X
+#define TEXTURE_WIDTH				(300.0f)	// キャラサイズ	X
 #define TEXTURE_HEIGHT				(100.0f)	//				Y
 #define TEXTURE_SIZE				D3DXVECTOR2(TEXTURE_WIDTH, TEXTURE_HEIGHT)	// キャラサイズ
 
