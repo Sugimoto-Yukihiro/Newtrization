@@ -11,35 +11,23 @@
 //*****************************************************************************
 // クラス定義
 //*****************************************************************************
-class CTexture
-{
-public:
-	void SetV(float V);
-	void SetU(float U);
-	//void DrawTexture(char* TextureName, D3DXVECTOR2 Position, D3DXCOLOR Color, float Rotation);
-	void DrawTexture(ID3D11Buffer* VertexBuffer, ID3D11ShaderResourceView* TextureData);
-
-private:
-	//------------------- メンバ変数
-//	ID3D11Buffer*				VertexBuffer = NULL;				// 頂点情報
-//	ID3D11ShaderResourceView*	TextureData;
-	D3DXVECTOR2					m_vTexPos;		// テクスチャの描画位置
-	D3DXVECTOR2					m_vSize;		// テクスチャの 幅＆高さ
-	float						m_fU, m_fV;		// UV座標系
-	float						m_fRotation;	// テクスチャの回転角
-};
-
 // アニメーションクラス
 class CAnimation
 {
 public:
-	//念のためのコンストとデスト
-//	CAnimation();
-//	~CAnimation();
+//	CAnimation();		// コンストラクタ
+//	~CAnimation();		// デストラクタ
 
 	//------------------- メンバ関数
-//	void ChangeAnimIndex(int& CurrentIndex, int& CurrentAnimFlame, int FlameWait, int MotionStartNum, int UseGraphNum);
 	void UpdateAnimIndex(int MotionStartIndex, int MotionEndIndex);
+
+	//-------------------セッター関数
+	void SetAnimWait(int Wait);		// アニメーションのWait値をセット
+
+	//-------------------ゲッター関数
+	int GetCurrentAnim();			// 現在のアニメーション番号を取得
+	int GetDivideX();				// 横のアニメーションパターン数を取得
+	int GetDivideY();				// 縦のアニメーションパターン数を取得
 
 private:
 	//------------------- メンバ変数
@@ -48,6 +36,33 @@ private:
 	int m_nCurrentFlame;			// 現在のフレーム値
 	int m_nAnimWait;				// 画像が切り替わるWait値（単位はフレーム）
 };
+
+// テクスチャクラス
+class CTexture : public CAnimation
+{
+public:
+	//------------------- メンバ関数
+	void DrawTexture(ID3D11Buffer* VertexBuffer, ID3D11ShaderResourceView* TextureData);
+
+	//------------------- セッター関数
+	void SetV(float V);
+	void SetU(float U);
+
+	//------------------- ゲッター関数
+	D3DXVECTOR2 GetTexPos();
+	D3DXVECTOR2 GetTexSize();
+
+private:
+	//------------------- メンバ変数
+//	ID3D11Buffer*				VertexBuffer = NULL;				// 頂点情報
+//	ID3D11ShaderResourceView*	TextureData;
+	D3DXVECTOR2					m_vTexPos;		// テクスチャの描画位置
+	D3DXVECTOR2					m_vSize;		// テクスチャの 幅＆高さ
+	D3DXCOLOR					m_Color;		// 頂点色
+	float						m_fU, m_fV;		// UV座標系
+	float						m_fRotation;	// テクスチャの回転角
+};
+
 
 //*****************************************************************************
 // プロトタイプ宣言

@@ -24,33 +24,62 @@
 
 
 //=============================================================================
-// テクスチャ描画関数（DrawTexture）
+// テクスチャ描画関数（CTexture）
 // 引数 :	テクスチャのファイル名, 描画座標, 頂点色, 回転角
 // 説明 :	テクスチャを、引数に指定された値に描画する処理
 //=============================================================================
 //void CTexture::DrawTexture(D3DXVECTOR2 Position, D3DXVECTOR2 Size, D3DXCOLOR Color, float Rotation)
-void CTexture::DrawTexture(ID3D11Buffer* VertexBuffer, ID3D11ShaderResourceView* TextureData)
+void CTexture::DrawTexture(ID3D11Buffer* pVertexBuffer, ID3D11ShaderResourceView* pTextureData)
 {
-	// テクスチャ設定
-	GetDeviceContext()->PSSetShaderResources(0, 1, &TextureData);
+	float tw, th, tU, tV;
 
-	//プレイヤーの位置やテクスチャー座標を反映
-	float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// テクスチャの幅
-	float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// テクスチャの高さ
-	float tx = (float)(patternAnim % TEXTURE_PATTERN_DIVIDE_X) * tw;	// テクスチャの左上X座標
-	float ty = (float)(patternAnim / TEXTURE_PATTERN_DIVIDE_X) * th;	// テクスチャの左上Y座標
+	// テクスチャ設定
+	GetDeviceContext()->PSSetShaderResources(0, 1, &pTextureData);
+
+	//------------------- アニメーションも考慮して、UV座標の値を決定する
+	// 1つのアニメーションパターンあたりの幅と高さを求める
+	tw = 1.0f / GetDivideX();							// 幅
+	th = 1.0f / GetDivideY();							// 高さ
+	tU = (float)(GetCurrentAnim() % GetDivideX()) * tw;	// テクスチャの左上X座標
+	tV = (float)(GetCurrentAnim() / GetDivideX()) * th;	// テクスチャの左上Y座標
 
 	// １枚のポリゴンの頂点とテクスチャ座標を設定
-	SetSpriteColorRotation(VertexBuffer, Position.x, Position.y, Size.x, Size.y, tx, ty, tw, th,
-		D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
-		Rotation);
+	SetSpriteColorRotation(pVertexBuffer, m_vTexPos.x, m_vTexPos.y, m_vSize.x, m_vSize.y, tU, tV, tw, th,
+		m_Color, m_fRotation);
 
 	// ポリゴン描画
 	GetDeviceContext()->Draw(4, 0);
 }
 
 //=============================================================================
-// アニメーション番号の更新関数
+// セッター関数（CTexture）
+//=============================================================================
+void CTexture::SetU(float U)	// UV座標のU値を変更する関数
+{
+	m_fU = U;
+}
+
+void CTexture::SetV(float V)	// UV座標のV値を変更する関数
+{
+	m_fU = V;
+}
+
+//=============================================================================
+// ゲッター関数（CTexture）
+//=============================================================================
+D3DXVECTOR2 CTexture::GetTexPos()
+{
+	return m_vTexPos;
+}
+
+D3DXVECTOR2 CTexture::GetTexSize()
+{
+	return m_vSize;
+}
+
+
+//=============================================================================
+// アニメーション番号の更新関数（CAnimation）
 // 引数 :	アニメーションの始点番号, アニメーションの終点番号
 // 説明 :	アニメーション番号の更新。
 //			Wait値と現在のフレーム値を比較して、アニメーション番号の加算を行う。
@@ -76,6 +105,32 @@ void CAnimation::UpdateAnimIndex(int MotionStartIndex, int MotionEndIndex)
 		m_nCurrentFlame = 0;
 	}
 
+}
+
+//=============================================================================
+// セッター関数（CAnimation）
+//=============================================================================
+void CAnimation::SetAnimWait(int Wait)	// Wait値を変更する関数
+{
+	m_nAnimWait = Wait;
+}
+
+//=============================================================================
+// ゲッター関数（CAnimation）
+//=============================================================================
+int CAnimation::GetCurrentAnim()		// 現在のアニメーション番号を取得する関数
+{
+	return m_nCurrentAnimIndex;
+}
+
+int CAnimation::GetDivideX()			// 横方向のアニメーションパターン数を取得する関数
+{
+	return m_nDivideX;
+}
+
+int CAnimation::GetDivideY()			// 縦方向のアニメーションパターン数を取得する関数
+{
+	return m_nDivideY;
 }
 
 
