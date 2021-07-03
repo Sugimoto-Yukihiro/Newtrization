@@ -24,6 +24,38 @@
 
 
 //=============================================================================
+// テクスチャ描画関数（DrawTexture）
+// 引数 :	テクスチャのファイル名, 描画座標, 頂点色, 回転角
+// 説明 :	テクスチャを、引数に指定された値に描画する処理
+//=============================================================================
+void CTexture::DrawTexture(ID3D11ShaderResourceView* Texture, D3DXVECTOR2 Position, D3DXCOLOR Color, float Rotation)
+{
+	// テクスチャ設定
+	GetDeviceContext()->PSSetShaderResources(0, 1, &Texture);
+
+	//プレイヤーの位置やテクスチャー座標を反映
+	float px = pos.x;	// プレイヤーの表示位置X
+	float py = pos.y;	// プレイヤーの表示位置Y
+	float pw = w;		// プレイヤーの表示幅
+	float ph = h;		// プレイヤーの表示高さ
+
+	float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// テクスチャの幅
+	float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// テクスチャの高さ
+	float tx = (float)(patternAnim % TEXTURE_PATTERN_DIVIDE_X) * tw;	// テクスチャの左上X座標
+	float ty = (float)(patternAnim / TEXTURE_PATTERN_DIVIDE_X) * th;	// テクスチャの左上Y座標
+
+	// １枚のポリゴンの頂点とテクスチャ座標を設定
+	SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
+		D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
+		rot.z);
+
+	// ポリゴン描画
+	GetDeviceContext()->Draw(4, 0);
+}
+
+
+
+//=============================================================================
 // 頂点データ設定(2D)
 //=============================================================================
 void SetVertex(ID3D11Buffer *buf, float X, float Y, float Width, float Height, float U, float V, float UW, float VH)
