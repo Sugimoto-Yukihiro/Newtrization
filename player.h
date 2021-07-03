@@ -22,21 +22,14 @@ public:
 	CPlayer();						// コンストラクタ
 	~CPlayer();						// デストラクタ
 
-	//HRESULT Init();
-	//void Uninit();
-	void Update();
-	void Draw();
+	void Init();					// 初期化
+	//void Uninit();				// 終了処理
+	void Update();					// 更新処理
+	void Draw();					// 描画処理
 
 private:
-	D3DXVECTOR3		pos;			// ポリゴンの座標
-	D3DXVECTOR3		rot;			// ポリゴンの回転量
-	float			w, h;			// 幅と高さ
-	int				countAnim;		// アニメーションカウント
-	int				patternAnim;	// アニメーションパターンナンバー
 	int				texNo;			// テクスチャ番号
 	bool			use;			// true:使っている  false:未使用
-//	bool			left;			// true:左へ移動
-
 };
 
 //*****************************************************************************

@@ -46,11 +46,12 @@
 #define SCREEN_CENTER_X	(SCREEN_WIDTH / 2)	// ウインドウの中心Ｘ座標
 #define SCREEN_CENTER_Y	(SCREEN_HEIGHT / 2)	// ウインドウの中心Ｙ座標
 
-#define	NUM_VERTEX		(4)					// 頂点数
+#define NUM_VERTEX		(4)					// 頂点数
 
-#define	FPS_RATE		(60)				// FPS値（1秒ごとに描画・更新処理を行う回数）
-
+#define FPS_RATE		(60)				// FPS値（1秒ごとに描画・更新処理を行う回数）
 #define NULL_SIZE		(1)
+#define ZERO_VECTOR2	D3DXVECTOR2(0.0f, 0.0f)
+#define DEFAULT_COLOR	D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)
 
 //*****************************************************************************
 // 構造体定義

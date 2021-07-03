@@ -1,6 +1,8 @@
 //=============================================================================
+//
 // テクスチャ関連処理 [texture.h]
 // Author : 杉本幸宏
+//
 //=============================================================================
 #pragma once
 
@@ -20,14 +22,19 @@ public:
 
 	//------------------- メンバ関数
 	void UpdateAnimIndex(int MotionStartIndex, int MotionEndIndex);
+	void Init();
 
-	//-------------------セッター関数
+	//------------------- セッター関数
+	//void SetCurrentAnim(int CurAnim);	// 現在のアニメーション番号を取得
+	void SetDivideX(int DivX);		// 横のアニメーションパターン数を格納
+	void SetDivideY(int DivY);		// 縦のアニメーションパターン数を格納
 	void SetAnimWait(int Wait);		// アニメーションのWait値をセット
 
-	//-------------------ゲッター関数
+	//------------------- ゲッター関数
 	int GetCurrentAnim();			// 現在のアニメーション番号を取得
 	int GetDivideX();				// 横のアニメーションパターン数を取得
 	int GetDivideY();				// 縦のアニメーションパターン数を取得
+//	int GetAnimWait();				// アニメーションのWait値を取得
 
 private:
 	//------------------- メンバ変数
@@ -43,6 +50,7 @@ class CTexture : public CAnimation
 public:
 	//------------------- メンバ関数
 	void DrawTexture(ID3D11Buffer* VertexBuffer, ID3D11ShaderResourceView* TextureData);
+	void Init();
 
 	//------------------- セッター関数
 	void SetV(float V);

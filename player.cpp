@@ -20,7 +20,7 @@
 #define TEXTURE_PATTERN_DIVIDE_X	(3)		// アニメパターンのテクスチャ内分割数（X)
 #define TEXTURE_PATTERN_DIVIDE_Y	(1)		// アニメパターンのテクスチャ内分割数（Y)
 #define ANIM_PATTERN_NUM			(TEXTURE_PATTERN_DIVIDE_X*TEXTURE_PATTERN_DIVIDE_Y)	// アニメーションパターン数
-#define ANIM_WAIT					(4)		// アニメーションの切り替わるWait値
+#define ANIM_WAIT					(4)		// アニメーションの切り替わるデフォルトWait値
 
 
 //*****************************************************************************
@@ -41,24 +41,34 @@ static char *g_TexturName[] = {
 static CPlayer	g_aPlayer[PLAYER_MAX];								// プレイヤーインスタンス
 
 //=============================================================================
-// コンストラクタ
+// コンストラクタ・デストラクタ
 //=============================================================================
-CPlayer::CPlayer()
+CPlayer::CPlayer()		// コンストラクタ
 {
-	// プレイヤー構造体の初期化
-	for (int i = 0; i < PLAYER_MAX; i++)
-	{
-		g_aPlayer[i].use = true;
-		g_aPlayer[i].w   = TEXTURE_WIDTH;
-		g_aPlayer[i].h   = TEXTURE_HEIGHT;
-		g_aPlayer[i].pos = D3DXVECTOR3(500.0f, 500.0f, 0.0f);	// 中心点から表示にした
-		g_aPlayer[i].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		g_aPlayer[i].texNo = 0;
-
-		g_aPlayer[i].countAnim = 0;
-		g_aPlayer[i].patternAnim = 0;
-	}
+	// プレイヤークラスの初期化
+	use = true;
+	texNo = 0;
 }
+
+CPlayer::~CPlayer()		// デストラクタ
+{
+
+}
+
+//=============================================================================
+// 初期化処理
+//=============================================================================
+void CPlayer::Init()
+{
+	// プレイヤークラスの初期化
+	use = true;
+	texNo = 0;
+
+	//------------------- ベースクラスの初期化
+	CTexture::Init();	// CTexture
+
+}
+
 
 void InitPlayer()
 {
@@ -74,7 +84,6 @@ void InitPlayer()
 			NULL);
 	}
 
-
 	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -83,15 +92,19 @@ void InitPlayer()
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
+
+	// プレイヤークラス初期化
+	for (int i = 0; i < PLAYER_MAX; i++)
+	{
+		
+	}
+
 }
 
 //=============================================================================
 // 終了処理
 //=============================================================================
-CPlayer::~CPlayer()
-{
 
-}
 
 void UninitPlayer()
 {

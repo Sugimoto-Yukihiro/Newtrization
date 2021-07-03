@@ -1,6 +1,8 @@
 //=============================================================================
-// スプライト処理 [sprite.cpp]
+//
+// テクスチャ関連処理 [texture.cpp]
 // Author : 杉本幸宏
+//
 //=============================================================================
 
 #include "main.h"
@@ -20,6 +22,23 @@
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
+
+
+
+//=============================================================================
+// メンバ変数の初期化（CTexture）
+//=============================================================================
+void CTexture::Init()	// 全てのメンバ変数を０で初期化
+{
+	m_vTexPos = ZERO_VECTOR2;
+	m_vSize = ZERO_VECTOR2;
+	m_Color = DEFAULT_COLOR;
+	m_fU = m_fV = 0.0f;
+	m_fRotation = 0.0f;
+
+	//------------------- ベースクラスの初期化
+	CAnimation::Init();		// CAnimation
+}
 
 
 
@@ -51,6 +70,8 @@ void CTexture::DrawTexture(ID3D11Buffer* pVertexBuffer, ID3D11ShaderResourceView
 	GetDeviceContext()->Draw(4, 0);
 }
 
+
+
 //=============================================================================
 // セッター関数（CTexture）
 //=============================================================================
@@ -64,6 +85,8 @@ void CTexture::SetV(float V)	// UV座標のV値を変更する関数
 	m_fU = V;
 }
 
+
+
 //=============================================================================
 // ゲッター関数（CTexture）
 //=============================================================================
@@ -76,6 +99,20 @@ D3DXVECTOR2 CTexture::GetTexSize()
 {
 	return m_vSize;
 }
+
+
+
+//=============================================================================
+// メンバ変数の初期化（CAnimation）
+//=============================================================================
+void CAnimation::Init()	// 全てのメンバ変数を０で初期化
+{
+	m_nDivideX = m_nDivideY = 0;
+	m_nCurrentAnimIndex = 0;
+	m_nCurrentFlame = 0;
+	m_nAnimWait = 0;
+}
+
 
 
 //=============================================================================
@@ -98,7 +135,7 @@ void CAnimation::UpdateAnimIndex(int MotionStartIndex, int MotionEndIndex)
 		// 終点番号をオーバーしていた時
 		if (m_nCurrentAnimIndex > MotionEndIndex)
 		{
-			m_nCurrentAnimIndex = MotionStartIndex;	// 始点にセット
+			m_nCurrentAnimIndex = MotionStartIndex;	// 始点にリセット
 		}
 
 		// 経過フレーム数のリセット
@@ -107,13 +144,27 @@ void CAnimation::UpdateAnimIndex(int MotionStartIndex, int MotionEndIndex)
 
 }
 
+
+
 //=============================================================================
 // セッター関数（CAnimation）
 //=============================================================================
-void CAnimation::SetAnimWait(int Wait)	// Wait値を変更する関数
+void CAnimation::SetDivideX(int DivX)		// 横のアニメーションパターン数を格納
+{
+	m_nDivideX = DivX;
+}
+
+void CAnimation::SetDivideY(int DivY)		// 縦のアニメーションパターン数を格納
+{
+	m_nDivideY = DivY;
+}
+
+void CAnimation::SetAnimWait(int Wait)		// Wait値を変更する関数
 {
 	m_nAnimWait = Wait;
 }
+
+
 
 //=============================================================================
 // ゲッター関数（CAnimation）
@@ -132,6 +183,7 @@ int CAnimation::GetDivideY()			// 縦方向のアニメーションパターン数を取得する関数
 {
 	return m_nDivideY;
 }
+
 
 
 //=============================================================================
