@@ -19,32 +19,29 @@
 class CPlayer : public CTexture
 {
 public:
-	CPlayer();						// コンストラクタ
-	~CPlayer();						// デストラクタ
+	CPlayer();							// コンストラクタ
+	~CPlayer();							// デストラクタ
 
-	void Init();					// 初期化
-	//void Uninit();				// 終了処理
-	void Update();					// 更新処理
-	void Draw();					// 描画処理
+	//------------------- メンバ関数
+	void Init();						// 初期化
+	//void Uninit();					// 終了処理
+	void Update();						// 更新処理
+	void Draw();						// 描画処理
+
+	//------------------- セッター関数
+	void SetPlayerUseFlag(bool Use);	// プレイヤーのuseフラグのセット
+	void KillPlayer();					// プレイヤーを殺す処理
+
+	//------------------- セッター関数
+	bool GetPlayerUseFlag();			// プレイヤーのuseフラグの取得
+
+	//------------------- マクロ定義
+	#define PLAYER_ALIVE	SetPlayerUseFlag(true)	// プレイヤーを生き返らせる
 
 private:
-	int				texNo;			// テクスチャ番号
-	bool			use;			// true:使っている  false:未使用
-};
-
-//*****************************************************************************
-// 構造体定義
-//*****************************************************************************
-struct PLAYER
-{
-	bool			use;			// true:使っている  false:未使用
-	float			w, h;			// 幅と高さ
-	D3DXVECTOR3		pos;			// ポリゴンの座標
-	D3DXVECTOR3		rot;			// ポリゴンの回転量
-	int				countAnim;		// アニメーションカウント
-	int				patternAnim;	// アニメーションパターンナンバー
-	int				texNo;			// テクスチャ番号
-	bool			left;			// true:左へ移動
+	//------------------- メンバ変数
+	int				m_nTexNo;			// テクスチャ番号
+	bool			m_bUse;				// true:使っている  false:未使用
 };
 
 //*****************************************************************************

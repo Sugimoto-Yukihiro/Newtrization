@@ -22,9 +22,10 @@ public:
 
 	//------------------- メンバ関数
 	void UpdateAnimIndex(int MotionStartIndex, int MotionEndIndex);
-	void Init();
+	void Init();					// メンバ変数の初期化
 
 	//------------------- セッター関数
+	void SetAnimInf(int DivX, int DivY, int Wait);
 	//void SetCurrentAnim(int CurAnim);	// 現在のアニメーション番号を取得
 	void SetDivideX(int DivX);		// 横のアニメーションパターン数を格納
 	void SetDivideY(int DivY);		// 縦のアニメーションパターン数を格納
@@ -44,31 +45,38 @@ private:
 	int m_nAnimWait;				// 画像が切り替わるWait値（単位はフレーム）
 };
 
+
 // テクスチャクラス
 class CTexture : public CAnimation
 {
 public:
 	//------------------- メンバ関数
 	void DrawTexture(ID3D11Buffer* VertexBuffer, ID3D11ShaderResourceView* TextureData);
-	void Init();
+	void Init();								// メンバ変数の初期化
+//	void AddTexPos(D3DXVECTOR2 Pos);			// テクスチャ表示座標をずらす
 
 	//------------------- セッター関数
-	void SetV(float V);
-	void SetU(float U);
+	void SetTextureInf(D3DXVECTOR2 Pos, D3DXVECTOR2 Size, D3DXCOLOR Color, float Rotation, D3DXVECTOR2 UV);
+	void SetTexPos(D3DXVECTOR2 Pos);			// テクスチャの描画位置をセット
+	void SetTexSize(D3DXVECTOR2 Size);			// テクスチャのサイズをセット
+	void SetTexColor(D3DXCOLOR Color);			// 頂点色のセット
+	void SetTexRotation(float Rotaiton);		// 回転値のセット
+	void SetTexU(float U);						// テクスチャのUV座標のU値をセット
+	void SetTexV(float V);						// テクスチャのUV座標のV値をセット
 
 	//------------------- ゲッター関数
-	D3DXVECTOR2 GetTexPos();
-	D3DXVECTOR2 GetTexSize();
+	D3DXVECTOR2 GetTexPos();					// テクスチャの描画位置を取得
+	D3DXVECTOR2 GetTexSize();					// テクスチャのサイズを取得
 
 private:
 	//------------------- メンバ変数
-//	ID3D11Buffer*				VertexBuffer = NULL;				// 頂点情報
+//	ID3D11Buffer*				VertexBuffer = NULL;// 頂点情報
 //	ID3D11ShaderResourceView*	TextureData;
-	D3DXVECTOR2					m_vTexPos;		// テクスチャの描画位置
-	D3DXVECTOR2					m_vSize;		// テクスチャの 幅＆高さ
-	D3DXCOLOR					m_Color;		// 頂点色
-	float						m_fU, m_fV;		// UV座標系
-	float						m_fRotation;	// テクスチャの回転角
+	D3DXVECTOR2					m_vTexPos;			// テクスチャの描画位置
+	D3DXVECTOR2					m_vTexSize;			// テクスチャの 幅＆高さ
+	D3DXCOLOR					m_TexColor;			// 頂点色
+	float						m_fTexU, m_fTexV;	// UV座標系
+	float						m_fTexRotation;		// テクスチャの回転角
 };
 
 
