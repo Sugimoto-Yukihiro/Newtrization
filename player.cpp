@@ -13,15 +13,17 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define TEXTURE_WIDTH				(200/2)	// キャラサイズ
-#define TEXTURE_HEIGHT				(200/2)	// 
-#define TEXTURE_MAX					(1)		// テクスチャの数
+#define TEXTURE_WIDTH				(100.0f)	// キャラサイズ	X
+#define TEXTURE_HEIGHT				(100.0f)	//				Y
+#define TEXTURE_SIZE				D3DXVECTOR2(TEXTURE_WIDTH, TEXTURE_HEIGHT)	// キャラサイズ
 
-#define TEXTURE_PATTERN_DIVIDE_X	(3)		// アニメパターンのテクスチャ内分割数（X)
-#define TEXTURE_PATTERN_DIVIDE_Y	(1)		// アニメパターンのテクスチャ内分割数（Y)
+#define TEXTURE_MAX					(1)			// テクスチャの数
+
+#define TEXTURE_PATTERN_DIVIDE_X	(3)			// アニメパターンのテクスチャ内分割数（X)
+#define TEXTURE_PATTERN_DIVIDE_Y	(1)			// アニメパターンのテクスチャ内分割数（Y)
 #define ANIM_PATTERN_NUM			(TEXTURE_PATTERN_DIVIDE_X*TEXTURE_PATTERN_DIVIDE_Y)	// アニメーションパターン数
-#define ANIM_WAIT					(4)		// アニメーションの切り替わるWait値
-
+#define ANIM_WAIT					(4)			// アニメーションの切り替わるデフォルトWait値
+#define MOVE_VALUE					(10.0f)
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -41,24 +43,34 @@ static char *g_TexturName[] = {
 static CPlayer	g_aPlayer[PLAYER_MAX];								// プレイヤーインスタンス
 
 //=============================================================================
-// コンストラクタ
+// コンストラクタ・デストラクタ
 //=============================================================================
-CPlayer::CPlayer()
+CPlayer::CPlayer()		// コンストラクタ
 {
-	// プレイヤー構造体の初期化
-	for (int i = 0; i < PLAYER_MAX; i++)
-	{
-		g_aPlayer[i].use = true;
-		g_aPlayer[i].w   = TEXTURE_WIDTH;
-		g_aPlayer[i].h   = TEXTURE_HEIGHT;
-		g_aPlayer[i].pos = D3DXVECTOR3(500.0f, 500.0f, 0.0f);	// 中心点から表示にした
-		g_aPlayer[i].rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		g_aPlayer[i].texNo = 0;
-
-		g_aPlayer[i].countAnim = 0;
-		g_aPlayer[i].patternAnim = 0;
-	}
+	// プレイヤークラスの初期化
+	m_bUse = true;
+	m_nTexNo = 0;
 }
+
+CPlayer::~CPlayer()		// デストラクタ
+{
+
+}
+
+//=============================================================================
+// 初期化処理
+//=============================================================================
+void CPlayer::Init()
+{
+	// プレイヤークラスの初期化
+	m_bUse = true;
+	m_nTexNo = 0;
+
+	//------------------- ベースクラスの初期化
+	CTexture::Init();	// CTexture
+
+}
+
 
 void InitPlayer()
 {
@@ -74,7 +86,6 @@ void InitPlayer()
 			NULL);
 	}
 
-
 	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -83,15 +94,21 @@ void InitPlayer()
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
+
+	// プレイヤークラス初期化
+	for (int i = 0; i < PLAYER_MAX; i++)
+	{
+		(g_aPlayer + i)->SetPlayerUseFlag(true);
+		(g_aPlayer + i)->SetTextureInf(SCREEN_CENTER, TEXTURE_SIZE, DEFAULT_COLOR, 0.0f, ZERO_VECTOR2);
+		(g_aPlayer + i)->SetAnimInf(1, 1, 10);
+	}
+
 }
 
 //=============================================================================
 // 終了処理
 //=============================================================================
-CPlayer::~CPlayer()
-{
 
-}
 
 void UninitPlayer()
 {
@@ -118,51 +135,53 @@ void UninitPlayer()
 //=============================================================================
 void CPlayer::Update()
 {
-	if (use == true)	// このプレイヤーが使われている？
-	{								// Yes
-		// アニメーション  (wait値)
-		countAnim++;
-		if ((countAnim % ANIM_WAIT) == 0)
-		{
-			// パターンの切り替え
-			patternAnim = (patternAnim + 1) % ANIM_PATTERN_NUM;
-		}
+	if (m_bUse == true)	// このプレイヤーが使われている？
+	{					// Yes
+		// アニメーション
+	//	UpdateAnimIndex(0, 0);	// 
 
-		// キー入力で移動 
-		if (GetKeyboardPress(DIK_DOWN))
 		{
-			pos.y += 10.0f;
-		}
-		else if (GetKeyboardPress(DIK_UP))
-		{
-			pos.y -= 10.0f;
-		}
-		if (GetKeyboardPress(DIK_RIGHT))
-		{
-			pos.x += 10.0f;
-		}
-		else if (GetKeyboardPress(DIK_LEFT))
-		{
-			pos.x -= 10.0f;
-		}
+			D3DXVECTOR2 move;	// プレイヤーの値を保存する変数
+			move = GetTexPos();	// 現在のプレイヤーの座標で初期化
 
-		// ゲームパッドでで移動処理
-		if (IsButtonPressed(0, BUTTON_DOWN))
-		{
-			pos.y += 2.0f;
-		}
-		else if (IsButtonPressed(0, BUTTON_UP))
-		{
-			pos.y -= 2.0f;
-		}
+			// キー入力で移動
+			if (GetKeyboardPress(DIK_DOWN))
+			{
+				move.y += MOVE_VALUE;
+			}
+			else if (GetKeyboardPress(DIK_UP))
+			{
+				move.y -= MOVE_VALUE;
+			}
+			else if (GetKeyboardPress(DIK_RIGHT))
+			{
+				move.x += MOVE_VALUE;
+			}
+			else if (GetKeyboardPress(DIK_LEFT))
+			{
+				move.x -= MOVE_VALUE;
+			}
 
-		if (IsButtonPressed(0, BUTTON_RIGHT))
-		{
-			pos.x += 2.0f;
-		}
-		else if (IsButtonPressed(0, BUTTON_LEFT))
-		{
-			pos.x -= 2.0f;
+			// ゲームパッドで移動処理
+			if (IsButtonPressed(0, BUTTON_DOWN))
+			{
+				move.y += MOVE_VALUE;
+			}
+			else if (IsButtonPressed(0, BUTTON_UP))
+			{
+				move.y -= MOVE_VALUE;
+			}
+			else if (IsButtonPressed(0, BUTTON_RIGHT))
+			{
+				move.x += MOVE_VALUE;
+			}
+			else if (IsButtonPressed(0, BUTTON_LEFT))
+			{
+				move.x -= MOVE_VALUE;
+			}
+
+			// プレイヤーの最終的な座標をセット
+			SetTexPos(move);
 		}
 
 	}
@@ -188,29 +207,9 @@ void UpdatePlayer(void)
 //=============================================================================
 void CPlayer::Draw()
 {
-	if (use == true)
+	if (m_bUse == true)
 		{
-			// テクスチャ設定
-			GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[texNo]);
-
-			//プレイヤーの位置やテクスチャー座標を反映
-			float px = pos.x;	// プレイヤーの表示位置X
-			float py = pos.y;	// プレイヤーの表示位置Y
-			float pw = w;		// プレイヤーの表示幅
-			float ph = h;		// プレイヤーの表示高さ
-
-			float tw = 1.0f / TEXTURE_PATTERN_DIVIDE_X;	// テクスチャの幅
-			float th = 1.0f / TEXTURE_PATTERN_DIVIDE_Y;	// テクスチャの高さ
-			float tx = (float)(patternAnim % TEXTURE_PATTERN_DIVIDE_X) * tw;	// テクスチャの左上X座標
-			float ty = (float)(patternAnim / TEXTURE_PATTERN_DIVIDE_X) * th;	// テクスチャの左上Y座標
-
-			// １枚のポリゴンの頂点とテクスチャ座標を設定
-			SetSpriteColorRotation(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
-				D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
-				rot.z);
-
-			// ポリゴン描画
-			GetDeviceContext()->Draw(4, 0);
+			DrawTexture(g_VertexBuffer, g_Texture[0]);
 		}
 }
 
@@ -234,12 +233,43 @@ void DrawPlayer(void)
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
 
-
+	// プレイヤーの描画
 	for (int i = 0; i < PLAYER_MAX; i++)
 	{
 		g_aPlayer[i].Draw();
 	}
 }
+
+
+
+//=============================================================================
+// セッター関数
+//=============================================================================
+// プレイヤーのuseフラグのセット
+void CPlayer::SetPlayerUseFlag(bool Use)
+{
+	m_bUse = Use;
+}
+
+// プレイヤーを殺す処理
+void CPlayer::KillPlayer()
+{
+	// プレイヤーのuseフラグを折る
+	SetPlayerUseFlag(false);
+
+	/* プレイヤーが死んだ後に何か処理を行う場合はここに記入 */
+
+}
+
+//=============================================================================
+// ゲッター関数
+//=============================================================================
+// プレイヤーのuseフラグの取得
+bool CPlayer::GetPlayerUseFlag()
+{
+	return m_bUse;
+}
+
 
 
 //=============================================================================

@@ -17,7 +17,7 @@ public:
 	~CMapchip();		// デストラクタ
 
 	//------------------- メンバ関数
-	void Init(char* pFileName, int* pChipArray);		// 初期化
+	void Init(char* pTextureName, int* pChipArray);		// 初期化
 	void Draw();		// 描画処理
 	void Update();		// 更新処理
 	void Uninit();
