@@ -17,6 +17,8 @@
 #include "camera.h"		// カメラ
 #include "fade.h"		// フェード処理
 #include "sound.h"		// サウンド
+#include "debugproc.h"	// デバック
+
 
 //*****************************************************************************
 // マクロ定義
@@ -372,6 +374,12 @@ void Draw(void)
 
 	// フェードの描画処理
 	DrawFade();
+
+#ifdef _DEBUG
+	// デバッグ表示
+	DrawDebugProc();
+#endif
+
 
 	// バックバッファ、フロントバッファ入れ替え
 	Present();

@@ -9,6 +9,7 @@
 #include "input.h"
 #include "player.h"
 #include "texture.h"
+#include "debugproc.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -170,6 +171,9 @@ void CPlayer::Update()
 #ifdef _DEBUG	// デバッグ情報を表示する
 //	char *str = GetDebugStr();
 //	sprintf(&str[strlen(str)], " PX:%.2f PY:%.2f", g_aPlayer[0].pos.x, g_aPlayer[0].pos.y);
+
+	PrintDebugProc("Player X:%f Y:%f \n", pos.x, pos.y );
+
 #endif
 
 }

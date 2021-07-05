@@ -56,4 +56,5 @@ void SetProjectionMatrix( D3DXMATRIX *ProjectionMatrix );
 
 void SetMaterial( MATERIAL Material );
 
+void DebugTextOut(char* text, int x, int y);
 

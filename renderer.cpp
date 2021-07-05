@@ -123,6 +123,7 @@ HRESULT InitRenderer(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	HRESULT hr = S_OK;
 
 	// デバイス、スワップチェーン、コンテキスト生成
+	DWORD deviceFlags = 0;
 	DXGI_SWAP_CHAIN_DESC sd;
 	ZeroMemory( &sd, sizeof( sd ) );
 	sd.BufferCount = 1;
@@ -151,6 +152,37 @@ HRESULT InitRenderer(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 										&g_ImmediateContext );
 	if( FAILED( hr ) )
 		return hr;
+
+
+	//デバッグ文字出力用設定
+#ifdef _DEBUG
+	sd.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	sd.Flags = DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE;
+	deviceFlags = D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+#endif
+
+	hr = D3D11CreateDeviceAndSwapChain(NULL,
+		D3D_DRIVER_TYPE_HARDWARE,
+		NULL,
+		deviceFlags,
+		NULL,
+		0,
+		D3D11_SDK_VERSION,
+		&sd,
+		&g_SwapChain,
+		&g_D3DDevice,
+		&g_FeatureLevel,
+		&g_ImmediateContext);
+	if (FAILED(hr))
+		return hr;
+
+	//デバッグ文字出力用設定
+#ifdef _DEBUG
+	hr = g_SwapChain->ResizeBuffers(0, SCREEN_WIDTH, SCREEN_HEIGHT, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE); // N.B. the GDI compatible flag
+	if (FAILED(hr))
+		return hr;
+#endif
+
 
 
 	// レンダーターゲットビュー生成、設定
@@ -402,3 +434,49 @@ void Present(void)
 	g_SwapChain->Present( 0, 0 );
 }
 
+
+//=============================================================================
+// デバッグ用テキスト出力
+//=============================================================================
+void DebugTextOut(char* text, int x, int y)
+{
+#ifdef _DEBUG
+	HRESULT hr;
+
+	//バックバッファからサーフェスを取得する
+	IDXGISurface1* pBackSurface = NULL;
+	hr = g_SwapChain->GetBuffer(0, __uuidof(IDXGISurface1), (void**)&pBackSurface);
+
+	if (SUCCEEDED(hr))
+	{
+		//取得したサーフェスからデバイスコンテキストを取得する
+		HDC hdc;
+		hr = pBackSurface->GetDC(FALSE, &hdc);
+
+		if (SUCCEEDED(hr))
+		{
+			//文字色を白に変更
+			SetTextColor(hdc, RGB(255, 255, 255));
+			//背景を透明に変更
+			SetBkMode(hdc, TRANSPARENT);
+
+			RECT rect;
+			rect.left = 0;
+			rect.top = 0;
+			rect.right = SCREEN_WIDTH;
+			rect.bottom = SCREEN_HEIGHT;
+
+			//テキスト出力
+			DrawText(hdc, text, strlen(text), &rect, DT_LEFT);
+
+			//デバイスコンテキストを解放する
+			pBackSurface->ReleaseDC(NULL);
+		}
+		//サーフェスを解放する
+		pBackSurface->Release();
+
+		//レンダリングターゲットがリセットされるのでセットしなおす
+		g_ImmediateContext->OMSetRenderTargets(1, &g_RenderTargetView, g_DepthStencilView);
+	}
+#endif
+}
