@@ -191,7 +191,7 @@ void CPlayer::Update()
 //	char *str = GetDebugStr();
 //	sprintf(&str[strlen(str)], " PX:%.2f PY:%.2f", g_aPlayer[0].pos.x, g_aPlayer[0].pos.y);
 
-	PrintDebugProc("Player X:%f Y:%f \n", pos.x, pos.y );
+	//PrintDebugProc("Player X:%f Y:%f \n", pos.x, pos.y );
 
 #endif
 
