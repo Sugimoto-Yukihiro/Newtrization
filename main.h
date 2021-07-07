@@ -38,6 +38,8 @@
 #pragma comment (lib, "dinput8.lib")
 
 
+#include "game.h"
+
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
@@ -68,13 +70,34 @@ typedef enum
 } MODE;
 
 //*****************************************************************************
+// クラス定義
+//*****************************************************************************
+class CMode
+{
+public:
+	//------------------- メンバ関数
+	HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow);
+	void Update();
+	void Draw();
+	void Uninit();
+
+	//------------------- セッター関数
+	void SetMode(MODE mode);
+
+private:
+	//------------------- 各モードのインスタンス
+	CGameMode m_GameMode;	// ゲーム画面
+
+};
+
+//*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
 long GetMousePosX(void);
 long GetMousePosY(void);
 char *GetDebugStr(void);
 
-void SetMode(MODE mode);
+void RequestSetMode(MODE mode);
 MODE GetMode(void);
 
 int DivideString(const char* String, int* Col, int* Row, char* DivMark);

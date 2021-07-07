@@ -10,17 +10,18 @@
 #include "mapchip.h"	// マップチップ
 #include "game.h"		// ゲーム画面
 
+
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define TEXTURE_MAX		(1)		// 使用テクスチャの数
+//#define MAPCHIP_MAX		(1)		// 使用テクスチャの数
 
 
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
 static ID3D11Buffer				*g_VertexBuffer = NULL;				// 頂点情報
-static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
+static ID3D11ShaderResourceView	*g_Texture[MAPCHIP_MAX] = { NULL };	// テクスチャ情報
 
 static char *g_TexturName[] = {
 	"data/TEXTURE/player.png",
@@ -57,7 +58,7 @@ void CMapchip::Init()
 void InitMapchip()
 {
 	// テクスチャ生成
-	for (int i = 0; i < TEXTURE_MAX; i++)
+	for (int i = 0; i < MAPCHIP_MAX; i++)
 	{
 		g_Texture[i] = NULL;
 		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
@@ -97,7 +98,7 @@ void UninitMapchip()
 		g_VertexBuffer = NULL;
 	}
 
-	for (int i = 0; i < TEXTURE_MAX; i++)
+	for (int i = 0; i < MAPCHIP_MAX; i++)
 	{
 		if (g_Texture[i])
 		{
@@ -136,20 +137,22 @@ void CMapchip::Draw()
 	int numx, numy, nDrawChipNumX, nDrawChipNumY;
 
 	// 表示座標の取得("ScrollPos"→スクロール座標)
-	ScrollPos = GetScrollPos();
-
-	// 描画するマップチップの最左の表示座標の算出
-	offset_x = numx * m_vChipSize.x - ScrollPos->x;	// 横位置
-	offset_y = numy * m_vChipSize.y - ScrollPos->y;	// 縦位置
-
+//	ScrollPos.x = GetPlayerPos().x - SCROLL_SET_X;	// ここは仮。後で直す！
+//	ScrollPos.x = GetPlayerPos().x - SCROLL_SET_X;	// ここは仮。後で直す！
+	ScrollPos.x = 0.0f;	// ここは仮。後で直す！
+	ScrollPos.x = 0.0f;	// ここは仮。後で直す！
 
 	//------------------- 描画するマップチップの最左のインデックス番号の算出
-	numx = (int)ScrollPos->x / m_vChipSize.x;		// スクロール座標より左側（画面外）にあるマップチップ数
-	numy = (int)ScrollPos->y / m_vChipSize.y;		// スクロール座標より上側（画面外）にあるマップチップ数
+	numx = (int)(ScrollPos.x / m_vChipSize.x);		// スクロール座標より左側（画面外）にあるマップチップ数
+	numy = (int)(ScrollPos.y / m_vChipSize.y);		// スクロール座標より上側（画面外）にあるマップチップ数
+
+	// 描画するマップチップの最左の表示座標の算出
+	offset_x = numx * m_vChipSize.x - ScrollPos.x;	// 横位置
+	offset_y = numy * m_vChipSize.y - ScrollPos.y;	// 縦位置
 
 	// 描画するチップ数を算出
-	nDrawChipNumX = SCREEN_WIDTH / m_vChipSize.x;	// 横方向(x軸)のチップ数
-	nDrawChipNumY = SCREEN_HEIGHT / m_vChipSize.y;	// 縦方向(y軸)のチップ数
+	nDrawChipNumX = SCREEN_WIDTH / (int)m_vChipSize.x;	// 横方向(x軸)のチップ数
+	nDrawChipNumY = SCREEN_HEIGHT / (int)m_vChipSize.y;	// 縦方向(y軸)のチップ数
 
 	// マップチップを一枚ずつ描画
 	for (int iy = numy; iy < (numy + nDrawChipNumY); iy++)
@@ -190,7 +193,6 @@ void CMapchip::Draw()
 
 
 
-
 void DrawMapchip()
 {
 
@@ -201,12 +203,54 @@ void DrawMapchip()
 //=============================================================================
 // ゲッター関数
 //=============================================================================
+// 回転フラグのセット
+void CMapchip::SetRotationFlag(bool Flag)
+{
+	m_bRotFlag = Flag;
+}
+
+//=============================================================================
+// ゲッター関数
+//=============================================================================
+// マップ全体の大きさを取得
+D3DXVECTOR2 CMapchip::GetMapSize()
+{
+	D3DXVECTOR2 ans;
+	ans.x = m_vChipSize.x * m_nChipNumX;	// 幅を格納
+	ans.y = m_vChipSize.y * m_nChipNumY;	// 高さを格納
+
+	return ans;
+}
+
+// １つのチップの大きさを取得
+D3DXVECTOR2 CMapchip::GetMapchipSize()
+{
+	return m_vChipSize;
+}
+
+// マップチップ配列を取得
+int* CMapchip::GetMapChipData()
+{
+	return m_pMapChipData;
+}
+
+// マップチップの列数を取得
+int CMapchip::GetMapchipNumX()
+{
+	return m_nChipNumX;
+}
+
 // 指定された座標にあるチップ番号を取得
 int CMapchip::GetMapchipNo(D3DXVECTOR2 Pos)
 {
-	int cx = (int)Pos.x / m_vChipSize.x;
-	int cy = (int)Pos.y / m_vChipSize.y;
+	int cx = (int)(Pos.x / m_vChipSize.x);
+	int cy = (int)(Pos.y / m_vChipSize.y);
 
 	return m_pMapChipData[cx + (cy * m_nChipNumX)];
 }
 
+// 回転フラグの取得
+bool CMapchip::GetRotationFlag()
+{
+	return m_bRotFlag;
+}

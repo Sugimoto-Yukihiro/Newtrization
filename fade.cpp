@@ -133,7 +133,7 @@ void UpdateFade(void)
 				SetFade(FADE_IN, g_ModeNext);
 
 				// ƒ‚[ƒh‚ğİ’è
-				SetMode(g_ModeNext);
+				RequestSetMode(g_ModeNext);
 
 			}
 		}

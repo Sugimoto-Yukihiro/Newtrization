@@ -8,6 +8,16 @@
 
 #include "texture.h"
 
+enum
+{
+	STAGE_NONE = -1,
+
+	MAPCHIP_STAGE_Sample,
+//	STAGE_Tutorial,
+
+	MAPCHIP_MAX
+};
+
 //*****************************************************************************
 // クラス定義
 //*****************************************************************************
@@ -34,6 +44,7 @@ public:
 
 	//------------------- ゲッター関数
 //	D3DXVECTOR2 GetMapchipPos();
+	D3DXVECTOR2 GetMapSize();			// マップ全体の大きさを取得
 	D3DXVECTOR2 GetMapchipSize();		// １つのチップの大きさを取得
 	int* GetMapChipData();				// マップチップ配列を取得
 	int GetMapchipNumX();				// マップチップの列数を取得
@@ -46,6 +57,7 @@ private:
 	D3DXVECTOR2		m_vChipSize;		// １つのチップの大きさ
 	int*			m_pMapChipData;		// マップチップ情報
 	int				m_nChipNumX;		// マップチップの列数
+	int				m_nChipNumY;		// マップチップの行数
 	int				m_nChipNo;			// マップチップの番号
 	bool			m_bRotFlag;			// ステージの回転フラグ
 //	bool			m_bUse;				// このマップチップ変数が使われているか
