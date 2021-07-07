@@ -51,7 +51,7 @@ char	g_DebugStr[2048] = WINDOW_NAME;		// デバッグ文字表示用
 #endif
 
 // 起動時の画面を初期値として設定
-MODE g_Mode = START_MODE;
+//MODE g_Mode = START_MODE;
 
 CMode g_aMode;
 
@@ -177,7 +177,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 				// マウス座標の表示
 				wsprintf(&g_DebugStr[strlen(g_DebugStr)], " MX:%d MY:%d", GetMousePosX(), GetMousePosY());
 				// 現在のモードの表示
-				wsprintf(&g_DebugStr[strlen(g_DebugStr)], "  CurrentMode:%d", GetMode());
+				wsprintf(&g_DebugStr[strlen(g_DebugStr)], "  CurrentMode:%d", g_aMode.GetMode());
 
 #endif
 				// テキストのセット
@@ -201,6 +201,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	return (int)msg.wParam;
 }
+
+
 
 //=============================================================================
 // プロシージャ
@@ -235,6 +237,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+
+
 //=============================================================================
 // 初期化処理
 //=============================================================================
@@ -268,6 +272,7 @@ HRESULT CMode::Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 }
 
 
+
 //=============================================================================
 // 終了処理
 //=============================================================================
@@ -294,6 +299,8 @@ void CMode::Uninit(void)
 	// レンダリングの終了処理
 	UninitRenderer();
 }
+
+
 
 //=============================================================================
 // 更新処理
@@ -333,6 +340,8 @@ void CMode::Update(void)
 	UpdateFade();
 
 }
+
+
 
 //=============================================================================
 // 描画処理
@@ -379,9 +388,11 @@ void CMode::Draw(void)
 }
 
 
+
+//=============================================================================
+// セッター関数
 //=============================================================================
 // モードの設定
-//=============================================================================
 void CMode::SetMode(MODE mode)
 {
 	//------------------- モードを変える前にメモリを解放しちゃう
@@ -422,11 +433,37 @@ void CMode::SetMode(MODE mode)
 }
 
 
+
+//=============================================================================
+// ゲッター関数
+//=============================================================================
+// 現在のモードを取得
+MODE CMode::GetMode()
+{
+	return g_Mode;
+}
+
+//------------------- 各モードのインスタンスへのゲッター関数
+// ゲーム
+CModeGame* GetGame()
+{
+	return &(g_aMode.m_GameMode);
+}
+
+
+//=============================================================================
+// CModeのメンバ変数へアクセスできるグローバル関数
+//=============================================================================
+// モードのセット
+void RequestSetMode(MODE mode)
+{
+	g_aMode.SetMode(mode);
+}
+
 long GetMousePosX(void)
 {
 	return g_MouseX;
 }
-
 
 long GetMousePosY(void)
 {
@@ -441,17 +478,8 @@ char* GetDebugStr(void)
 }
 #endif
 
-void RequestSetMode(MODE mode)
-{
-	g_aMode.SetMode(mode);
-}
 
 
-// 現在のモードを取得
-MODE GetMode(void)
-{
-	return g_Mode;
-}
 
 /*******************************************************************************
 関数名	:	void LoadCsvData( void )

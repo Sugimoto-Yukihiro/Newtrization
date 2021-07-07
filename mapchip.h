@@ -53,7 +53,7 @@ public:
 
 private:
 	//------------------- メンバ変数
-//	D3DXVECTOR2		m_vMChipPosition;	// 座標
+	D3DXVECTOR2		m_vChipBasePos;		// マップチップ描画の基準座標
 	D3DXVECTOR2		m_vChipSize;		// １つのチップの大きさ
 	int*			m_pMapChipData;		// マップチップ情報
 	int				m_nChipNumX;		// マップチップの列数
@@ -66,9 +66,7 @@ private:
 
 
 //*****************************************************************************
-// プロトタイプ定義
+// プロトタイプ宣言
 //*****************************************************************************
-void InitMapchip();
-void UninitMapchip();
-void UpdateMapchip();
-void DrawMapchip();
+void CreateMapchipTextureAndBuffer();
+void ReleaseMapchipTextureAndBuffer();

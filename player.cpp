@@ -82,8 +82,9 @@ void CPlayer::Init()
 //=============================================================================
 void CPlayer::Update()
 {
-	if (m_bUse == true)	// このプレイヤーが使われている？
-	{					// Yes
+	// このプレイヤーが使われていたら更新処理実行
+	if (m_bUse == true)
+	{
 		// アニメーション
 	//	UpdateAnimIndex(0, 0);	// 
 
@@ -132,14 +133,20 @@ void CPlayer::Update()
 		}
 
 
-		// スクロール座標の更新
-//		GetScrollPosition()->x = GetTexPos().x - SCROLL_SET_X;			// スクロール座標<x>に値を代入
-//		GetScrollPosition()->x = (GetScrollPosition()->x < 0.0f) ? 0.0f : GetScrollPosition()->x;	// スクロール座標<x>が負なら「0」にリセット、正の数ならそのまま
-//		GetScrollPosition()->x = (GetScrollPosition()->x + SCREEN_WIDTH > GetMapSize().x) ? GetMapSize().x - SCREEN_WIDTH : GetScrollPosition()->x;		// 画面右上の点がワールドの端に来たら"STAGE_W"の値にリセット
-//
-//		GetScrollPosition()->y = GetTexPos().y - SCROLL_SET_Y;			// スクロール座標<y>に値を代入
-//		GetScrollPosition()->y = (GetScrollPosition()->y < 0.0f) ? 0.0f : GetScrollPosition()->y;	// スクロール座標<y>負なら「0」にリセット、正の数ならそのまま
-//		GetScrollPosition()->y = (GetScrollPosition()->y + SCREEN_HEIGHT > GetMapSize().y) ? GetMapSize().y - SCREEN_HEIGHT : GetScrollPosition()->y;	// 画面右上の点がワールドの端に来たら"STAGE_H"の値にリセット
+		//=================== スクロール座標の更新
+		{
+			D3DXVECTOR2 pos;	// 一時的な変数
+			pos.x = GetTexPos().x - SCROLL_SET_X;			// スクロール座標<x>に値を代入
+	//		pos.x = (GetScrollPosition()->x < 0.0f) ? 0.0f : GetScrollPosition()->x;	// スクロール座標<x>が負なら「0」にリセット、正の数ならそのまま
+	//		pos.x = (GetScrollPosition()->x + SCREEN_WIDTH > GetMapSize().x) ? GetMapSize().x - SCREEN_WIDTH : GetScrollPosition()->x;		// 画面右上の点がワールドの端に来たら"STAGE_W"の値にリセット
+	//
+			pos.y = GetTexPos().y - SCROLL_SET_Y;			// スクロール座標<y>に値を代入
+	//		pos.y = (GetScrollPosition()->y < 0.0f) ? 0.0f : GetScrollPosition()->y;	// スクロール座標<y>負なら「0」にリセット、正の数ならそのまま
+	//		pos.y = (GetScrollPosition()->y + SCREEN_HEIGHT > GetMapSize().y) ? GetMapSize().y - SCREEN_HEIGHT : GetScrollPosition()->y;	// 画面右上の点がワールドの端に来たら"STAGE_H"の値にリセット
+
+			// 座標をセット
+			GetGame()->SetScrollPosition(pos);
+		}
 
 	}
 

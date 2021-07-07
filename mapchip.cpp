@@ -16,15 +16,20 @@
 //*****************************************************************************
 //#define MAPCHIP_MAX		(1)		// 使用テクスチャの数
 
-
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
 static ID3D11Buffer				*g_VertexBuffer = NULL;				// 頂点情報
 static ID3D11ShaderResourceView	*g_Texture[MAPCHIP_MAX] = { NULL };	// テクスチャ情報
 
+//*****************************************************************************
+// プロトタイプ宣言
+//*****************************************************************************
+void PresetDrawMapchip();	// 描画する前準備
+
+// テクスチャのファイル名
 static char *g_TexturName[] = {
-	"data/TEXTURE/player.png",
+	"data/TEXTURE/player.png",		// TexNo : 0
 };
 
 
@@ -55,31 +60,6 @@ void CMapchip::Init()
 
 }
 
-void InitMapchip()
-{
-	// テクスチャ生成
-	for (int i = 0; i < MAPCHIP_MAX; i++)
-	{
-		g_Texture[i] = NULL;
-		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-			g_TexturName[i],
-			NULL,
-			NULL,
-			&g_Texture[i],
-			NULL);
-	}
-
-	// 頂点バッファ生成
-	D3D11_BUFFER_DESC bd;
-	ZeroMemory(&bd, sizeof(bd));
-	bd.Usage = D3D11_USAGE_DYNAMIC;
-	bd.ByteWidth = sizeof(VERTEX_3D) * 4;
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
-
-}
-
 
 
 //=============================================================================
@@ -87,25 +67,6 @@ void InitMapchip()
 //=============================================================================
 void CMapchip::Uninit()
 {
-
-}
-
-void UninitMapchip()
-{
-	if (g_VertexBuffer)
-	{
-		g_VertexBuffer->Release();
-		g_VertexBuffer = NULL;
-	}
-
-	for (int i = 0; i < MAPCHIP_MAX; i++)
-	{
-		if (g_Texture[i])
-		{
-			g_Texture[i]->Release();
-			g_Texture[i] = NULL;
-		}
-	}
 
 }
 
@@ -120,18 +81,15 @@ void CMapchip::Update()
 }
 
 
-void UpdateMapchip()
-{
-
-}
-
-
 
 //=============================================================================
 // 描画処理
 //=============================================================================
 void CMapchip::Draw()
 {
+	// 描画する前に呼び出す
+	PresetDrawMapchip();
+
 	D3DXVECTOR2 ScrollPos;
 	float offset_x, offset_y;
 	int numx, numy, nDrawChipNumX, nDrawChipNumY;
@@ -143,16 +101,16 @@ void CMapchip::Draw()
 	ScrollPos.x = 0.0f;	// ここは仮。後で直す！
 
 	//------------------- 描画するマップチップの最左のインデックス番号の算出
-	numx = (int)(ScrollPos.x / m_vChipSize.x);		// スクロール座標より左側（画面外）にあるマップチップ数
-	numy = (int)(ScrollPos.y / m_vChipSize.y);		// スクロール座標より上側（画面外）にあるマップチップ数
+	numx = (int)(ScrollPos.x / GetMapchipSize().x);		// スクロール座標より左側（画面外）にあるマップチップ数
+	numy = (int)(ScrollPos.y / GetMapchipSize().y);		// スクロール座標より上側（画面外）にあるマップチップ数
 
 	// 描画するマップチップの最左の表示座標の算出
-	offset_x = numx * m_vChipSize.x - ScrollPos.x;	// 横位置
-	offset_y = numy * m_vChipSize.y - ScrollPos.y;	// 縦位置
+	offset_x = (numx * GetMapchipSize().x) - ScrollPos.x;	// 横位置
+	offset_y = (numy * GetMapchipSize().y) - ScrollPos.y;	// 縦位置
 
 	// 描画するチップ数を算出
-	nDrawChipNumX = SCREEN_WIDTH / (int)m_vChipSize.x;	// 横方向(x軸)のチップ数
-	nDrawChipNumY = SCREEN_HEIGHT / (int)m_vChipSize.y;	// 縦方向(y軸)のチップ数
+	nDrawChipNumX = SCREEN_WIDTH / (int)GetMapchipSize().x;	// 横方向(x軸)のチップ数
+	nDrawChipNumY = SCREEN_HEIGHT / (int)GetMapchipSize().y;	// 縦方向(y軸)のチップ数
 
 	// マップチップを一枚ずつ描画
 	for (int iy = numy; iy < (numy + nDrawChipNumY); iy++)
@@ -164,11 +122,11 @@ void CMapchip::Draw()
 
 			// チップの描画位置を算出
 			D3DXVECTOR2 ChipCenterPos;
-			ChipCenterPos.y = (float)(offset_y + (m_vChipSize.y * iy));		// 背景の表示座標Y
-			ChipCenterPos.x = (float)(offset_x + (m_vChipSize.x  * ix));	// 背景の表示座標X
+			ChipCenterPos.y = (float)(offset_y + (GetMapchipSize().y * iy));		// 背景の表示座標Y
+			ChipCenterPos.x = (float)(offset_x + (GetMapchipSize().x  * ix));	// 背景の表示座標X
 
-			ChipCenterPos.y += m_vChipSize.y * 0.5f;
-			ChipCenterPos.x += m_vChipSize.x * 0.5f;
+			ChipCenterPos.y += GetMapchipSize().y * 0.5f;
+			ChipCenterPos.x += GetMapchipSize().x * 0.5f;
 
 			// 描画
 			DrawTexture(g_VertexBuffer, g_Texture[m_nTexNo]);	// 描画座標が中心指定のとき
@@ -188,13 +146,6 @@ void CMapchip::Draw()
 
 		}
 	}
-
-}
-
-
-
-void DrawMapchip()
-{
 
 }
 
@@ -253,4 +204,75 @@ int CMapchip::GetMapchipNo(D3DXVECTOR2 Pos)
 bool CMapchip::GetRotationFlag()
 {
 	return m_bRotFlag;
+}
+
+
+
+
+
+
+
+void CreateMapchipTextureAndBuffer()
+{
+	// テクスチャ生成
+	for (int i = 0; i < MAPCHIP_MAX; i++)
+	{
+		g_Texture[i] = NULL;
+		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
+			g_TexturName[i],
+			NULL,
+			NULL,
+			&g_Texture[i],
+			NULL);
+	}
+
+	// 頂点バッファ生成
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DYNAMIC;
+	bd.ByteWidth = sizeof(VERTEX_3D) * 4;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
+
+}
+
+void ReleaseMapchipTextureAndBuffer()
+{
+	if (g_VertexBuffer)
+	{
+		g_VertexBuffer->Release();
+		g_VertexBuffer = NULL;
+	}
+
+	for (int i = 0; i < MAPCHIP_MAX; i++)
+	{
+		if (g_Texture[i])
+		{
+			g_Texture[i]->Release();
+			g_Texture[i] = NULL;
+		}
+	}
+
+}
+
+void PresetDrawMapchip()
+{
+	// 頂点バッファ設定
+	UINT stride = sizeof(VERTEX_3D);
+	UINT offset = 0;
+	GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
+
+	// マトリクス設定
+	SetWorldViewProjection2D();
+
+	// プリミティブトポロジ設定
+	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+	// マテリアル設定
+	MATERIAL material;
+	ZeroMemory(&material, sizeof(material));
+	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	SetMaterial(material);
+
 }

@@ -35,7 +35,7 @@
 //=============================================================================
 // 初期化処理
 //=============================================================================
-void CGameMode::Init()
+void CModeGame::Init()
 {
 	//	g_ViewPortType_Game = TYPE_FULL_SCREEN;	// ビューポート設定
 
@@ -76,7 +76,7 @@ void CGameMode::Init()
 //=============================================================================
 // 終了処理
 //=============================================================================
-void CGameMode::Uninit(void)
+void CModeGame::Uninit(void)
 {
 	// パーティクルの終了処理
 //	UninitParticle();
@@ -105,7 +105,7 @@ void CGameMode::Uninit(void)
 //=============================================================================
 // 更新処理
 //=============================================================================
-void CGameMode::Update(void)
+void CModeGame::Update(void)
 {
 	//------------------- キー・ゲームパットでの入力で次のモードへ
 	if (KEY_MODE_CHANGE)
@@ -153,7 +153,7 @@ void CGameMode::Update(void)
 //=============================================================================
 // 描画処理
 //=============================================================================
-void CGameMode::Draw()
+void CModeGame::Draw()
 {
 	// 背景の描画処理
 	DrawBg();
@@ -186,7 +186,7 @@ void CGameMode::Draw()
 //=============================================================================
 // 当たり判定処理
 //=============================================================================
-void CGameMode::CollisionCheck()
+void CModeGame::CollisionCheck()
 {
 
 }
@@ -197,14 +197,14 @@ void CGameMode::CollisionCheck()
 // ゲッター関数
 //=============================================================================
 // スクロール座標の取得
-void CGameMode::SetScrollPosition(D3DXVECTOR2 Pos)
+void CModeGame::SetScrollPosition(D3DXVECTOR2 Pos)
 {
 	m_vScrollPos = Pos;
 }
 
 #ifdef _DEBUG
 // ポーズフラグの取得
-bool CGameMode::GetPauseFlag()
+bool CModeGame::GetPauseFlag()
 {
 	return m_bPauseFlag;
 }
@@ -216,13 +216,13 @@ bool CGameMode::GetPauseFlag()
 // セッター関数
 //=============================================================================
 // スクロール座標のセット
-D3DXVECTOR2 CGameMode::GetScrollPosition()
+D3DXVECTOR2 CModeGame::GetScrollPosition()
 {
 	return m_vScrollPos;
 }
 
 // ポーズフラグのセット
-void CGameMode::SetPauseFlag(bool Flag)
+void CModeGame::SetPauseFlag(bool Flag)
 {
 	m_bPauseFlag = Flag;
 }
@@ -235,6 +235,7 @@ void CGameMode::SetPauseFlag(bool Flag)
 
 // 構造体管理
 #ifdef GAMEMODE_STRUCT
+
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
