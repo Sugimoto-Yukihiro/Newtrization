@@ -8,7 +8,7 @@
 #include "main.h"
 
 #include "title.h"		// タイトル画面
-#include "game.h"		// ゲーム画面
+//#include "game.h"		// ゲーム画面	【クラス化して、hの方でインクルードしてる】
 #include "result.h"		// リザルト画面
 
 #include "input.h"		// キー・ゲームパッド入力処理
@@ -23,7 +23,7 @@
 #define CLASS_NAME			"AppClass"				// ウインドウのクラス名
 #define WINDOW_NAME			"GP23 DirectX11"		// ウインドウのキャプション名
 
-#define START_MODE			(MODE_TITLE)
+#define START_MODE			(MODE_TITLE)			// 起動時のモード
 
 //*****************************************************************************
 // 構造体定義
@@ -260,13 +260,13 @@ HRESULT CMode::Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	InitSound(hWnd);
 
 	// 最初のモードをセット
-	g_Mode = START_MODE;
+	g_aMode.SetMode(START_MODE);
 
 	//------------------- モードに応じた初期化
-	if (g_Mode == MODE_TITLE) InitTitle();				// タイトル画面の初期化処理
-//	else if(g_Mode == MODE_TUTORIAL) InitTutorial();	// チュートリアル画面の初期化処理
-	else if (g_Mode == MODE_GAME) m_GameMode.Init();	// ゲーム画面の初期化処理
-	else if (g_Mode == MODE_RESULT) InitResult();		// リザルト画面の初期化処理
+	if (g_aMode.GetMode() == MODE_TITLE) InitTitle();				// タイトル画面の初期化処理
+//	else if(g_aMode.GetMode() == MODE_TUTORIAL) InitTutorial();		// チュートリアル画面の初期化処理
+	else if (g_aMode.GetMode() == MODE_GAME) m_GameMode.Init();		// ゲーム画面の初期化処理
+	else if (g_aMode.GetMode() == MODE_RESULT) InitResult();		// リザルト画面の初期化処理
 
 	return S_OK;
 }
@@ -279,10 +279,10 @@ HRESULT CMode::Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 void CMode::Uninit(void)
 {
 	//------------------- モードに応じたメモリ解放
-	if (g_Mode == MODE_TITLE) UninitTitle();			// タイトル画面の終了処理
-//	else if(g_Mode == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
-	else if (g_Mode == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
-	else if (g_Mode == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
+	if (g_aMode.GetMode() == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
+//	else if(g_aMode.GetMode() == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
+	else if (g_aMode.GetMode() == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
+	else if (g_aMode.GetMode() == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
 
 	// サウンドの終了処理
 	UninitSound();
@@ -314,7 +314,7 @@ void CMode::Update(void)
 	UpdateCamera();
 
 	//------------------- モードに応じた更新処理
-	switch (g_Mode)
+	switch (g_aMode.GetMode())
 	{
 	case MODE_TITLE:
 		UpdateTitle();
@@ -358,7 +358,7 @@ void CMode::Draw(void)
 	SetDepthEnable(false);
 	
 	//------------------- モードに応じた描画処理
-	switch (g_Mode)
+	switch (g_aMode.GetMode())
 	{
 	case MODE_TITLE:
 		DrawTitle();
@@ -396,16 +396,16 @@ void CMode::Draw(void)
 void CMode::SetMode(MODE mode)
 {
 	//------------------- モードを変える前にメモリを解放しちゃう
-	if(g_Mode == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
-//	else if(g_Mode == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
-	else if(g_Mode == MODE_GAME) m_GameMode.Uninit();			// ゲーム画面の終了処理
-	else if(g_Mode == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
+	if(g_aMode.GetMode() == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
+//	else if(g_aMode.GetMode() == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
+	else if(g_aMode.GetMode() == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
+	else if(g_aMode.GetMode() == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
 
 	//------------------- 次のモードのセット
-	g_Mode = mode;
+	m_Mode = mode;
 
 	//------------------- セットしたモードに応じた初期化処理を行う
-	switch (g_Mode)
+	switch (m_Mode)
 	{
 	case MODE_TITLE:
 		// タイトル画面の初期化
@@ -440,7 +440,7 @@ void CMode::SetMode(MODE mode)
 // 現在のモードを取得
 MODE CMode::GetMode()
 {
-	return g_Mode;
+	return m_Mode;
 }
 
 //------------------- 各モードのインスタンスへのゲッター関数
