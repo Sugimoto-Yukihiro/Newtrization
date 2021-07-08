@@ -392,3 +392,63 @@ void SetSpriteColorRotation(ID3D11Buffer *buf, float X, float Y, float Width, fl
 
 }
 
+
+
+
+void CreateTexture(const char* TextureName, ID3D11ShaderResourceView** TexrureData, ID3D11Buffer** VertexBuffer)
+{
+	//テクスチャ生成
+	D3DX11CreateShaderResourceViewFromFile(GetDevice(),
+		TextureName,
+		NULL,
+		NULL,
+		TexrureData,
+		NULL);
+
+	// 頂点バッファ生成
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DYNAMIC;
+	bd.ByteWidth = sizeof(VERTEX_3D) * 4;	// 2Dは4頂点
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	GetDevice()->CreateBuffer(&bd, NULL, VertexBuffer);
+}
+
+
+void ReleaseTexture(ID3D11ShaderResourceView** TextureData, ID3D11Buffer** VertexBuffer)
+{
+	if (*VertexBuffer)
+	{
+		VertexBuffer[0]->Release();
+		*VertexBuffer = NULL;
+	}
+
+	if (*TextureData)
+	{
+		TextureData[0]->Release();
+		*TextureData = NULL;
+	}
+
+}
+
+
+void PresetDraw2D(ID3D11Buffer** VertexBuffer)
+{
+	// 頂点バッファ設定
+	UINT stride = sizeof(VERTEX_3D);
+	UINT offset = 0;
+	GetDeviceContext()->IASetVertexBuffers(0, 1, VertexBuffer, &stride, &offset);
+
+	// マトリクス設定
+	SetWorldViewProjection2D();
+
+	// プリミティブトポロジ設定
+	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+	// マテリアル設定
+	MATERIAL material;
+	ZeroMemory(&material, sizeof(material));
+	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	SetMaterial(material);
+}
