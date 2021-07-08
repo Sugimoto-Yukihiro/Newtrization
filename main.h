@@ -38,6 +38,8 @@
 #pragma comment (lib, "dinput8.lib")
 
 
+#include "game.h"
+
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
@@ -55,17 +57,42 @@
 #define DEFAULT_COLOR	D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)
 
 //*****************************************************************************
-// 構造体定義
+// enum
 //*****************************************************************************
 typedef enum
 {
 	MODE_NONE = -1,
-	MODE_TITLE = 0,							// タイトル画面
-	MODE_TUTORIAL,							// ゲーム説明画面
-	MODE_GAME,								// ゲーム画面
-	MODE_RESULT,							// リザルト画面
+	MODE_OPENING,		// オープニング画面
+	MODE_TITLE,			// タイトル画面
+	MODE_TUTORIAL,		// ゲーム説明画面
+	MODE_GAME,			// ゲーム画面
+	MODE_RESULT,		// リザルト画面
 	MODE_MAX
 } MODE;
+
+//*****************************************************************************
+// クラス定義
+//*****************************************************************************
+class CMode
+{
+public:
+	//------------------- メンバ関数
+	HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow);
+	void Update();
+	void Draw();
+	void Uninit();
+	//------------------- ゲッター関数
+	MODE GetMode();
+
+	//------------------- セッター関数
+	void SetMode(MODE mode);
+
+	//------------------- 各モードのインスタンス
+	CModeGame m_GameMode;	// ゲーム画面
+
+private:
+	MODE m_Mode;	// モードの状態を格納する変数
+};
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -74,8 +101,13 @@ long GetMousePosX(void);
 long GetMousePosY(void);
 char *GetDebugStr(void);
 
-void SetMode(MODE mode);
-MODE GetMode(void);
+//------------------- 各インスタンスへのアクセス用関数
+CModeGame* GetGame();
 
+//------------------- メンバ変数のアクセス用グローバル関数
+void RequestSetMode(MODE mode);
+//MODE RequestGetMode();
+
+//------------------- ファイル関数
 int DivideString(const char* String, int* Col, int* Row, char* DivMark);
 int SerchWordOffset(const char* String, const char SingleWord);

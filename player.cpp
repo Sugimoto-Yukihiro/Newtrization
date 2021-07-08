@@ -1,7 +1,7 @@
 //=============================================================================
 //
-// ƒvƒŒƒCƒ„[ˆ— [player.cpp]
-// Author : —§Î‘å’q, ™–{KG
+// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼å‡¦ç† [player.cpp]
+// Author : ç«‹çŸ³å¤§æ™º, æ‰æœ¬å¹¸å®
 //
 //=============================================================================
 #include "main.h"
@@ -9,73 +9,214 @@
 #include "input.h"
 #include "player.h"
 #include "texture.h"
-#include "debugproc.h"
+
+#include "game.h"
 
 //*****************************************************************************
-// ƒ}ƒNƒ’è‹`
+// ãƒã‚¯ãƒ­å®šç¾©
 //*****************************************************************************
-#define TEXTURE_WIDTH				(100.0f)	// ƒLƒƒƒ‰ƒTƒCƒY	X
+#define TEXTURE_WIDTH				(300.0f)	// ã‚­ãƒ£ãƒ©ã‚µã‚¤ã‚º	X
 #define TEXTURE_HEIGHT				(100.0f)	//				Y
-#define TEXTURE_SIZE				D3DXVECTOR2(TEXTURE_WIDTH, TEXTURE_HEIGHT)	// ƒLƒƒƒ‰ƒTƒCƒY
+#define TEXTURE_SIZE				D3DXVECTOR2(TEXTURE_WIDTH, TEXTURE_HEIGHT)	// ã‚­ãƒ£ãƒ©ã‚µã‚¤ã‚º
 
-#define TEXTURE_MAX					(1)			// ƒeƒNƒXƒ`ƒƒ‚Ì”
+#define TEXTURE_MAX					(1)			// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®æ•°
 
-#define TEXTURE_PATTERN_DIVIDE_X	(3)			// ƒAƒjƒƒpƒ^[ƒ“‚ÌƒeƒNƒXƒ`ƒƒ“à•ªŠ„”iX)
-#define TEXTURE_PATTERN_DIVIDE_Y	(1)			// ƒAƒjƒƒpƒ^[ƒ“‚ÌƒeƒNƒXƒ`ƒƒ“à•ªŠ„”iY)
-#define ANIM_PATTERN_NUM			(TEXTURE_PATTERN_DIVIDE_X*TEXTURE_PATTERN_DIVIDE_Y)	// ƒAƒjƒ[ƒVƒ‡ƒ“ƒpƒ^[ƒ“”
-#define ANIM_WAIT					(4)			// ƒAƒjƒ[ƒVƒ‡ƒ“‚ÌØ‚è‘Ö‚í‚éƒfƒtƒHƒ‹ƒgWait’l
+#define TEXTURE_PATTERN_DIVIDE_X	(3)			// ã‚¢ãƒ‹ãƒ¡ãƒ‘ã‚¿ãƒ¼ãƒ³ã®ãƒ†ã‚¯ã‚¹ãƒãƒ£å†…åˆ†å‰²æ•°ï¼ˆX)
+#define TEXTURE_PATTERN_DIVIDE_Y	(1)			// ã‚¢ãƒ‹ãƒ¡ãƒ‘ã‚¿ãƒ¼ãƒ³ã®ãƒ†ã‚¯ã‚¹ãƒãƒ£å†…åˆ†å‰²æ•°ï¼ˆY)
+#define ANIM_PATTERN_NUM			(TEXTURE_PATTERN_DIVIDE_X*TEXTURE_PATTERN_DIVIDE_Y)	// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‘ã‚¿ãƒ¼ãƒ³æ•°
+#define ANIM_WAIT					(4)			// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®åˆ‡ã‚Šæ›¿ã‚ã‚‹ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆWaitå€¤
 #define MOVE_VALUE					(10.0f)
 
+
 //*****************************************************************************
-// ƒvƒƒgƒ^ƒCƒvéŒ¾
+// ãƒ—ãƒ­ãƒˆã‚¿ã‚¤ãƒ—å®£è¨€
 //*****************************************************************************
 
 
 //*****************************************************************************
-// ƒOƒ[ƒoƒ‹•Ï”
+// ã‚°ãƒ­ãƒ¼ãƒãƒ«å¤‰æ•°
 //*****************************************************************************
-static ID3D11Buffer				*g_VertexBuffer = NULL;				// ’¸“_î•ñ
-static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// ƒeƒNƒXƒ`ƒƒî•ñ
+static ID3D11Buffer				*g_VertexBuffer = NULL;				// é ‚ç‚¹æƒ…å ±
+static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// ãƒ†ã‚¯ã‚¹ãƒãƒ£æƒ…å ±
 
 static char *g_TexturName[] = {
-	"data/TEXTURE/player.png",
+	"data/TEXTURE/player.png",		// TexNo : 0
 };
 
-static CPlayer	g_aPlayer[PLAYER_MAX];								// ƒvƒŒƒCƒ„[ƒCƒ“ƒXƒ^ƒ“ƒX
+//static CPlayer	g_aPlayer[PLAYER_MAX];								// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹
 
 //=============================================================================
-// ƒRƒ“ƒXƒgƒ‰ƒNƒ^EƒfƒXƒgƒ‰ƒNƒ^
+// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ãƒ»ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 //=============================================================================
-CPlayer::CPlayer()		// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+CPlayer::CPlayer()		// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 {
-	// ƒvƒŒƒCƒ„[ƒNƒ‰ƒX‚Ì‰Šú‰»
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¯ãƒ©ã‚¹ã®åˆæœŸåŒ–
 	m_bUse = true;
 	m_nTexNo = 0;
 }
 
-CPlayer::~CPlayer()		// ƒfƒXƒgƒ‰ƒNƒ^
+CPlayer::~CPlayer()		// ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 {
 
 }
 
 //=============================================================================
-// ‰Šú‰»ˆ—
+// åˆæœŸåŒ–å‡¦ç†
 //=============================================================================
 void CPlayer::Init()
 {
-	// ƒvƒŒƒCƒ„[ƒNƒ‰ƒX‚Ì‰Šú‰»
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¯ãƒ©ã‚¹ã®åˆæœŸåŒ–
 	m_bUse = true;
 	m_nTexNo = 0;
 
-	//------------------- ƒx[ƒXƒNƒ‰ƒX‚Ì‰Šú‰»
-	CTexture::Init();	// CTexture
-
+	//------------------- ãƒ™ãƒ¼ã‚¹ã‚¯ãƒ©ã‚¹ã®åˆæœŸåŒ–
+//	CTexture::Init();	// CTexture
+	SetPlayerUseFlag(true);
+	SetTextureInf(SCREEN_CENTER, TEXTURE_SIZE, DEFAULT_COLOR, 0.0f, ZERO_VECTOR2);
+	SetAnimInf(1, 1, 10);
 }
 
 
-void InitPlayer()
+
+//=============================================================================
+// æ›´æ–°å‡¦ç†
+//=============================================================================
+void CPlayer::Update()
 {
-	//ƒeƒNƒXƒ`ƒƒ¶¬
+	// ã“ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒä½¿ã‚ã‚Œã¦ã„ãŸã‚‰æ›´æ–°å‡¦ç†å®Ÿè¡Œ
+	if (m_bUse == true)
+	{
+		// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³
+	//	UpdateAnimIndex(0, 0);	// 
+
+		{
+			D3DXVECTOR2 move;	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å€¤ã‚’ä¿å­˜ã™ã‚‹å¤‰æ•°
+			move = GetTexPos();	// ç¾åœ¨ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®åº§æ¨™ã§åˆæœŸåŒ–
+
+			// ã‚­ãƒ¼å…¥åŠ›ã§ç§»å‹•
+			if (GetKeyboardPress(DIK_DOWN))
+			{
+				move.y += MOVE_VALUE;
+			}
+			else if (GetKeyboardPress(DIK_UP))
+			{
+				move.y -= MOVE_VALUE;
+			}
+			else if (GetKeyboardPress(DIK_RIGHT))
+			{
+				move.x += MOVE_VALUE;
+			}
+			else if (GetKeyboardPress(DIK_LEFT))
+			{
+				move.x -= MOVE_VALUE;
+			}
+
+			// ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰ã§ç§»å‹•å‡¦ç†
+			if (IsButtonPressed(0, BUTTON_DOWN))
+			{
+				move.y += MOVE_VALUE;
+			}
+			else if (IsButtonPressed(0, BUTTON_UP))
+			{
+				move.y -= MOVE_VALUE;
+			}
+			else if (IsButtonPressed(0, BUTTON_RIGHT))
+			{
+				move.x += MOVE_VALUE;
+			}
+			else if (IsButtonPressed(0, BUTTON_LEFT))
+			{
+				move.x -= MOVE_VALUE;
+			}
+
+			// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æœ€çµ‚çš„ãªåº§æ¨™ã‚’ã‚»ãƒƒãƒˆ
+			SetTexPos(move);
+		}
+
+
+		//=================== ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«åº§æ¨™ã®æ›´æ–°
+		{
+			D3DXVECTOR2 pos;	// ä¸€æ™‚çš„ãªå¤‰æ•°
+			pos.x = GetTexPos().x - SCROLL_SET_X;			// ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«åº§æ¨™<x>ã«å€¤ã‚’ä»£å…¥
+	//		pos.x = (GetScrollPosition()->x < 0.0f) ? 0.0f : GetScrollPosition()->x;	// ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«åº§æ¨™<x>ãŒè² ãªã‚‰ã€Œ0ã€ã«ãƒªã‚»ãƒƒãƒˆã€æ­£ã®æ•°ãªã‚‰ãã®ã¾ã¾
+	//		pos.x = (GetScrollPosition()->x + SCREEN_WIDTH > GetMapSize().x) ? GetMapSize().x - SCREEN_WIDTH : GetScrollPosition()->x;		// ç”»é¢å³ä¸Šã®ç‚¹ãŒãƒ¯ãƒ¼ãƒ«ãƒ‰ã®ç«¯ã«æ¥ãŸã‚‰"STAGE_W"ã®å€¤ã«ãƒªã‚»ãƒƒãƒˆ
+	//
+			pos.y = GetTexPos().y - SCROLL_SET_Y;			// ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«åº§æ¨™<y>ã«å€¤ã‚’ä»£å…¥
+	//		pos.y = (GetScrollPosition()->y < 0.0f) ? 0.0f : GetScrollPosition()->y;	// ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«åº§æ¨™<y>è² ãªã‚‰ã€Œ0ã€ã«ãƒªã‚»ãƒƒãƒˆã€æ­£ã®æ•°ãªã‚‰ãã®ã¾ã¾
+	//		pos.y = (GetScrollPosition()->y + SCREEN_HEIGHT > GetMapSize().y) ? GetMapSize().y - SCREEN_HEIGHT : GetScrollPosition()->y;	// ç”»é¢å³ä¸Šã®ç‚¹ãŒãƒ¯ãƒ¼ãƒ«ãƒ‰ã®ç«¯ã«æ¥ãŸã‚‰"STAGE_H"ã®å€¤ã«ãƒªã‚»ãƒƒãƒˆ
+
+			// åº§æ¨™ã‚’ã‚»ãƒƒãƒˆ
+			GetGame()->SetScrollPosition(pos);
+		}
+
+	}
+
+#ifdef _DEBUG	// ãƒ‡ãƒãƒƒã‚°æƒ…å ±ã‚’è¡¨ç¤ºã™ã‚‹
+//	char *str = GetDebugStr();
+//	sprintf(&str[strlen(str)], " PX:%.2f PY:%.2f", g_aPlayer[0].pos.x, g_aPlayer[0].pos.y);
+
+	//PrintDebugProc("Player X:%f Y:%f \n", pos.x, pos.y );
+
+#endif
+}
+
+
+
+//=============================================================================
+// æç”»å‡¦ç†
+//=============================================================================
+void CPlayer::Draw()
+{
+	PresetDrawPlayer();
+
+	if (m_bUse == true)
+		{
+			DrawTexture(g_VertexBuffer, g_Texture[0]);
+		}
+}
+
+
+
+//=============================================================================
+// ã‚»ãƒƒã‚¿ãƒ¼é–¢æ•°
+//=============================================================================
+// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®useãƒ•ãƒ©ã‚°ã®ã‚»ãƒƒãƒˆ
+void CPlayer::SetPlayerUseFlag(bool Use)
+{
+	m_bUse = Use;
+}
+
+// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’æ®ºã™å‡¦ç†
+void CPlayer::KillPlayer()
+{
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®useãƒ•ãƒ©ã‚°ã‚’æŠ˜ã‚‹
+	SetPlayerUseFlag(false);
+
+	/* ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒæ­»ã‚“ã å¾Œã«ä½•ã‹å‡¦ç†ã‚’è¡Œã†å ´åˆã¯ã“ã“ã«è¨˜å…¥ */
+
+}
+
+//=============================================================================
+// ã‚²ãƒƒã‚¿ãƒ¼é–¢æ•°
+//=============================================================================
+// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®åº§æ¨™ã‚’å–å¾—
+D3DXVECTOR2 CPlayer::GetPlayerPos()
+{
+	return GetTexPos();		// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®åº§æ¨™ ï¼ ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®åº§æ¨™ ã£ã¦ã“ã¨
+}
+
+// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®useãƒ•ãƒ©ã‚°ã®å–å¾—
+bool CPlayer::GetPlayerUseFlag()
+{
+	return m_bUse;
+}
+
+
+
+
+void CreatePlayerTextureAndBuffer()
+{
+	//ãƒ†ã‚¯ã‚¹ãƒãƒ£ç”Ÿæˆ
 	for (int i = 0; i < TEXTURE_MAX; i++)
 	{
 		g_Texture[i] = NULL;
@@ -87,7 +228,7 @@ void InitPlayer()
 			NULL);
 	}
 
-	// ’¸“_ƒoƒbƒtƒ@¶¬
+	// é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡ç”Ÿæˆ
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DYNAMIC;
@@ -95,23 +236,9 @@ void InitPlayer()
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
-
-	// ƒvƒŒƒCƒ„[ƒNƒ‰ƒX‰Šú‰»
-	for (int i = 0; i < PLAYER_MAX; i++)
-	{
-		(g_aPlayer + i)->SetPlayerUseFlag(true);
-		(g_aPlayer + i)->SetTextureInf(SCREEN_CENTER, TEXTURE_SIZE, DEFAULT_COLOR, 0.0f, ZERO_VECTOR2);
-		(g_aPlayer + i)->SetAnimInf(1, 1, 10);
-	}
-
 }
 
-//=============================================================================
-// I—¹ˆ—
-//=============================================================================
-
-
-void UninitPlayer()
+void ReleasePlayerTextureAndBuffer()
 {
 	if (g_VertexBuffer)
 	{
@@ -130,156 +257,23 @@ void UninitPlayer()
 
 }
 
-
-//=============================================================================
-// XVˆ—
-//=============================================================================
-void CPlayer::Update()
+void PresetDrawPlayer(void)
 {
-	if (m_bUse == true)	// ‚±‚ÌƒvƒŒƒCƒ„[‚ªg‚í‚ê‚Ä‚¢‚éH
-	{					// Yes
-		// ƒAƒjƒ[ƒVƒ‡ƒ“
-	//	UpdateAnimIndex(0, 0);	// 
-
-		{
-			D3DXVECTOR2 move;	// ƒvƒŒƒCƒ„[‚Ì’l‚ğ•Û‘¶‚·‚é•Ï”
-			move = GetTexPos();	// Œ»İ‚ÌƒvƒŒƒCƒ„[‚ÌÀ•W‚Å‰Šú‰»
-
-			// ƒL[“ü—Í‚ÅˆÚ“®
-			if (GetKeyboardPress(DIK_DOWN))
-			{
-				move.y += MOVE_VALUE;
-			}
-			else if (GetKeyboardPress(DIK_UP))
-			{
-				move.y -= MOVE_VALUE;
-			}
-			else if (GetKeyboardPress(DIK_RIGHT))
-			{
-				move.x += MOVE_VALUE;
-			}
-			else if (GetKeyboardPress(DIK_LEFT))
-			{
-				move.x -= MOVE_VALUE;
-			}
-
-			// ƒQ[ƒ€ƒpƒbƒh‚ÅˆÚ“®ˆ—
-			if (IsButtonPressed(0, BUTTON_DOWN))
-			{
-				move.y += MOVE_VALUE;
-			}
-			else if (IsButtonPressed(0, BUTTON_UP))
-			{
-				move.y -= MOVE_VALUE;
-			}
-			else if (IsButtonPressed(0, BUTTON_RIGHT))
-			{
-				move.x += MOVE_VALUE;
-			}
-			else if (IsButtonPressed(0, BUTTON_LEFT))
-			{
-				move.x -= MOVE_VALUE;
-			}
-
-			// ƒvƒŒƒCƒ„[‚ÌÅI“I‚ÈÀ•W‚ğƒZƒbƒg
-			SetTexPos(move);
-		}
-
-	}
-
-#ifdef _DEBUG	// ƒfƒoƒbƒOî•ñ‚ğ•\¦‚·‚é
-//	char *str = GetDebugStr();
-//	sprintf(&str[strlen(str)], " PX:%.2f PY:%.2f", g_aPlayer[0].pos.x, g_aPlayer[0].pos.y);
-
-	//PrintDebugProc("Player X:%f Y:%f \n", pos.x, pos.y );
-
-#endif
-
-}
-
-void UpdatePlayer(void)
-{
-	for (int i = 0; i < PLAYER_MAX; i++)
-	{
-		g_aPlayer[i].Update();
-	}
-
-}
-
-//=============================================================================
-// •`‰æˆ—
-//=============================================================================
-void CPlayer::Draw()
-{
-	if (m_bUse == true)
-		{
-			DrawTexture(g_VertexBuffer, g_Texture[0]);
-		}
-}
-
-
-void DrawPlayer(void)
-{
-	// ’¸“_ƒoƒbƒtƒ@İ’è
+	// é ‚ç‚¹ãƒãƒƒãƒ•ã‚¡è¨­å®š
 	UINT stride = sizeof(VERTEX_3D);
 	UINT offset = 0;
 	GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
 
-	// ƒ}ƒgƒŠƒNƒXİ’è
+	// ãƒãƒˆãƒªã‚¯ã‚¹è¨­å®š
 	SetWorldViewProjection2D();
 
-	// ƒvƒŠƒ~ƒeƒBƒuƒgƒ|ƒƒWİ’è
+	// ãƒ—ãƒªãƒŸãƒ†ã‚£ãƒ–ãƒˆãƒãƒ­ã‚¸è¨­å®š
 	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-	// ƒ}ƒeƒŠƒAƒ‹İ’è
+	// ãƒãƒ†ãƒªã‚¢ãƒ«è¨­å®š
 	MATERIAL material;
 	ZeroMemory(&material, sizeof(material));
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
-
-	// ƒvƒŒƒCƒ„[‚Ì•`‰æ
-	for (int i = 0; i < PLAYER_MAX; i++)
-	{
-		g_aPlayer[i].Draw();
-	}
 }
 
-
-
-//=============================================================================
-// ƒZƒbƒ^[ŠÖ”
-//=============================================================================
-// ƒvƒŒƒCƒ„[‚Ìuseƒtƒ‰ƒO‚ÌƒZƒbƒg
-void CPlayer::SetPlayerUseFlag(bool Use)
-{
-	m_bUse = Use;
-}
-
-// ƒvƒŒƒCƒ„[‚ğE‚·ˆ—
-void CPlayer::KillPlayer()
-{
-	// ƒvƒŒƒCƒ„[‚Ìuseƒtƒ‰ƒO‚ğÜ‚é
-	SetPlayerUseFlag(false);
-
-	/* ƒvƒŒƒCƒ„[‚ª€‚ñ‚¾Œã‚É‰½‚©ˆ—‚ğs‚¤ê‡‚Í‚±‚±‚É‹L“ü */
-
-}
-
-//=============================================================================
-// ƒQƒbƒ^[ŠÖ”
-//=============================================================================
-// ƒvƒŒƒCƒ„[‚Ìuseƒtƒ‰ƒO‚Ìæ“¾
-bool CPlayer::GetPlayerUseFlag()
-{
-	return m_bUse;
-}
-
-
-
-//=============================================================================
-// ƒvƒŒƒCƒ„[\‘¢‘Ì‚Ìæ“ªƒAƒhƒŒƒX‚ğæ“¾
-//=============================================================================
-//PLAYER *GetPlayer(void)
-//{
-//	return &g_aPlayer[0];
-//}

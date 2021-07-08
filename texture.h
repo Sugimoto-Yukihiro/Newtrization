@@ -52,21 +52,24 @@ class CTexture : public CAnimation
 public:
 	//------------------- メンバ関数
 	void DrawTexture(ID3D11Buffer* VertexBuffer, ID3D11ShaderResourceView* TextureData);
-	void Init();								// メンバ変数の初期化
-//	void AddTexPos(D3DXVECTOR2 Pos);			// テクスチャ表示座標をずらす
+	void Init();							// メンバ変数の初期化
+//	void AddTexPos(D3DXVECTOR2 Pos);		// テクスチャ表示座標をずらす
 
 	//------------------- セッター関数
 	void SetTextureInf(D3DXVECTOR2 Pos, D3DXVECTOR2 Size, D3DXCOLOR Color, float Rotation, D3DXVECTOR2 UV);
-	void SetTexPos(D3DXVECTOR2 Pos);			// テクスチャの描画位置をセット
-	void SetTexSize(D3DXVECTOR2 Size);			// テクスチャのサイズをセット
-	void SetTexColor(D3DXCOLOR Color);			// 頂点色のセット
-	void SetTexRotation(float Rotaiton);		// 回転値のセット
-	void SetTexU(float U);						// テクスチャのUV座標のU値をセット
-	void SetTexV(float V);						// テクスチャのUV座標のV値をセット
+	void SetTexPos(D3DXVECTOR2 Pos);		// テクスチャの描画位置をセット
+	void SetTexSize(D3DXVECTOR2 Size);		// テクスチャのサイズをセット
+	void SetTexColor(D3DXCOLOR Color);		// 頂点色のセット
+	void SetTexRotation(float Rotaiton);	// 回転値のセット
+	void SetTexU(float U);					// テクスチャのUV座標のU値をセット
+	void SetTexV(float V);					// テクスチャのUV座標のV値をセット
 
 	//------------------- ゲッター関数
-	D3DXVECTOR2 GetTexPos();					// テクスチャの描画位置を取得
-	D3DXVECTOR2 GetTexSize();					// テクスチャのサイズを取得
+	D3DXVECTOR2 GetTexPos();				// テクスチャの描画位置を取得
+	D3DXVECTOR2 GetTexSize();				// テクスチャのサイズを取得
+
+	//------------------- メンバ変数(public)
+	int		m_nTexNo;		// テクスチャ番号
 
 private:
 	//------------------- メンバ変数
@@ -77,6 +80,7 @@ private:
 	D3DXCOLOR					m_TexColor;			// 頂点色
 	float						m_fTexU, m_fTexV;	// UV座標系
 	float						m_fTexRotation;		// テクスチャの回転角
+
 };
 
 
