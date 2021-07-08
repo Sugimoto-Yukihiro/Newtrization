@@ -13,6 +13,10 @@
 //*****************************************************************************
 #define PLAYER_MAX		(1)			// プレイヤーのMax人数
 
+#define SCROLL_SET_X				(SCREEN_CENTER_X / 2)			// スクロール座標のセット位置
+#define SCROLL_SET_Y				(SCREEN_CENTER_Y * 2)			// スクロール座標のセット位置
+
+
 //*****************************************************************************
 // クラス定義
 //*****************************************************************************
@@ -24,7 +28,7 @@ public:
 
 	//------------------- メンバ関数
 	void Init();						// 初期化
-	//void Uninit();					// 終了処理
+//	void Uninit();					// 終了処理
 	void Update();						// 更新処理
 	void Draw();						// 描画処理
 
@@ -32,7 +36,8 @@ public:
 	void SetPlayerUseFlag(bool Use);	// プレイヤーのuseフラグのセット
 	void KillPlayer();					// プレイヤーを殺す処理
 
-	//------------------- セッター関数
+	//------------------- ゲッター関数
+	D3DXVECTOR2 GetPlayerPos();			// プレイヤーの座標を取得
 	bool GetPlayerUseFlag();			// プレイヤーのuseフラグの取得
 
 	//------------------- マクロ定義
@@ -47,9 +52,6 @@ private:
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-void InitPlayer(void);
-void UninitPlayer(void);
-void UpdatePlayer(void);
-void DrawPlayer(void);
-
-//PLAYER *GetPlayer(void);
+void CreatePlayerTextureAndBuffer(void);
+void ReleasePlayerTextureAndBuffer(void);
+void PresetDrawPlayer(void);

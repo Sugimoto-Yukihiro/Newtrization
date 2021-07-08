@@ -33,10 +33,10 @@
 // プロトタイプ宣言
 //*****************************************************************************
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow);
-void Uninit(void);
-void Update(void);
-void Draw(void);
+//HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow);
+//void Uninit(void);
+//void Draw(void);
+//void Update(void);
 
 
 //*****************************************************************************
@@ -51,7 +51,9 @@ char	g_DebugStr[2048] = WINDOW_NAME;		// デバッグ文字表示用
 #endif
 
 // 起動時の画面を初期値として設定
-MODE g_Mode = START_MODE;
+//MODE g_Mode = START_MODE;
+
+CMode g_aMode;
 
 //=============================================================================
 // メイン関数
@@ -118,7 +120,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 #endif // !_DEBUG
 
 	// DirectXの初期化(ウィンドウを作成してから行う)
-	if(FAILED(Init(hInstance, hWnd, true)))
+	if(FAILED(g_aMode.Init(hInstance, hWnd, true)))
 	{
 		return -1;
 	}
@@ -175,14 +177,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 				// マウス座標の表示
 				wsprintf(&g_DebugStr[strlen(g_DebugStr)], " MX:%d MY:%d", GetMousePosX(), GetMousePosY());
 				// 現在のモードの表示
-				wsprintf(&g_DebugStr[strlen(g_DebugStr)], "  CurrentMode:%d", GetMode());
+				wsprintf(&g_DebugStr[strlen(g_DebugStr)], "  CurrentMode:%d", g_aMode.GetMode());
 
 #endif
 				// テキストのセット
 				SetWindowText(hWnd, g_DebugStr);
 
-				Update();			// 更新処理
-				Draw();				// 描画処理
+				g_aMode.Update();			// 更新処理
+				g_aMode.Draw();				// 描画処理
 
 				dwFrameCount++;		// 処理回数のカウントを加算
 			}
@@ -195,10 +197,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	UnregisterClass(CLASS_NAME, wcex.hInstance);
 
 	// 終了処理
-	Uninit();
+	g_aMode.Uninit();
 
 	return (int)msg.wParam;
 }
+
+
 
 //=============================================================================
 // プロシージャ
@@ -233,10 +237,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+
+
 //=============================================================================
 // 初期化処理
 //=============================================================================
-HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
+HRESULT CMode::Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 {
 	// レンダリング処理の初期化
 	InitRenderer(hInstance, hWnd, bWindow);
@@ -257,24 +263,25 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	g_Mode = START_MODE;
 
 	//------------------- モードに応じた初期化
-	if (g_Mode == MODE_TITLE) InitTitle();				// タイトル画面の終了処理
-//	else if(g_Mode == MODE_TUTORIAL) InitTutorial();	// チュートリアル画面の終了処理
-	else if (g_Mode == MODE_GAME) InitGame();			// ゲーム画面の終了処理
-	else if (g_Mode == MODE_RESULT) InitResult();		// リザルト画面の終了処理
+	if (g_Mode == MODE_TITLE) InitTitle();				// タイトル画面の初期化処理
+//	else if(g_Mode == MODE_TUTORIAL) InitTutorial();	// チュートリアル画面の初期化処理
+	else if (g_Mode == MODE_GAME) m_GameMode.Init();	// ゲーム画面の初期化処理
+	else if (g_Mode == MODE_RESULT) InitResult();		// リザルト画面の初期化処理
 
 	return S_OK;
 }
 
 
+
 //=============================================================================
 // 終了処理
 //=============================================================================
-void Uninit(void)
+void CMode::Uninit(void)
 {
 	//------------------- モードに応じたメモリ解放
-	if (g_Mode == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
+	if (g_Mode == MODE_TITLE) UninitTitle();			// タイトル画面の終了処理
 //	else if(g_Mode == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
-	else if (g_Mode == MODE_GAME) UninitGame();			// ゲーム画面の終了処理
+	else if (g_Mode == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
 	else if (g_Mode == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
 
 	// サウンドの終了処理
@@ -293,10 +300,12 @@ void Uninit(void)
 	UninitRenderer();
 }
 
+
+
 //=============================================================================
 // 更新処理
 //=============================================================================
-void Update(void)
+void CMode::Update(void)
 {
 	// キー・ゲームパッドの更新処理
 	UpdateInput();
@@ -316,7 +325,7 @@ void Update(void)
 		break;
 
 	case MODE_GAME:
-		UpdateGame();
+		m_GameMode.Update();
 		break;
 
 	case MODE_RESULT:
@@ -332,10 +341,12 @@ void Update(void)
 
 }
 
+
+
 //=============================================================================
 // 描画処理
 //=============================================================================
-void Draw(void)
+void CMode::Draw(void)
 {
 	// バックバッファクリア
 	Clear();
@@ -358,7 +369,7 @@ void Draw(void)
 		break;
 
 	case MODE_GAME:
-		DrawGame();
+		m_GameMode.Draw();
 		break;
 
 	case MODE_RESULT:
@@ -377,15 +388,17 @@ void Draw(void)
 }
 
 
+
+//=============================================================================
+// セッター関数
 //=============================================================================
 // モードの設定
-//=============================================================================
-void SetMode(MODE mode)
+void CMode::SetMode(MODE mode)
 {
 	//------------------- モードを変える前にメモリを解放しちゃう
 	if(g_Mode == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
 //	else if(g_Mode == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
-	else if(g_Mode == MODE_GAME) UninitGame();			// ゲーム画面の終了処理
+	else if(g_Mode == MODE_GAME) m_GameMode.Uninit();			// ゲーム画面の終了処理
 	else if(g_Mode == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
 
 	//------------------- 次のモードのセット
@@ -406,7 +419,7 @@ void SetMode(MODE mode)
 
 	case MODE_GAME:
 		// ゲーム画面の初期化
-		InitGame();
+		m_GameMode.Init();
 		break;
 
 	case MODE_RESULT:
@@ -420,11 +433,37 @@ void SetMode(MODE mode)
 }
 
 
+
+//=============================================================================
+// ゲッター関数
+//=============================================================================
+// 現在のモードを取得
+MODE CMode::GetMode()
+{
+	return g_Mode;
+}
+
+//------------------- 各モードのインスタンスへのゲッター関数
+// ゲーム
+CModeGame* GetGame()
+{
+	return &(g_aMode.m_GameMode);
+}
+
+
+//=============================================================================
+// CModeのメンバ変数へアクセスできるグローバル関数
+//=============================================================================
+// モードのセット
+void RequestSetMode(MODE mode)
+{
+	g_aMode.SetMode(mode);
+}
+
 long GetMousePosX(void)
 {
 	return g_MouseX;
 }
-
 
 long GetMousePosY(void)
 {
@@ -439,11 +478,8 @@ char* GetDebugStr(void)
 }
 #endif
 
-// 現在のモードを取得
-MODE GetMode(void)
-{
-	return g_Mode;
-}
+
+
 
 /*******************************************************************************
 関数名	:	void LoadCsvData( void )
