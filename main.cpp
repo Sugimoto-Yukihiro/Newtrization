@@ -7,6 +7,7 @@
 //=============================================================================
 #include "main.h"
 
+#include "opening.h"	// オープニング画面
 #include "title.h"		// タイトル画面
 #include "game.h"		// ゲーム画面
 #include "result.h"		// リザルト画面
@@ -23,7 +24,7 @@
 #define CLASS_NAME			"AppClass"				// ウインドウのクラス名
 #define WINDOW_NAME			"GP23 DirectX11"		// ウインドウのキャプション名
 
-#define START_MODE			(MODE_TITLE)
+#define START_MODE			(MODE_OPENING)
 
 //*****************************************************************************
 // 構造体定義
@@ -263,7 +264,8 @@ HRESULT CMode::Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	g_Mode = START_MODE;
 
 	//------------------- モードに応じた初期化
-	if (g_Mode == MODE_TITLE) InitTitle();				// タイトル画面の初期化処理
+	if (g_Mode == MODE_OPENING) InitOpening();		// オープニング画面の終了処理
+	else if (g_Mode == MODE_TITLE) InitTitle();			// タイトル画面の終了処理
 //	else if(g_Mode == MODE_TUTORIAL) InitTutorial();	// チュートリアル画面の初期化処理
 	else if (g_Mode == MODE_GAME) m_GameMode.Init();	// ゲーム画面の初期化処理
 	else if (g_Mode == MODE_RESULT) InitResult();		// リザルト画面の初期化処理
@@ -279,7 +281,8 @@ HRESULT CMode::Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 void CMode::Uninit(void)
 {
 	//------------------- モードに応じたメモリ解放
-	if (g_Mode == MODE_TITLE) UninitTitle();			// タイトル画面の終了処理
+	if (g_Mode == MODE_OPENING) UninitOpening();		// オープニング画面の終了処理
+	else if (g_Mode == MODE_TITLE) UninitTitle();		// タイトル画面の終了処理
 //	else if(g_Mode == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
 	else if (g_Mode == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
 	else if (g_Mode == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
@@ -316,6 +319,10 @@ void CMode::Update(void)
 	//------------------- モードに応じた更新処理
 	switch (g_Mode)
 	{
+	case MODE_OPENING:
+		UpdateOpening();
+		break;
+
 	case MODE_TITLE:
 		UpdateTitle();
 		break;
@@ -360,6 +367,10 @@ void CMode::Draw(void)
 	//------------------- モードに応じた描画処理
 	switch (g_Mode)
 	{
+	case MODE_OPENING:
+		DrawOpening();
+		break;
+
 	case MODE_TITLE:
 		DrawTitle();
 		break;
@@ -396,7 +407,8 @@ void CMode::Draw(void)
 void CMode::SetMode(MODE mode)
 {
 	//------------------- モードを変える前にメモリを解放しちゃう
-	if(g_Mode == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
+	if (g_Mode == MODE_OPENING) UninitOpening();	// オープニング画面の終了処理
+	else if (g_Mode == MODE_TITLE) UninitTitle();		// タイトル画面の終了処理
 //	else if(g_Mode == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
 	else if(g_Mode == MODE_GAME) m_GameMode.Uninit();			// ゲーム画面の終了処理
 	else if(g_Mode == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
@@ -407,6 +419,11 @@ void CMode::SetMode(MODE mode)
 	//------------------- セットしたモードに応じた初期化処理を行う
 	switch (g_Mode)
 	{
+	case MODE_OPENING:
+		// オープニング画面の初期化
+		InitOpening();
+		break;
+
 	case MODE_TITLE:
 		// タイトル画面の初期化
 		InitTitle();
