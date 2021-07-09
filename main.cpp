@@ -1,37 +1,40 @@
 //=============================================================================
 //
-// Main���� [main.cpp]
-// Author : ���{ �K�G
+// Main処理 [main.cpp]
+// Author : 杉本 幸宏
 //
-// �G�l�~�[�ƃv���C���[�ǉ�������ASetMode�̍Ō�̕��̃R�����g�A�E�g�������Ƃ�
+// エネミーとプレイヤー追加したら、SetModeの最後の方のコメントアウト解除しとく
 //=============================================================================
 #include "main.h"
 
-#include "opening.h"	// �I�[�v�j���O���
-#include "title.h"		// �^�C�g�����
-#include "game.h"		// �Q�[�����
-#include "result.h"		// ���U���g���
+#include "title.h"		// タイトル画面
+#include "opening.h"  // オープニング画面
+#include "tutorial.h"	// チュートリアル画面
+//#include "game.h"		// ゲーム画面	【クラス化して、hの方でインクルードしてる】
+#include "result.h"		// リザルト画面
 
-#include "input.h"		// �L�[�E�Q�[���p�b�h���͏���
-#include "renderer.h"	// �����_�����O����
-#include "camera.h"		// �J����
-#include "fade.h"		// �t�F�[�h����
-#include "sound.h"		// �T�E���h
-
-//*****************************************************************************
-// �}�N����`
-//*****************************************************************************
-#define CLASS_NAME			"AppClass"				// �E�C���h�E�̃N���X��
-#define WINDOW_NAME			"GP23 DirectX11"		// �E�C���h�E�̃L���v�V������
-
-#define START_MODE			(MODE_OPENING)
+#include "input.h"		// キー・ゲームパッド入力処理
+#include "renderer.h"	// レンダリング処理
+#include "camera.h"		// カメラ
+#include "fade.h"		// フェード処理
+#include "sound.h"		// サウンド
+#include "debugproc.h"	// デバック
 
 //*****************************************************************************
-// �\���̒�`
+// マクロ定義
+//*****************************************************************************
+#define CLASS_NAME			"AppClass"				// ウインドウのクラス名
+#define WINDOW_NAME			"GP23 DirectX11"		// ウインドウのキャプション名
+
+#define START_MODE			(MODE_OPENING)  // 起動時のモード
+
+
+//*****************************************************************************
+// 構造体定義
 //*****************************************************************************
 
 //*****************************************************************************
-// �v���g�^�C�v�錾
+// プロトタイプ宣言
 //*****************************************************************************
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 //HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow);
@@ -41,30 +44,30 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 
 //*****************************************************************************
-// �O���[�o���ϐ�:
+// グローバル変数:
 //*****************************************************************************
 long g_MouseX = 0;
 long g_MouseY = 0;
 
 #ifdef _DEBUG
-int		g_CountFPS;							// FPS�J�E���^
-char	g_DebugStr[2048] = WINDOW_NAME;		// �f�o�b�O�����\���p
+int		g_CountFPS;							// FPSカウンタ
+char	g_DebugStr[2048] = WINDOW_NAME;		// デバッグ文字表示用
 #endif
 
-// �N�����̉�ʂ������l�Ƃ��Đݒ�
+// 起動時の画面を初期値として設定
 //MODE g_Mode = START_MODE;
 
 CMode g_aMode;
 
 //=============================================================================
-// ���C���֐�
+// メイン関数
 //=============================================================================
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	UNREFERENCED_PARAMETER(hPrevInstance);	// �����Ă��ǂ����ǁA�x�����o��i���g�p�錾�j
-	UNREFERENCED_PARAMETER(lpCmdLine);		// �����Ă��ǂ����ǁA�x�����o��i���g�p�錾�j
+	UNREFERENCED_PARAMETER(hPrevInstance);	// 無くても良いけど、警告が出る（未使用宣言）
+	UNREFERENCED_PARAMETER(lpCmdLine);		// 無くても良いけど、警告が出る（未使用宣言）
 
-	// ���Ԍv���p
+	// 時間計測用
 	DWORD dwExecLastTime;
 	DWORD dwFPSLastTime;
 	DWORD dwCurrentTime;
@@ -87,17 +90,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	HWND		hWnd;
 	MSG			msg;
 	
-	// �E�B���h�E�N���X�̓o�^
+	// ウィンドウクラスの登録
 	RegisterClassEx(&wcex);
 
-	// �E�B���h�E�̍쐬
+	// ウィンドウの作成
 	hWnd = CreateWindow(CLASS_NAME,
 						WINDOW_NAME,
 						WS_OVERLAPPEDWINDOW,
-						CW_USEDEFAULT,																		// �E�B���h�E�̍����W
-						CW_USEDEFAULT,																		// �E�B���h�E�̏���W
-						SCREEN_WIDTH + GetSystemMetrics(SM_CXDLGFRAME)*2,									// �E�B���h�E����
-						SCREEN_HEIGHT + GetSystemMetrics(SM_CXDLGFRAME)*2+GetSystemMetrics(SM_CYCAPTION),	// �E�B���h�E�c��
+						CW_USEDEFAULT,																		// ウィンドウの左座標
+						CW_USEDEFAULT,																		// ウィンドウの上座標
+						SCREEN_WIDTH + GetSystemMetrics(SM_CXDLGFRAME)*2,									// ウィンドウ横幅
+						SCREEN_HEIGHT + GetSystemMetrics(SM_CXDLGFRAME)*2+GetSystemMetrics(SM_CYCAPTION),	// ウィンドウ縦幅
 						NULL,
 						NULL,
 						hInstance,
@@ -105,99 +108,99 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 #ifndef _DEBUG
 	{
-		int id = MessageBox(NULL, "Window���[�h�Ńv���C���܂����H", "�N�����[�h", MB_YESNOCANCEL | MB_ICONQUESTION);
+		int id = MessageBox(NULL, "Windowモードでプレイしますか？", "起動モード", MB_YESNOCANCEL | MB_ICONQUESTION);
 		switch (id)
 		{
-		case IDYES:		// Yes�Ȃ�Window���[�h�ŋN��
+		case IDYES:		// YesならWindowモードで起動
 			break;
-		case IDNO:		// No�Ȃ�t���X�N���[�����[�h�ŋN��
+		case IDNO:		// Noならフルスクリーンモードで起動
 			break;
 		case IDCANCEL:	// CANCEL
-		default:		// �܂��͂���ȊO�Ȃ�I��
+		default:		// またはそれ以外なら終了
 			return -1;
 			break;
 		}
 	}
 #endif // !_DEBUG
 
-	// DirectX�̏�����(�E�B���h�E���쐬���Ă���s��)
+	// DirectXの初期化(ウィンドウを作成してから行う)
 	if(FAILED(g_aMode.Init(hInstance, hWnd, true)))
 	{
 		return -1;
 	}
 
-	// �t���[���J�E���g������
-	timeBeginPeriod(1);	// ����\��ݒ�
-	dwExecLastTime = dwFPSLastTime = timeGetTime();	// �V�X�e���������~���b�P�ʂŎ擾
+	// フレームカウント初期化
+	timeBeginPeriod(1);	// 分解能を設定
+	dwExecLastTime = dwFPSLastTime = timeGetTime();	// システム時刻をミリ秒単位で取得
 	dwCurrentTime = dwFrameCount = 0;
 	
-	// �E�C���h�E�̕\��(Init()�̌�ɌĂ΂Ȃ��Ƒʖ�)
+	// ウインドウの表示(Init()の後に呼ばないと駄目)
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 	
-	// ���b�Z�[�W���[�v
+	// メッセージループ
 	while(1)
 	{
 		if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			if(msg.message == WM_QUIT)
-			{// PostQuitMessage()���Ă΂ꂽ�烋�[�v�I��
+			{// PostQuitMessage()が呼ばれたらループ終了
 				break;
 			}
 			else
 			{
-				// ���b�Z�[�W�̖|��ƃf�B�X�p�b�`
+				// メッセージの翻訳とディスパッチ
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 			}
 		}
 		else
 		{
-			dwCurrentTime = timeGetTime();					// �V�X�e���������擾
+			dwCurrentTime = timeGetTime();					// システム時刻を取得
 
-			if ((dwCurrentTime - dwFPSLastTime) >= 1000)	// 1�b���ƂɎ��s
+			if ((dwCurrentTime - dwFPSLastTime) >= 1000)	// 1秒ごとに実行
 			{
 #ifdef _DEBUG
 				g_CountFPS = dwFrameCount;
 #endif
-				dwFPSLastTime = dwCurrentTime;				// FPS�𑪒肵��������ۑ�
-				dwFrameCount = 0;							// �J�E���g���N���A
+				dwFPSLastTime = dwCurrentTime;				// FPSを測定した時刻を保存
+				dwFrameCount = 0;							// カウントをクリア
 			}
 
-			// 1/60�b���ƂɎ��s
+			// 1/60秒ごとに実行
 			if ((dwCurrentTime - dwExecLastTime) >= (1000 / FPS_RATE))
 			{
-				dwExecLastTime = dwCurrentTime;	// ��������������ۑ�
+				dwExecLastTime = dwCurrentTime;	// 処理した時刻を保存
 
-				// WINDOW_NAME�̕\��
+				// WINDOW_NAMEの表示
 				wsprintf(g_DebugStr, WINDOW_NAME);
 
-#ifdef _DEBUG	// �f�o�b�O�ł̎������\��������
-				// FPS��\��
+#ifdef _DEBUG	// デバッグ版の時だけ表示するやつ
+				// FPSを表示
 				wsprintf(&g_DebugStr[strlen(g_DebugStr)], " FPS:%d", g_CountFPS);
-				// �}�E�X���W�̕\��
+				// マウス座標の表示
 				wsprintf(&g_DebugStr[strlen(g_DebugStr)], " MX:%d MY:%d", GetMousePosX(), GetMousePosY());
-				// ���݂̃��[�h�̕\��
+				// 現在のモードの表示
 				wsprintf(&g_DebugStr[strlen(g_DebugStr)], "  CurrentMode:%d", g_aMode.GetMode());
 
 #endif
-				// �e�L�X�g�̃Z�b�g
+				// テキストのセット
 				SetWindowText(hWnd, g_DebugStr);
 
-				g_aMode.Update();			// �X�V����
-				g_aMode.Draw();				// �`�揈��
+				g_aMode.Update();			// 更新処理
+				g_aMode.Draw();				// 描画処理
 
-				dwFrameCount++;		// �����񐔂̃J�E���g�����Z
+				dwFrameCount++;		// 処理回数のカウントを加算
 			}
 		}
 	}
 	
-	timeEndPeriod(1);				// ����\��߂�
+	timeEndPeriod(1);				// 分解能を戻す
 
-	// �E�B���h�E�N���X�̓o�^������
+	// ウィンドウクラスの登録を解除
 	UnregisterClass(CLASS_NAME, wcex.hInstance);
 
-	// �I������
+	// 終了処理
 	g_aMode.Uninit();
 
 	return (int)msg.wParam;
@@ -206,7 +209,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 
 //=============================================================================
-// �v���V�[�W��
+// プロシージャ
 //=============================================================================
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -219,16 +222,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:
 		switch(wParam)
 		{
-		case VK_ESCAPE:					// [ESC]�L�[�������ꂽ
-			DestroyWindow(hWnd);		// �E�B���h�E��j������悤�w������
+		case VK_ESCAPE:					// [ESC]キーが押された
+			DestroyWindow(hWnd);		// ウィンドウを破棄するよう指示する
 			break;
 		}
 		break;
 
-	// �}�E�X�����������̏���
+	// マウスが動いた時の処理
 	case WM_MOUSEMOVE:
-		g_MouseX = LOWORD(lParam);		// �}�E�X��X���W���i�[
-		g_MouseY = HIWORD(lParam);		// �}�E�X��Y���W���i�[
+		g_MouseX = LOWORD(lParam);		// マウスのX座標を格納
+		g_MouseY = HIWORD(lParam);		// マウスのY座標を格納
 		break;
 
 	default:
@@ -241,83 +244,82 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 //=============================================================================
-// ����������
+// 初期化処理
 //=============================================================================
 HRESULT CMode::Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 {
-	// �����_�����O�����̏�����
+	// レンダリング処理の初期化
 	InitRenderer(hInstance, hWnd, bWindow);
 
-	// �t�F�[�h�����̏�����
+	// フェード処理の初期化
 	InitFade();
 
-	// �J���������̏�����
+	// カメラ処理の初期化
 	InitCamera();
 
-	// ���͏����̏�����
+	// 入力処理の初期化
 	InitInput(hInstance, hWnd);
 
-	// �T�E���h�̏�����
+	// サウンドの初期化
 	InitSound(hWnd);
 
-	// �ŏ��̃��[�h���Z�b�g
-	g_Mode = START_MODE;
+	// 最初のモードをセット
+	g_aMode.SetMode(START_MODE);
 
-	//------------------- ���[�h�ɉ�����������
-	if (g_Mode == MODE_OPENING) InitOpening();		// �I�[�v�j���O��ʂ̏I������
-	else if (g_Mode == MODE_TITLE) InitTitle();			// �^�C�g����ʂ̏I������
-//	else if(g_Mode == MODE_TUTORIAL) InitTutorial();	// �`���[�g���A����ʂ̏���������
-	else if (g_Mode == MODE_GAME) m_GameMode.Init();	// �Q�[����ʂ̏���������
-	else if (g_Mode == MODE_RESULT) InitResult();		// ���U���g��ʂ̏���������
-
+	//------------------- モードに応じた初期化
+	if (g_aMode.GetMode() == MODE_TITLE) InitTitle();			 	// タイトル画面の初期化処理
+	else if(g_aMode.GetMode() == MODE_TUTORIAL) InitTutorial();		// チュートリアル画面の初期化処理
+	else if (g_aMode.GetMode() == MODE_GAME) m_GameMode.Init();		// ゲーム画面の初期化処理
+	else if (g_aMode.GetMode() == MODE_RESULT) InitResult();		// リザルト画面の初期化処理
+  
 	return S_OK;
 }
 
 
 
 //=============================================================================
-// �I������
+// 終了処理
 //=============================================================================
 void CMode::Uninit(void)
 {
-	//------------------- ���[�h�ɉ��������������
-	if (g_Mode == MODE_OPENING) UninitOpening();		// �I�[�v�j���O��ʂ̏I������
-	else if (g_Mode == MODE_TITLE) UninitTitle();		// �^�C�g����ʂ̏I������
-//	else if(g_Mode == MODE_TUTORIAL) UninitTutorial();	// �`���[�g���A����ʂ̏I������
-	else if (g_Mode == MODE_GAME) m_GameMode.Uninit();	// �Q�[����ʂ̏I������
-	else if (g_Mode == MODE_RESULT) UninitResult();		// ���U���g��ʂ̏I������
+	//------------------- モードに応じたメモリ解放
+	if (g_aMode.GetMode() == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
+  if (g_aMode.GetMode() == MODE_OPENING) UninitOpening();  // オープニング画面の終了処理
+	else if(g_aMode.GetMode() == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
+	else if (g_aMode.GetMode() == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
+	else if (g_aMode.GetMode() == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
 
-	// �T�E���h�̏I������
+	// サウンドの終了処理
 	UninitSound();
 
-	// �L�[�E�Q�[���p�b�h�̏I������
+	// キー・ゲームパッドの終了処理
 	UninitInput();
 
-	// �J�����̏I������
+	// カメラの終了処理
 	UninitCamera();
 
-	// �t�F�[�h�����̏I������
+	// フェード処理の終了処理
 	UninitFade();
 
-	// �����_�����O�̏I������
+	// レンダリングの終了処理
 	UninitRenderer();
 }
 
 
 
 //=============================================================================
-// �X�V����
+// 更新処理
 //=============================================================================
 void CMode::Update(void)
 {
-	// �L�[�E�Q�[���p�b�h�̍X�V����
+	// キー・ゲームパッドの更新処理
 	UpdateInput();
 
-	// �J�����̍X�V����
+	// カメラの更新処理
 	UpdateCamera();
 
-	//------------------- ���[�h�ɉ������X�V����
-	switch (g_Mode)
+	//------------------- モードに応じた更新処理
+	switch (g_aMode.GetMode())
 	{
 	case MODE_OPENING:
 		UpdateOpening();
@@ -328,7 +330,7 @@ void CMode::Update(void)
 		break;
 
 	case MODE_TUTORIAL:
-	//	UpdateTutorial();
+		UpdateTutorial();
 		break;
 
 	case MODE_GAME:
@@ -343,7 +345,7 @@ void CMode::Update(void)
 		break;
 	}
 
-	// �t�F�[�h�̍X�V����
+	// フェードの更新処理
 	UpdateFade();
 
 }
@@ -351,21 +353,21 @@ void CMode::Update(void)
 
 
 //=============================================================================
-// �`�揈��
+// 描画処理
 //=============================================================================
 void CMode::Draw(void)
 {
-	// �o�b�N�o�b�t�@�N���A
+	// バックバッファクリア
 	Clear();
 
-	// �J�������Z�b�g
+	// カメラをセット
 	SetCamera();
 
-	// 2D�`��Ȃ̂Ő[�x����
+	// 2D描画なので深度無効
 	SetDepthEnable(false);
 	
-	//------------------- ���[�h�ɉ������`�揈��
-	switch (g_Mode)
+	//------------------- モードに応じた描画処理
+	switch (g_aMode.GetMode())
 	{
 	case MODE_OPENING:
 		DrawOpening();
@@ -376,7 +378,7 @@ void CMode::Draw(void)
 		break;
 
 	case MODE_TUTORIAL:
-	//	DrawTutorial();
+		DrawTutorial();
 		break;
 
 	case MODE_GAME:
@@ -391,56 +393,63 @@ void CMode::Draw(void)
 		break;
 	}
 
-	// �t�F�[�h�̕`�揈��
+	// フェードの描画処理
 	DrawFade();
 
-	// �o�b�N�o�b�t�@�A�t�����g�o�b�t�@����ւ�
+#ifdef _DEBUG
+	// デバッグ表示
+	DrawDebugProc();
+#endif
+
+
+	// バックバッファ、フロントバッファ入れ替え
 	Present();
 }
 
 
 
 //=============================================================================
-// �Z�b�^�[�֐�
+// セッター関数
 //=============================================================================
-// ���[�h�̐ݒ�
+// モードの設定
 void CMode::SetMode(MODE mode)
 {
-	//------------------- ���[�h��ς���O�Ƀ���������������Ⴄ
-	if (g_Mode == MODE_OPENING) UninitOpening();	// �I�[�v�j���O��ʂ̏I������
-	else if (g_Mode == MODE_TITLE) UninitTitle();		// �^�C�g����ʂ̏I������
-//	else if(g_Mode == MODE_TUTORIAL) UninitTutorial();	// �`���[�g���A����ʂ̏I������
-	else if(g_Mode == MODE_GAME) m_GameMode.Uninit();			// �Q�[����ʂ̏I������
-	else if(g_Mode == MODE_RESULT) UninitResult();		// ���U���g��ʂ̏I������
 
-	//------------------- ���̃��[�h�̃Z�b�g
-	g_Mode = mode;
+	//------------------- モードを変える前にメモリを解放しちゃう
+	if(g_aMode.GetMode() == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
+  if (g_aMode.GetMode() == MODE_OPENING) UninitOpening();   // オープニング画面の終了処理
+	else if(g_aMode.GetMode() == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
+	else if(g_aMode.GetMode() == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
+	else if(g_aMode.GetMode() == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
 
-	//------------------- �Z�b�g�������[�h�ɉ������������������s��
-	switch (g_Mode)
+	//------------------- 次のモードのセット
+	m_Mode = mode;
+
+	//------------------- セットしたモードに応じた初期化処理を行う
+	switch (m_Mode)
 	{
 	case MODE_OPENING:
-		// �I�[�v�j���O��ʂ̏�����
+		// オープニング画面の初期化
 		InitOpening();
 		break;
 
 	case MODE_TITLE:
-		// �^�C�g����ʂ̏�����
+		// タイトル画面の初期化
 		InitTitle();
 		break;
 
 	case MODE_TUTORIAL:
-		// �Q�[����ʂ̏�����
-	//	InitTutorial();
+		// ゲーム画面の初期化
+		InitTutorial();
 		break;
 
 	case MODE_GAME:
-		// �Q�[����ʂ̏�����
+		// ゲーム画面の初期化
 		m_GameMode.Init();
 		break;
 
 	case MODE_RESULT:
-		// ���U���g��ʂ̏�����
+		// リザルト画面の初期化
 		InitResult();
 		break;
 
@@ -452,16 +461,16 @@ void CMode::SetMode(MODE mode)
 
 
 //=============================================================================
-// �Q�b�^�[�֐�
+// ゲッター関数
 //=============================================================================
-// ���݂̃��[�h���擾
+// 現在のモードを取得
 MODE CMode::GetMode()
 {
-	return g_Mode;
+	return m_Mode;
 }
 
-//------------------- �e���[�h�̃C���X�^���X�ւ̃Q�b�^�[�֐�
-// �Q�[��
+//------------------- 各モードのインスタンスへのゲッター関数
+// ゲーム
 CModeGame* GetGame()
 {
 	return &(g_aMode.m_GameMode);
@@ -469,9 +478,9 @@ CModeGame* GetGame()
 
 
 //=============================================================================
-// CMode�̃����o�ϐ��փA�N�Z�X�ł���O���[�o���֐�
+// CModeのメンバ変数へアクセスできるグローバル関数
 //=============================================================================
-// ���[�h�̃Z�b�g
+// モードのセット
 void RequestSetMode(MODE mode)
 {
 	g_aMode.SetMode(mode);
@@ -499,214 +508,214 @@ char* GetDebugStr(void)
 
 
 /*******************************************************************************
-�֐���	:	void LoadCsvData( void )
-����	:	�ǂݍ��ރt�@�C����, �쐬�f�[�^�̐擪�A�h���X���i�[����|�C���^, 1�̃Z�����Ƃ̍ő啶����, ��؂蕶���i�w�薳�����NULL�j
-�Ԃ�l	:	�i�[�f�[�^�̑��������B�G���[���́u-1�v
-����	:	�J���}��؂��csv�t�@�C�����A������̂܂ܓǂݍ���
-			"new���Z�q"�Ń��������m�ۂ��Ă��邽�߁A�g������͕K��"delete"���邱��
+関数名	:	void LoadCsvData( void )
+引数	:	読み込むファイル名, 作成データの先頭アドレスを格納するポインタ, 1つのセルごとの最大文字数, 区切り文字（指定無ければNULL）
+返り値	:	格納データの総文字数。エラー時は「-1」
+説明	:	カンマ区切りのcsvファイルを、文字列のまま読み込む
+			"new演算子"でメモリを確保しているため、使った後は必ず"delete"すること
 *******************************************************************************/
-#define	MAX_COLUMN			(64)								// �Z���̍ő��<���̐�>
-#define	MAX_ROW				(64)								// �Z���̍ő�s��<�c�̐�>
-#define	SizeOfCell(wordCnt)	(sizeof(char) * wordCnt)			// 1�̃Z���Ɏg��char�^������
-#define	SizeOfLine(wordCnt)	(SizeOfCell(wordCnt) * MAX_COLUMN)	// 1�s������Ɏg��char�^������
-#define	MAX_SIZE(wordCnt)	(SizeOfLine(wordCnt) * MAX_ROW)		// �g�p����ő�char�^�������i= 1��csv�t�@�C���ɋL�ڂ���Ă���ő啶����j
-#define	CommentsSymbol		'#'									// �R�����g�L��
-#define	DefaultDivMark		"#"									// �f�t�H���g�̋�؂�L��
+#define	MAX_COLUMN			(64)								// セルの最大列数<横の数>
+#define	MAX_ROW				(64)								// セルの最大行数<縦の数>
+#define	SizeOfCell(wordCnt)	(sizeof(char) * wordCnt)			// 1つのセルに使うchar型メモリ
+#define	SizeOfLine(wordCnt)	(SizeOfCell(wordCnt) * MAX_COLUMN)	// 1行あたりに使うchar型メモリ
+#define	MAX_SIZE(wordCnt)	(SizeOfLine(wordCnt) * MAX_ROW)		// 使用する最大char型メモリ（= 1つのcsvファイルに記載されている最大文字列）
+#define	CommentsSymbol		'#'									// コメント記号
+#define	DefaultDivMark		"#"									// デフォルトの区切り記号
 
 int LoadCsvFile(const char* pCsvFileName, char* &pFirst, int MaxCharCell, char* DivMark)
 {
-	FILE*	csvFile = fopen(pCsvFileName, "r");					// �t�@�C���̃I�[�v��<fclose�L�ڍς�>
+	FILE*	csvFile = fopen(pCsvFileName, "r");					// ファイルのオープン<fclose記載済み>
 
-	// �ǂݍ��ݎ��s��(�G���[�`�F�b�N)
+	// 読み込み失敗時(エラーチェック)
 	if (csvFile == NULL) {
 		fclose(csvFile);
-		printf("�I�[�v���G���[�I");
-		return -1;	// �G���[��Ԃ��ďI��
+		printf("オープンエラー！");
+		return -1;	// エラーを返して終了
 	}
 
-	// ���������烍�[�h
-	// ��؂�L���Ɏw�肪���������ꍇ�A"#"�ɂ���
+	// 成功したらロード
+	// 区切り記号に指定が無かった場合、"#"にする
 	if (DivMark == NULL)
 	{
 		DivMark = DefaultDivMark;
 	}
 
-	// ���I�z��̐���
+	// 動的配列の生成
 	char*	pTmpArray = NULL;
-	pTmpArray = (char*)malloc(MAX_SIZE(MaxCharCell) + NULL_SIZE);			// char�^�z����g�p����ő僁�������������m��<free�L�ڍς�>
-	if (pTmpArray == NULL) {	// �m�ۂł��Ȃ�������
-		fclose(csvFile);		// �t�@�C���̃N���[�Y
-		return -1;				// �G���[�o���ďI��
+	pTmpArray = (char*)malloc(MAX_SIZE(MaxCharCell) + NULL_SIZE);			// char型配列を使用する最大メモリ数分だけ確保<free記載済み>
+	if (pTmpArray == NULL) {	// 確保できなかったら
+		fclose(csvFile);		// ファイルのクローズ
+		return -1;				// エラー出して終了
 	}
 
-	memset(pTmpArray, '\0', MAX_SIZE(MaxCharCell) + NULL_SIZE);			// ������
+	memset(pTmpArray, '\0', MAX_SIZE(MaxCharCell) + NULL_SIZE);			// 初期化
 
-	// �t�@�C���ւ̃A�N�Z�X�Ɏg�p����char�^�ϐ�
-	char	OneLineStr[1024] = { NULL };								// �ǂݎ��t�@�C���́A��s���̕�������i�[���邽�߂�char�^�z��
-	char*	pDivideStr = NULL;											// str�z��ւ̃A�N�Z�X�pchar�^�|�C���^
+	// ファイルへのアクセスに使用するchar型変数
+	char	OneLineStr[1024] = { NULL };								// 読み取るファイルの、一行分の文字列を格納するためのchar型配列
+	char*	pDivideStr = NULL;											// str配列へのアクセス用char型ポインタ
 
-	// �ǂݍ��񂾃f�[�^�̐����J�E���g����ϐ�
+	// 読み込んだデータの数をカウントする変数
 	//int		storeCharCnt = 0;
 
-	// �z��ɐ��l���i�[������
-	while (fgets(&OneLineStr[0], (MaxCharCell * MAX_COLUMN), csvFile) != NULL)		// �ǂݎ��t�@�C���́A��s���̕�������i�[
-	{	// ��s�P�ʂ̓ǂݎ���Ƃ��A�t�@�C���I���܂ŌJ��Ԃ�
-		pDivideStr = strtok(OneLineStr, ",");							// �P��ڂ̕���������o��
-		if (pDivideStr == NULL) break;									// NULL�Ȃ烋�[�v�𔲂���
+	// 配列に数値を格納する作業
+	while (fgets(&OneLineStr[0], (MaxCharCell * MAX_COLUMN), csvFile) != NULL)		// 読み取るファイルの、一行分の文字列を格納
+	{	// 一行単位の読み取り作業を、ファイル終了まで繰り返す
+		pDivideStr = strtok(OneLineStr, ",");							// １列目の文字列を取り出す
+		if (pDivideStr == NULL) break;									// NULLならループを抜ける
 
 		do
 		{
-			int comOffset = SerchWordOffset(pDivideStr, CommentsSymbol);	// �R�����g�L���̈ʒu���擾
+			int comOffset = SerchWordOffset(pDivideStr, CommentsSymbol);	// コメント記号の位置を取得
 
-			// �R�����g�L�����擪�ɂ���Ƃ��͂��̃Z���ɏ�����Ă�����e�͔�΂�
+			// コメント記号が先頭にあるときはそのセルに書かれている内容は飛ばす
 			if (comOffset != 0 && pDivideStr != NULL)
-			{	// �f�[�^�̊i�[
+			{	// データの格納
 				char*	pBuf = NULL;
 
-				int		bufNum = MaxCharCell + NULL_SIZE;				// pBuf�̗v�f��
-				pBuf = new char[bufNum];								// �ꎞ�I�ȕ�����R�s�[�p�̔z��<delete�L�ڍς�>
-				memset(pBuf, '\0', bufNum);								// ������
+				int		bufNum = MaxCharCell + NULL_SIZE;				// pBufの要素数
+				pBuf = new char[bufNum];								// 一時的な文字列コピー用の配列<delete記載済み>
+				memset(pBuf, '\0', bufNum);								// 初期化
 
-				// pDivideStr�̕�������R�s�[
+				// pDivideStrの文字列をコピー
 				strncpy_s(pBuf, bufNum, pDivideStr, MaxCharCell);
 
-				// ���o����������̕��������擾
+				// 取り出した文字列の文字数を取得
 				int		len = (int)strlen(pBuf);
-				// �R�����g�L���ȉ��̕����́A�S��"\0"�ɒu��������i���R�����g�ȉ��̂��̂͊i�[���Ȃ��悤�ɂ��邽�߁j
-				if (comOffset != -1) {						// �R�����g�L����������Ă��Ȃ��ꍇ�͍s��Ȃ�
+				// コメント記号以下の文字は、全て"\0"に置き換える（→コメント以下のものは格納しないようにするため）
+				if (comOffset != -1) {						// コメント記号が書かれていない場合は行わない
 
-					//		�R�����g�L���̏ꏊ����	  �R�����g�L���ȉ��̕������������u��������
+					//		コメント記号の場所から	  コメント記号以下の文字数分だけ置き換える
 					memset(pBuf + comOffset, '\0', (len - comOffset));
 
-					len = (int)strlen(pBuf);				// �u��������̕�����������
+					len = (int)strlen(pBuf);				// 置き換え後の文字数を入れる
 				}
 
-				strncat_s(pTmpArray, MAX_SIZE(MaxCharCell), pBuf, MaxCharCell - sizeof(DivMark));	// ��؂�L����������悤�ɁApBuf�ɋ󂫂����
-				strncat_s(pTmpArray, MAX_SIZE(MaxCharCell), DivMark, sizeof(DivMark));			// ��؂�L��������ɂ���
-			//	storeCharCnt += (int)(strlen(pBuf) + strlen(DivMark));							// �������̃J�E���g
+				strncat_s(pTmpArray, MAX_SIZE(MaxCharCell), pBuf, MaxCharCell - sizeof(DivMark));	// 区切り記号を入れられるように、pBufに空きを作る
+				strncat_s(pTmpArray, MAX_SIZE(MaxCharCell), DivMark, sizeof(DivMark));			// 区切り記号を語尾につける
+			//	storeCharCnt += (int)(strlen(pBuf) + strlen(DivMark));							// 文字数のカウント
 
 				if (pBuf != NULL) delete[] pBuf;
 			}
 
-			pDivideStr = strtok(NULL, ",");					// 2��ڈȍ~�̕���������o��
-		} while (pDivideStr != NULL);						// ���o�������񂪂Ȃ��Ȃ�܂ŌJ��Ԃ�
+			pDivideStr = strtok(NULL, ",");					// 2列目以降の文字列を取り出す
+		} while (pDivideStr != NULL);						// 取り出す文字列がなくなるまで繰り返し
 
 	}
 
-	// �z����Œ���̃������T�C�Y�����R�s�[
-	size_t	BufSize = strlen(pTmpArray);					// �f�[�^�̑��������T�C�Y(������)���擾
-	pFirst = new char[(int)BufSize + NULL_SIZE];			// ��������K�v�������V���Ɋm��(NULL�̊i�[���l��)
-	memset(pFirst, '\0', BufSize + NULL_SIZE);				// ������
+	// 配列を最低限のメモリサイズだけコピー
+	size_t	BufSize = strlen(pTmpArray);					// データの総メモリサイズ(文字数)を取得
+	pFirst = new char[(int)BufSize + NULL_SIZE];			// メモリを必要分だけ新たに確保(NULLの格納を考慮)
+	memset(pFirst, '\0', BufSize + NULL_SIZE);				// 初期化
 
-	// �K�v�������R�s�[
+	// 必要分だけコピー
 	strncpy(pFirst, pTmpArray, BufSize);
 
-	// malloc�Ŋm�ۂ���"pTmpArray"�̃����������
+	// mallocで確保した"pTmpArray"のメモリを解放
 	free(pTmpArray);
 
-	// �t�@�C���̃N���[�Y���G���[�`�F�b�N
+	// ファイルのクローズかつエラーチェック
 	if (fclose(csvFile) == EOF) {
-		// �G���[���̏���
-		printf("�N���[�Y�h�G���[�I");
-		//	exit(1);			// �N���[�Y���s���AOS�Ɂu1�v��Ԃ��Đ���I��������
+		// エラー時の処理
+		printf("クローズドエラー！");
+		//	exit(1);			// クローズ失敗時、OSに「1」を返して正常終了させる
 		return -1;
 	}
 
-	return (int)BufSize;	// ����������Ԃ�
+	return (int)BufSize;	// 総文字数を返す
 	//return storeCharCnt;
 }
 
 
 /*******************************************************************************
-* �֐���	: int SerchWordOffset(char* String, const char SingleWord)
-* ����		: ������, �w�蕶��
-* �Ԃ�l	: �w�蕶���́A�擪���琔�����Ƃ��̈ʒu		������Ȃ��������E�G���[ : -1
-* ����		: ������"String"�̒�����A�w�蕶�����擪����ǂ̈ʒu�ɂ���̂���Ԃ�
+* 関数名	: int SerchWordOffset(char* String, const char SingleWord)
+* 引数		: 文字列, 指定文字
+* 返り値	: 指定文字の、先頭から数えたときの位置		見つからなかった時・エラー : -1
+* 説明		: 文字列"String"の中から、指定文字が先頭からどの位置にあるのかを返す
 *******************************************************************************/
 int SerchWordOffset(const char* String, const char SingleWord)
 {
-	// �����񂪌�����Ȃ���
-	if (String == NULL) return -1;	// �G���[��Ԃ�
+	// 文字列が見つからない時
+	if (String == NULL) return -1;	// エラーを返す
 
-	// �w�蕶���̈ʒu���i�[����ϐ�(�Ԃ�l)
+	// 指定文字の位置を格納する変数(返り値)
 	int		offset = 0;
 
-	// Buf�ɋL�ڂ��ꂽ�������擪����ꕶ�������ʂ���
-	// �p������:String�̏I�[�܂� �ϐ��̍X�V���e:�uString�v���w���A�h���X�Ɓuoffset�v�̒l�����ꂼ����Z
+	// Bufに記載された文字列を先頭から一文字ずつ判別する
+	// 継続条件:Stringの終端まで 変数の更新内容:「String」が指すアドレスと「offset」の値をそれぞれ加算
 	for (; *String; ++String, ++offset)
 	{
-		// 1�����i�[�p��char�^�z��
+		// 1文字格納用のchar型配列
 		char singleWord[2] = { "\0" };
 
-		// �P�����𒊏o
+		// １文字を抽出
 		strncat(singleWord, String, 1);
 
-		// ���o�����P�����ɂ���ď�����ς���
+		// 抽出した１文字によって処理を変える
 		if (strcmp(singleWord, &SingleWord) == 0)
-		{	// �w�肵�������񂪌�����΁A���̈ʒu��Ԃ�
+		{	// 指定した文字列が見つかれば、その位置を返す
 			return offset;
 		}
 
 	}
 
-	return -1;	// ������Ȃ��������A-1��Ԃ�
+	return -1;	// 見つからなかった時、-1を返す
 }
 
 
 /*******************************************************************************
-* �֐���		:	int DivideString(const char* String, int* Col, int* Row, char* DivMark)
-* ����		:	���W�ԍ�, �ő�񐔂��i�[����Ԓn, �s�����i�[����Ԓn, ��؂�L��
-* �Ԃ�l		:	���� �� 1		���s �� 0
-* ����		:	�ǂݍ��񂾕�����̏c���̕��������A"\n"(���s�R�[�h)���狁�߂�
+* 関数名		:	int DivideString(const char* String, int* Col, int* Row, char* DivMark)
+* 引数		:	座標番号, 最大列数を格納する番地, 行数を格納する番地, 区切り記号
+* 返り値		:	成功 → 1		失敗 → 0
+* 説明		:	読み込んだ文字列の縦横の分割数を、"\n"(改行コード)から求める
 ********************************************************************************/
 int DivideString(const char* String, int* Col, int* Row, char* DivMark)
 {
-	// �����񂪌�����Ȃ���(�G���[�`�F�b�N)
+	// 文字列が見つからない時(エラーチェック)
 	if (String == NULL) return 0;
 
-	// char�^�|�C���^
+	// char型ポインタ
 	char*	Buf;
 
-	// �uString�v�̕�������uBuf�v�ɃR�s�[
+	// 「String」の文字列を「Buf」にコピー
 	{
-		int	BufSize = (int)strlen(String);			// string�̃����������o��
+		int	BufSize = (int)strlen(String);			// stringのメモリ数を出す
 
-		int		idxNum = BufSize + NULL_SIZE;		// �K�v�ȗv�f��
-		Buf = new char[idxNum];						// �����^�z���K�v���������p��
-		memset(Buf, '\0', sizeof(char) * idxNum);	// ������
+		int		idxNum = BufSize + NULL_SIZE;		// 必要な要素数
+		Buf = new char[idxNum];						// 文字型配列を必要メモリ分用意
+		memset(Buf, '\0', sizeof(char) * idxNum);	// 初期化
 
-		strncpy(Buf, String, BufSize);				// ������̃R�s�[
+		strncpy(Buf, String, BufSize);				// 文字列のコピー
 	}
 
-	int		ColCnt = 0, RowCnt = 0;						// �s�Ɨ񂻂ꂼ��̃J�E���g�p�ϐ�
-	int		MaxCol = -1;								// �ő�񐔂̔�r�p�̕ϐ�
+	int		ColCnt = 0, RowCnt = 0;						// 行と列それぞれのカウント用変数
+	int		MaxCol = -1;								// 最大列数の比較用の変数
 
-	// ���ڂ̕�������i�[
-	char*	divideBuf = NULL;							// ��؂���������������|�C���^
-	char*	p = NULL;									// strtok_s�p�̃|�C���^
+	// 一列目の文字列を格納
+	char*	divideBuf = NULL;							// 区切った文字列を示すポインタ
+	char*	p = NULL;									// strtok_s用のポインタ
 	divideBuf = strtok_s(&Buf[0], DivMark, &p);
 
 	do
 	{
-		// �񐔂̃J�E���g
+		// 列数のカウント
 		ColCnt++;
 
-		if (SerchWordOffset(divideBuf, '\n') >= 0)		// ���s�R�[�h����������
+		if (SerchWordOffset(divideBuf, '\n') >= 0)		// 改行コードがあったら
 		{
-			RowCnt++;									// ���̍s�֍s���̂ŁA�s�����v���X
+			RowCnt++;									// 次の行へ行くので、行数をプラス
 
-			if (ColCnt > MaxCol) MaxCol = ColCnt;		// �ő吔�𒴂��Ă�����A�ő�񐔂��X�V
-			ColCnt = 0;									// �񐔃J�E���g�̃��Z�b�g
+			if (ColCnt > MaxCol) MaxCol = ColCnt;		// 最大数を超えていたら、最大列数を更新
+			ColCnt = 0;									// 列数カウントのリセット
 		}
 
-		divideBuf = strtok_s(NULL, DivMark, &p);		// �Q��ڈȍ~�̕��������肾��
-	} while (divideBuf != NULL);				// divideBuf�ɓ��镶���񂪖����Ȃ�܂ŌJ��Ԃ�
+		divideBuf = strtok_s(NULL, DivMark, &p);		// ２列目以降の文字列を取りだす
+	} while (divideBuf != NULL);				// divideBufに入る文字列が無くなるまで繰り返し
 
-	// ���ꂼ����
+	// それぞれ代入
 	*Row = RowCnt;
 	*Col = MaxCol;
 
-	// �������̉��
+	// メモリの解放
 	if (Buf != NULL) delete[] Buf;
 
 	return 1;
