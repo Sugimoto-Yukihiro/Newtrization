@@ -62,7 +62,7 @@
 typedef enum
 {
 	MODE_NONE = -1,
-	MODE_OPENING,		// オープニング画面
+	MODE_OPENING = 0,	// オープニング画面
 	MODE_TITLE,			// タイトル画面
 	MODE_TUTORIAL,		// ゲーム説明画面
 	MODE_GAME,			// ゲーム画面

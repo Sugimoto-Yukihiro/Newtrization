@@ -8,6 +8,7 @@
 #include "main.h"
 
 #include "title.h"		// タイトル画面
+#include "opening.h"  // オープニング画面
 #include "tutorial.h"	// チュートリアル画面
 //#include "game.h"		// ゲーム画面	【クラス化して、hの方でインクルードしてる】
 #include "result.h"		// リザルト画面
@@ -19,14 +20,14 @@
 #include "sound.h"		// サウンド
 #include "debugproc.h"	// デバック
 
-
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
 #define CLASS_NAME			"AppClass"				// ウインドウのクラス名
 #define WINDOW_NAME			"GP23 DirectX11"		// ウインドウのキャプション名
 
-#define START_MODE			(MODE_TITLE)			// 起動時のモード
+#define START_MODE			(MODE_OPENING)  // 起動時のモード
+
 
 //*****************************************************************************
 // 構造体定義
@@ -283,6 +284,7 @@ void CMode::Uninit(void)
 {
 	//------------------- モードに応じたメモリ解放
 	if (g_aMode.GetMode() == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
+  if (g_aMode.GetMode() == MODE_OPENING) UninitOpening();  // オープニング画面の終了処理
 	else if(g_aMode.GetMode() == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
 	else if (g_aMode.GetMode() == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
 	else if (g_aMode.GetMode() == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
@@ -319,6 +321,10 @@ void CMode::Update(void)
 	//------------------- モードに応じた更新処理
 	switch (g_aMode.GetMode())
 	{
+	case MODE_OPENING:
+		UpdateOpening();
+		break;
+
 	case MODE_TITLE:
 		UpdateTitle();
 		break;
@@ -363,6 +369,10 @@ void CMode::Draw(void)
 	//------------------- モードに応じた描画処理
 	switch (g_aMode.GetMode())
 	{
+	case MODE_OPENING:
+		DrawOpening();
+		break;
+
 	case MODE_TITLE:
 		DrawTitle();
 		break;
@@ -404,8 +414,10 @@ void CMode::Draw(void)
 // モードの設定
 void CMode::SetMode(MODE mode)
 {
+
 	//------------------- モードを変える前にメモリを解放しちゃう
 	if(g_aMode.GetMode() == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
+  if (g_aMode.GetMode() == MODE_OPENING) UninitOpening();   // オープニング画面の終了処理
 	else if(g_aMode.GetMode() == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
 	else if(g_aMode.GetMode() == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
 	else if(g_aMode.GetMode() == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
@@ -416,6 +428,11 @@ void CMode::SetMode(MODE mode)
 	//------------------- セットしたモードに応じた初期化処理を行う
 	switch (m_Mode)
 	{
+	case MODE_OPENING:
+		// オープニング画面の初期化
+		InitOpening();
+		break;
+
 	case MODE_TITLE:
 		// タイトル画面の初期化
 		InitTitle();
