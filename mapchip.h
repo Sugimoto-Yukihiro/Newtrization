@@ -35,12 +35,13 @@ public:
 
 	int LoadMapchip(char* pChipFileName);	// マップチップ情報の読み込み
 	int ReleaseMapchip();					// マップチップ情報の解放
-	void RotationMapChip(float Angle);		// マップチップステージの回転
+//	void RotationMapChip(float Angle);		// マップチップステージの回転
 
 	//------------------- セッター関数
 //	void SetMapchipPos(D3DXVECTOR2 Pos);
 //	void SetMapchipNum(int Num);
-	void SetRotationFlag(bool Flag);	// 回転フラグのセット
+//	void SetRotationFlag(bool Flag);			// 回転フラグのセット
+	void SetMapChipData(const char* pCsvFile);	// マップチップ配列を取得
 
 	//------------------- ゲッター関数
 //	D3DXVECTOR2 GetMapchipPos();
@@ -59,7 +60,7 @@ private:
 	int				m_nChipNumX;		// マップチップの列数
 	int				m_nChipNumY;		// マップチップの行数
 	int				m_nChipNo;			// マップチップの番号
-	bool			m_bRotFlag;			// ステージの回転フラグ
+//	bool			m_bRotFlag;			// ステージの回転フラグ
 //	bool			m_bUse;				// このマップチップ変数が使われているか
 
 };

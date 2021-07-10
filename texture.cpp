@@ -395,7 +395,7 @@ void SetSpriteColorRotation(ID3D11Buffer *buf, float X, float Y, float Width, fl
 
 
 
-void CreateTexture(const char* TextureName, ID3D11ShaderResourceView** TexrureData, ID3D11Buffer** VertexBuffer)
+void CreateTexture(const char* TextureName, ID3D11ShaderResourceView** TexrureData)
 {
 	//テクスチャ生成
 	D3DX11CreateShaderResourceViewFromFile(GetDevice(),
@@ -405,6 +405,10 @@ void CreateTexture(const char* TextureName, ID3D11ShaderResourceView** TexrureDa
 		TexrureData,
 		NULL);
 
+}
+
+void CreateVertexBuffer(ID3D11Buffer** VertexBuffer)
+{
 	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));

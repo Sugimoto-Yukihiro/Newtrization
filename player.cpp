@@ -216,81 +216,30 @@ bool CPlayer::GetPlayerUseFlag()
 
 void CreatePlayerTextureAndBuffer()
 {
+	// テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
 	{
-		CreateTexture(g_TextureName[i], &g_Texture[i], &g_VertexBuffer);
+		CreateTexture(g_TextureName[i], &g_Texture[i]);
 	}
 
+	// 頂点バッファ生成
+	CreateVertexBuffer(&g_VertexBuffer);
 
-//	//テクスチャ生成
-//	for (int i = 0; i < TEXTURE_MAX; i++)
-//	{
-//		g_Texture[i] = NULL;
-//		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-//			g_TexturName[i],
-//			NULL,
-//			NULL,
-//			&g_Texture[i],
-//			NULL);
-//	}
-//
-//	// 頂点バッファ生成
-//	D3D11_BUFFER_DESC bd;
-//	ZeroMemory(&bd, sizeof(bd));
-//	bd.Usage = D3D11_USAGE_DYNAMIC;
-//	bd.ByteWidth = sizeof(VERTEX_3D) * 4;
-//	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-//	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-//	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
 }
 
 void ReleasePlayerTextureAndBuffer()
 {
+	// テクスチャ解放
 	for (int i = 0; i < TEXTURE_MAX; i++)
 	{
 		ReleaseTexture(&g_Texture[i], &g_VertexBuffer);
 	}
 
-
-
-
-//	if (g_VertexBuffer)
-//	{
-//		g_VertexBuffer->Release();
-//		g_VertexBuffer = NULL;
-//	}
-//
-//	for (int i = 0; i < TEXTURE_MAX; i++)
-//	{
-//		if (g_Texture[i])
-//		{
-//			g_Texture[i]->Release();
-//			g_Texture[i] = NULL;
-//		}
-//	}
-
 }
 
 void PresetDrawPlayer(void)
 {
-//	// 頂点バッファ設定
-//	UINT stride = sizeof(VERTEX_3D);
-//	UINT offset = 0;
-//	GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
-//
-//	// マトリクス設定
-//	SetWorldViewProjection2D();
-//
-//	// プリミティブトポロジ設定
-//	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-//
-//	// マテリアル設定
-//	MATERIAL material;
-//	ZeroMemory(&material, sizeof(material));
-//	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-//	SetMaterial(material);
-
+	// 描画前の処理
 	PresetDraw2D(&g_VertexBuffer);
-
 }
 

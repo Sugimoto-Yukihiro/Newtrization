@@ -32,12 +32,14 @@ public:
 
 	//------------------- ゲッター関数
 	D3DXVECTOR2 GetScrollPosition();
+
 #ifdef _DEBUG
 	bool GetPauseFlag();				// ポーズフラグの取得
 #endif // _DEBUG
 
 	//------------------- セッター関数
 	void SetScrollPosition(D3DXVECTOR2 Pos);	// スクロール座標のセット
+
 #ifdef _DEBUG
 	void SetPauseFlag(bool Flag);		// ポーズフラグのセット
 #endif // _DEBUG
@@ -59,8 +61,7 @@ private:
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-void RequestSetScrollPosition(D3DXVECTOR2 Pos);
-
+//void RequestSetScrollPosition(D3DXVECTOR2 Pos);
 
 // 構造体管理
 #ifdef GAMEMODE_STRUCT

@@ -76,11 +76,15 @@ typedef enum
 class CMode
 {
 public:
+	CMode();	// コンストラクタ
+	~CMode();	// デストラクタ
+
 	//------------------- メンバ関数
 	HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow);
+	void Uninit();
 	void Update();
 	void Draw();
-	void Uninit();
+
 	//------------------- ゲッター関数
 	MODE GetMode();
 
@@ -102,12 +106,15 @@ long GetMousePosY(void);
 char *GetDebugStr(void);
 
 //------------------- 各インスタンスへのアクセス用関数
-CModeGame* GetGame();
+CModeGame* GetGame();	// ゲームモードのインスタンスを取得
 
 //------------------- メンバ変数のアクセス用グローバル関数
-void RequestSetMode(MODE mode);
+void RequestSetMode(MODE mode);					// セットモード
 //MODE RequestGetMode();
+//void RequestSetScrollPosition(D3DXVECTOR2 Pos);	// スクロール座標のセット
+
 
 //------------------- ファイル関数
-int DivideString(const char* String, int* Col, int* Row, char* DivMark);
+int LoadCsvFile(const char* pCsvFileName, char* &pFirst, int MaxCharCell, char* DivMark);
+int DivideString(const char* String, int* retCol, int* retRow, char* DivMark);
 int SerchWordOffset(const char* String, const char SingleWord);

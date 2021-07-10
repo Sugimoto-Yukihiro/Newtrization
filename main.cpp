@@ -10,7 +10,7 @@
 #include "title.h"		// タイトル画面
 #include "opening.h"  // オープニング画面
 #include "tutorial.h"	// チュートリアル画面
-//#include "game.h"		// ゲーム画面	【クラス化して、hの方でインクルードしてる】
+//#include "game.h"		// ゲーム画面	【クラス化して、main.h の方でインクルードしてる】
 #include "result.h"		// リザルト画面
 
 #include "input.h"		// キー・ゲームパッド入力処理
@@ -26,7 +26,7 @@
 #define CLASS_NAME			"AppClass"				// ウインドウのクラス名
 #define WINDOW_NAME			"GP23 DirectX11"		// ウインドウのキャプション名
 
-#define START_MODE			(MODE_OPENING)  // 起動時のモード
+#define START_MODE			(MODE_OPENING)			// 起動時のモード
 
 
 //*****************************************************************************
@@ -244,6 +244,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 //=============================================================================
+// コンストラクタ・デストラクタ
+//=============================================================================
+CMode::CMode()	// コンストラクタ
+{
+	m_Mode = MODE_NONE;		// モード無しで初期化
+}
+
+CMode::~CMode()	// デストラクタ
+{
+	
+}
+
+
+//=============================================================================
 // 初期化処理
 //=============================================================================
 HRESULT CMode::Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
@@ -267,10 +281,11 @@ HRESULT CMode::Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	g_aMode.SetMode(START_MODE);
 
 	//------------------- モードに応じた初期化
-	if (g_aMode.GetMode() == MODE_TITLE) InitTitle();			 	// タイトル画面の初期化処理
-	else if(g_aMode.GetMode() == MODE_TUTORIAL) InitTutorial();		// チュートリアル画面の初期化処理
-	else if (g_aMode.GetMode() == MODE_GAME) m_GameMode.Init();		// ゲーム画面の初期化処理
-	else if (g_aMode.GetMode() == MODE_RESULT) InitResult();		// リザルト画面の初期化処理
+//	if (g_aMode.GetMode() == MODE_TITLE) InitTitle();			 	// タイトル画面の初期化処理
+//	else if (g_aMode.GetMode() == MODE_TUTORIAL) InitTutorial();	// オープニング画面の初期化処理
+//	else if(g_aMode.GetMode() == MODE_TUTORIAL) InitTutorial();		// チュートリアル画面の初期化処理
+//	else if (g_aMode.GetMode() == MODE_GAME) m_GameMode.Init();		// ゲーム画面の初期化処理
+//	else if (g_aMode.GetMode() == MODE_RESULT) InitResult();		// リザルト画面の初期化処理
   
 	return S_OK;
 }
@@ -284,7 +299,7 @@ void CMode::Uninit(void)
 {
 	//------------------- モードに応じたメモリ解放
 	if (g_aMode.GetMode() == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
-  if (g_aMode.GetMode() == MODE_OPENING) UninitOpening();  // オープニング画面の終了処理
+	if (g_aMode.GetMode() == MODE_OPENING) UninitOpening();			// オープニング画面の終了処理
 	else if(g_aMode.GetMode() == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
 	else if (g_aMode.GetMode() == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
 	else if (g_aMode.GetMode() == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
@@ -414,10 +429,9 @@ void CMode::Draw(void)
 // モードの設定
 void CMode::SetMode(MODE mode)
 {
-
-	//------------------- モードを変える前にメモリを解放しちゃう
+	//------------------- モードを変える前にメモリを解放
 	if(g_aMode.GetMode() == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
-  if (g_aMode.GetMode() == MODE_OPENING) UninitOpening();   // オープニング画面の終了処理
+	if (g_aMode.GetMode() == MODE_OPENING) UninitOpening();			// オープニング画面の終了処理
 	else if(g_aMode.GetMode() == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
 	else if(g_aMode.GetMode() == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
 	else if(g_aMode.GetMode() == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
@@ -480,11 +494,19 @@ CModeGame* GetGame()
 //=============================================================================
 // CModeのメンバ変数へアクセスできるグローバル関数
 //=============================================================================
-// モードのセット
+// モードのセット 【main】
 void RequestSetMode(MODE mode)
 {
 	g_aMode.SetMode(mode);
 }
+
+// スクロール座標のセット 【game】
+//void RequestSetScrollPosition(D3DXVECTOR2 Pos)
+//{
+//	g_aMode.m_GameMode.SetScrollPosition(Pos);
+//}
+
+
 
 long GetMousePosX(void)
 {
@@ -542,26 +564,27 @@ int LoadCsvFile(const char* pCsvFileName, char* &pFirst, int MaxCharCell, char* 
 
 	// 動的配列の生成
 	char*	pTmpArray = NULL;
-	pTmpArray = (char*)malloc(MAX_SIZE(MaxCharCell) + NULL_SIZE);			// char型配列を使用する最大メモリ数分だけ確保<free記載済み>
+	pTmpArray = (char*)malloc(MAX_SIZE(MaxCharCell) + NULL_SIZE);		// char型配列を使用する最大メモリ数分だけ確保<free記載済み>
 	if (pTmpArray == NULL) {	// 確保できなかったら
 		fclose(csvFile);		// ファイルのクローズ
 		return -1;				// エラー出して終了
 	}
 
-	memset(pTmpArray, '\0', MAX_SIZE(MaxCharCell) + NULL_SIZE);			// 初期化
+	// 初期化
+	memset(pTmpArray, '\0', MAX_SIZE(MaxCharCell) + NULL_SIZE);
 
 	// ファイルへのアクセスに使用するchar型変数
-	char	OneLineStr[1024] = { NULL };								// 読み取るファイルの、一行分の文字列を格納するためのchar型配列
-	char*	pDivideStr = NULL;											// str配列へのアクセス用char型ポインタ
+	char	OneLineStr[1024] = { NULL };	// 読み取るファイルの、一行分の文字列を格納するためのchar型配列
+	char*	pDivideStr = NULL;				// str配列へのアクセス用char型ポインタ
 
 	// 読み込んだデータの数をカウントする変数
 	//int		storeCharCnt = 0;
 
 	// 配列に数値を格納する作業
-	while (fgets(&OneLineStr[0], (MaxCharCell * MAX_COLUMN), csvFile) != NULL)		// 読み取るファイルの、一行分の文字列を格納
+	while (fgets(&OneLineStr[0], (MaxCharCell * MAX_COLUMN), csvFile) != NULL)	// 読み取るファイルの、一行分の文字列を格納
 	{	// 一行単位の読み取り作業を、ファイル終了まで繰り返す
-		pDivideStr = strtok(OneLineStr, ",");							// １列目の文字列を取り出す
-		if (pDivideStr == NULL) break;									// NULLならループを抜ける
+		pDivideStr = strtok(OneLineStr, ",");	// １列目の文字列を取り出す
+		if (pDivideStr == NULL) break;			// NULLならループを抜ける
 
 		do
 		{
@@ -572,9 +595,9 @@ int LoadCsvFile(const char* pCsvFileName, char* &pFirst, int MaxCharCell, char* 
 			{	// データの格納
 				char*	pBuf = NULL;
 
-				int		bufNum = MaxCharCell + NULL_SIZE;				// pBufの要素数
-				pBuf = new char[bufNum];								// 一時的な文字列コピー用の配列<delete記載済み>
-				memset(pBuf, '\0', bufNum);								// 初期化
+				int		bufNum = MaxCharCell + NULL_SIZE;	// pBufの要素数
+				pBuf = new char[bufNum];					// 一時的な文字列コピー用の配列<delete記載済み>
+				memset(pBuf, '\0', bufNum);					// 初期化
 
 				// pDivideStrの文字列をコピー
 				strncpy_s(pBuf, bufNum, pDivideStr, MaxCharCell);
@@ -591,8 +614,8 @@ int LoadCsvFile(const char* pCsvFileName, char* &pFirst, int MaxCharCell, char* 
 				}
 
 				strncat_s(pTmpArray, MAX_SIZE(MaxCharCell), pBuf, MaxCharCell - sizeof(DivMark));	// 区切り記号を入れられるように、pBufに空きを作る
-				strncat_s(pTmpArray, MAX_SIZE(MaxCharCell), DivMark, sizeof(DivMark));			// 区切り記号を語尾につける
-			//	storeCharCnt += (int)(strlen(pBuf) + strlen(DivMark));							// 文字数のカウント
+				strncat_s(pTmpArray, MAX_SIZE(MaxCharCell), DivMark, sizeof(DivMark));				// 区切り記号を語尾につける
+			//	storeCharCnt += (int)(strlen(pBuf) + strlen(DivMark));								// 文字数のカウント
 
 				if (pBuf != NULL) delete[] pBuf;
 			}
@@ -668,7 +691,7 @@ int SerchWordOffset(const char* String, const char SingleWord)
 * 返り値		:	成功 → 1		失敗 → 0
 * 説明		:	読み込んだ文字列の縦横の分割数を、"\n"(改行コード)から求める
 ********************************************************************************/
-int DivideString(const char* String, int* Col, int* Row, char* DivMark)
+int DivideString(const char* String, int* retCol, int* retRow, char* DivMark)
 {
 	// 文字列が見つからない時(エラーチェック)
 	if (String == NULL) return 0;
@@ -687,12 +710,12 @@ int DivideString(const char* String, int* Col, int* Row, char* DivMark)
 		strncpy(Buf, String, BufSize);				// 文字列のコピー
 	}
 
-	int		ColCnt = 0, RowCnt = 0;						// 行と列それぞれのカウント用変数
-	int		MaxCol = -1;								// 最大列数の比較用の変数
+	int		ColCnt = 0, RowCnt = 0;					// 行と列それぞれのカウント用変数
+	int		MaxCol = -1;							// 最大列数の比較用の変数
 
 	// 一列目の文字列を格納
-	char*	divideBuf = NULL;							// 区切った文字列を示すポインタ
-	char*	p = NULL;									// strtok_s用のポインタ
+	char*	divideBuf = NULL;						// 区切った文字列を示すポインタ
+	char*	p = NULL;								// strtok_s用のポインタ
 	divideBuf = strtok_s(&Buf[0], DivMark, &p);
 
 	do
@@ -700,20 +723,20 @@ int DivideString(const char* String, int* Col, int* Row, char* DivMark)
 		// 列数のカウント
 		ColCnt++;
 
-		if (SerchWordOffset(divideBuf, '\n') >= 0)		// 改行コードがあったら
+		if (SerchWordOffset(divideBuf, '\n') >= 0)	// 改行コードがあったら
 		{
-			RowCnt++;									// 次の行へ行くので、行数をプラス
+			RowCnt++;								// 次の行へ行くので、行数をプラス
 
-			if (ColCnt > MaxCol) MaxCol = ColCnt;		// 最大数を超えていたら、最大列数を更新
-			ColCnt = 0;									// 列数カウントのリセット
+			if (ColCnt > MaxCol) MaxCol = ColCnt;	// 最大数を超えていたら、最大列数を更新
+			ColCnt = 0;								// 列数カウントのリセット
 		}
 
-		divideBuf = strtok_s(NULL, DivMark, &p);		// ２列目以降の文字列を取りだす
-	} while (divideBuf != NULL);				// divideBufに入る文字列が無くなるまで繰り返し
+		divideBuf = strtok_s(NULL, DivMark, &p);	// ２列目以降の文字列を取りだす
+	} while (divideBuf != NULL);					// divideBufに入る文字列が無くなるまで繰り返し
 
-	// それぞれ代入
-	*Row = RowCnt;
-	*Col = MaxCol;
+	// 算出したあたいを返す
+	*retRow = RowCnt;
+	*retCol = MaxCol;
 
 	// メモリの解放
 	if (Buf != NULL) delete[] Buf;

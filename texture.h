@@ -94,6 +94,7 @@ void SetSpriteColorRotation(ID3D11Buffer *buf, float X, float Y, float Width, fl
 	float U, float V, float UW, float VH,
 	D3DXCOLOR Color, float Rot);
 
-void CreateTexture(const char* TextureName, ID3D11ShaderResourceView** TexrureData, ID3D11Buffer** VertexBuffer);
+void CreateTexture(const char* TextureName, ID3D11ShaderResourceView** TexrureData);
+void CreateVertexBuffer(ID3D11Buffer** VertexBuffer);
 void ReleaseTexture(ID3D11ShaderResourceView** TexrureData, ID3D11Buffer** VertexBuffer);
 void PresetDraw2D(ID3D11Buffer** g_VertexBuffer);

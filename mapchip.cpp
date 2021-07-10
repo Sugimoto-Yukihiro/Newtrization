@@ -28,7 +28,7 @@ static ID3D11ShaderResourceView	*g_Texture[MAPCHIP_MAX] = { NULL };	// ƒeƒNƒXƒ`ƒ
 void PresetDrawMapchip();	// •`‰æ‚·‚é‘O€”õ
 
 // ƒeƒNƒXƒ`ƒƒ‚Ìƒtƒ@ƒCƒ‹–¼
-static char *g_TexturName[] = {
+static char *g_TextureName[] = {
 	"data/TEXTURE/player.png",		// TexNo : 0
 };
 
@@ -152,13 +152,19 @@ void CMapchip::Draw()
 
 
 //=============================================================================
-// ƒQƒbƒ^[ŠÖ”
+// ƒZƒbƒ^[ŠÖ”
 //=============================================================================
-// ‰ñ“]ƒtƒ‰ƒO‚ÌƒZƒbƒg
-void CMapchip::SetRotationFlag(bool Flag)
+// ƒ}ƒbƒvƒ`ƒbƒv”z—ñ‚ğæ“¾
+void SetMapChipData(const char* pCsvFile)
 {
-	m_bRotFlag = Flag;
+	
 }
+
+// ‰ñ“]ƒtƒ‰ƒO‚ÌƒZƒbƒg
+//void CMapchip::SetRotationFlag(bool Flag)
+//{
+//	m_bRotFlag = Flag;
+//}
 
 //=============================================================================
 // ƒQƒbƒ^[ŠÖ”
@@ -201,10 +207,10 @@ int CMapchip::GetMapchipNo(D3DXVECTOR2 Pos)
 }
 
 // ‰ñ“]ƒtƒ‰ƒO‚Ìæ“¾
-bool CMapchip::GetRotationFlag()
-{
-	return m_bRotFlag;
-}
+//bool CMapchip::GetRotationFlag()
+//{
+//	return m_bRotFlag;
+//}
 
 
 
@@ -217,62 +223,24 @@ void CreateMapchipTextureAndBuffer()
 	// ƒeƒNƒXƒ`ƒƒ¶¬
 	for (int i = 0; i < MAPCHIP_MAX; i++)
 	{
-		g_Texture[i] = NULL;
-		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-			g_TexturName[i],
-			NULL,
-			NULL,
-			&g_Texture[i],
-			NULL);
+		CreateTexture(g_TextureName[i], &g_Texture[i]);
 	}
 
 	// ’¸“_ƒoƒbƒtƒ@¶¬
-	D3D11_BUFFER_DESC bd;
-	ZeroMemory(&bd, sizeof(bd));
-	bd.Usage = D3D11_USAGE_DYNAMIC;
-	bd.ByteWidth = sizeof(VERTEX_3D) * 4;
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
+	CreateVertexBuffer(&g_VertexBuffer);
 
 }
 
 void ReleaseMapchipTextureAndBuffer()
 {
-	if (g_VertexBuffer)
-	{
-		g_VertexBuffer->Release();
-		g_VertexBuffer = NULL;
-	}
-
 	for (int i = 0; i < MAPCHIP_MAX; i++)
 	{
-		if (g_Texture[i])
-		{
-			g_Texture[i]->Release();
-			g_Texture[i] = NULL;
-		}
+		ReleaseTexture(&g_Texture[i], &g_VertexBuffer);
 	}
 
 }
 
 void PresetDrawMapchip()
 {
-	// ’¸“_ƒoƒbƒtƒ@İ’è
-	UINT stride = sizeof(VERTEX_3D);
-	UINT offset = 0;
-	GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
-
-	// ƒ}ƒgƒŠƒNƒXİ’è
-	SetWorldViewProjection2D();
-
-	// ƒvƒŠƒ~ƒeƒBƒuƒgƒ|ƒƒWİ’è
-	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-
-	// ƒ}ƒeƒŠƒAƒ‹İ’è
-	MATERIAL material;
-	ZeroMemory(&material, sizeof(material));
-	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-	SetMaterial(material);
-
+	PresetDraw2D(&g_VertexBuffer);
 }
