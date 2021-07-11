@@ -456,9 +456,9 @@ void DebugTextOut(char* text, int x, int y)
 		if (SUCCEEDED(hr))
 		{
 			//•¶šF‚ğ”’‚É•ÏX
-			SetTextColor(hdc, RGB(255, 255, 255));
+			SetTextColor(hdc, RGB(0, 0, 0));
 			//”wŒi‚ğ“§–¾‚É•ÏX
-			SetBkMode(hdc, TRANSPARENT);
+		//	SetBkMode(hdc, TRANSPARENT);
 
 			RECT rect;
 			rect.left = 0;

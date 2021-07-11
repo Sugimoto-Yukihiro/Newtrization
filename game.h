@@ -32,6 +32,7 @@ public:
 
 	//------------------- ゲッター関数
 	D3DXVECTOR2 GetScrollPosition();
+	CMapchip* GetMapchip();	// マップチップのインスタンスへのアクセス
 
 #ifdef _DEBUG
 	bool GetPauseFlag();				// ポーズフラグの取得
@@ -47,7 +48,7 @@ public:
 private:
 	//------------------- 各インスタンス
 	CPlayer m_Player[PLAYER_MAX];		// プレイヤーのインスタンス
-	CMapchip m_Mapchip[MAPCHIP_MAX];	// マップチップのサンプル
+	CMapchip m_Mapchip;					// マップチップのサンプル
 
 	//------------------- メンバ変数
 	D3DXVECTOR2 m_vScrollPos;			// スクロール座標

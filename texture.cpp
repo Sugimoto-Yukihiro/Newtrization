@@ -47,7 +47,6 @@ void CTexture::Init()	// 全てのメンバ変数を０で初期化
 // 引数 :	テクスチャのファイル名, 描画座標, 頂点色, 回転角
 // 説明 :	テクスチャを、引数に指定された値に描画する処理
 //=============================================================================
-//void CTexture::DrawTexture(D3DXVECTOR2 Position, D3DXVECTOR2 Size, D3DXCOLOR Color, float Rotation)
 void CTexture::DrawTexture(ID3D11Buffer* pVertexBuffer, ID3D11ShaderResourceView* pTextureData)
 {
 	float tw = 0.0f, th = 0.0f, tU = 0.0f, tV = 0.0f;
@@ -57,10 +56,10 @@ void CTexture::DrawTexture(ID3D11Buffer* pVertexBuffer, ID3D11ShaderResourceView
 
 	//------------------- アニメーションも考慮して、UV座標の値を決定する
 	// 1つのアニメーションパターンあたりの幅と高さを求める
-	tw = 1.0f / (float)GetDivideX();							// 幅
-	th = 1.0f / (float)GetDivideY();							// 高さ
-	if(tU != 0.0f) tU = (float)(GetCurrentAnim() % GetDivideX()) * tw;	// テクスチャの左上X座標
-	if(tV != 0.0f) tV = (float)(GetCurrentAnim() / GetDivideX()) * th;	// テクスチャの左上Y座標
+	tw = 1.0f / (float)GetTexDivideX();							// 幅
+	th = 1.0f / (float)GetTexDivideY();							// 高さ
+	if (GetCurrentAnim() != 0) tU = (float)(GetCurrentAnim() % GetTexDivideX()) * tw;	// テクスチャの左上X座標
+	if (GetCurrentAnim() != 0) tV = (float)(GetCurrentAnim() / GetTexDivideX()) * th;	// テクスチャの左上Y座標
 
 	// １枚のポリゴンの頂点とテクスチャ座標を設定
 	SetSpriteColorRotation(pVertexBuffer, m_vTexPos.x, m_vTexPos.y, m_vTexSize.x, m_vTexSize.y, tU, tV, tw, th,
@@ -161,7 +160,7 @@ void CAnimation::Init()	// 全てのメンバ変数を０で初期化
 //=============================================================================
 void CAnimation::UpdateAnimIndex(int MotionStartIndex, int MotionEndIndex)
 {
-	// 1フレーム加算
+	// 現在の経過フレームを加算
 	m_nCurrentFlame++;
 
 	// 切り替えるフレームになったか判別
@@ -196,13 +195,13 @@ void CAnimation::SetAnimInf(int DivX, int DivY, int Wait)
 }
 
 // 横のアニメーションパターン数を格納
-void CAnimation::SetDivideX(int DivX)
+void CAnimation::SetTexDivideX(int DivX)
 {
 	m_nDivideX = DivX;
 }
 
 // 縦のアニメーションパターン数を格納
-void CAnimation::SetDivideY(int DivY)
+void CAnimation::SetTexDivideY(int DivY)
 {
 	m_nDivideY = DivY;
 }
@@ -223,12 +222,12 @@ int CAnimation::GetCurrentAnim()		// 現在のアニメーション番号を取得する関数
 	return m_nCurrentAnimIndex;
 }
 
-int CAnimation::GetDivideX()			// 横方向のアニメーションパターン数を取得する関数
+int CAnimation::GetTexDivideX()			// 横方向のアニメーションパターン数を取得する関数
 {
 	return m_nDivideX;
 }
 
-int CAnimation::GetDivideY()			// 縦方向のアニメーションパターン数を取得する関数
+int CAnimation::GetTexDivideY()			// 縦方向のアニメーションパターン数を取得する関数
 {
 	return m_nDivideY;
 }

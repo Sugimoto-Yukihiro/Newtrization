@@ -26,15 +26,15 @@ public:
 
 	//------------------- セッター関数
 	void SetAnimInf(int DivX, int DivY, int Wait);
-	//void SetCurrentAnim(int CurAnim);	// 現在のアニメーション番号を取得
-	void SetDivideX(int DivX);		// 横のアニメーションパターン数を格納
-	void SetDivideY(int DivY);		// 縦のアニメーションパターン数を格納
+//	void SetCurrentAnim(int CurAnim);	// 現在のアニメーション番号をセット
+	void SetTexDivideX(int DivX);		// 横のアニメーションパターン数を格納
+	void SetTexDivideY(int DivY);		// 縦のアニメーションパターン数を格納
 	void SetAnimWait(int Wait);		// アニメーションのWait値をセット
 
 	//------------------- ゲッター関数
 	int GetCurrentAnim();			// 現在のアニメーション番号を取得
-	int GetDivideX();				// 横のアニメーションパターン数を取得
-	int GetDivideY();				// 縦のアニメーションパターン数を取得
+	int GetTexDivideX();			// 横のアニメーションパターン数を取得
+	int GetTexDivideY();			// 縦のアニメーションパターン数を取得
 //	int GetAnimWait();				// アニメーションのWait値を取得
 
 private:

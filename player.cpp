@@ -1,4 +1,4 @@
-//=============================================================================
+﻿//=============================================================================
 //
 // プレイヤー処理 [player.cpp]
 // Author : 立石大智, 杉本幸宏
@@ -9,22 +9,23 @@
 #include "input.h"
 #include "player.h"
 #include "texture.h"
-
 #include "game.h"
+
+#include "debugproc.h"
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define TEXTURE_WIDTH				(300.0f)	// キャラサイズ	X
-#define TEXTURE_HEIGHT				(100.0f)	//				Y
+#define TEXTURE_WIDTH				(128.0f)	// キャラサイズ	X
+#define TEXTURE_HEIGHT				(192.0f)	//				Y
 #define TEXTURE_SIZE				D3DXVECTOR2(TEXTURE_WIDTH, TEXTURE_HEIGHT)	// キャラサイズ
 
-#define TEXTURE_MAX					(1)			// テクスチャの数
+#define TEXTURE_MAX					(2)			// テクスチャの数
 
 #define TEXTURE_PATTERN_DIVIDE_X	(3)			// アニメパターンのテクスチャ内分割数（X)
 #define TEXTURE_PATTERN_DIVIDE_Y	(1)			// アニメパターンのテクスチャ内分割数（Y)
 #define ANIM_PATTERN_NUM			(TEXTURE_PATTERN_DIVIDE_X*TEXTURE_PATTERN_DIVIDE_Y)	// アニメーションパターン数
-#define ANIM_WAIT					(4)			// アニメーションの切り替わるデフォルトWait値
+#define ANIM_WAIT					(5)			// アニメーションの切り替わるデフォルトWait値
 #define MOVE_VALUE					(10.0f)
 
 
@@ -40,7 +41,8 @@ static ID3D11Buffer				*g_VertexBuffer = NULL;				// 頂点情報
 static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
 static char *g_TextureName[] = {
-	"data/TEXTURE/player.png",		// TexNo : 0
+	"data/TEXTURE/player.png",				// TexNo : 0
+	"data/TEXTURE/player/player01.png",		// TexNo : 1
 };
 
 //static CPlayer	g_aPlayer[PLAYER_MAX];								// プレイヤーインスタンス
@@ -67,13 +69,13 @@ void CPlayer::Init()
 {
 	// プレイヤークラスの初期化
 	m_bUse = true;
-	m_nTexNo = 0;
+	m_nTexNo = 1;
 
 	//------------------- ベースクラスの初期化
-//	CTexture::Init();	// CTexture
+	CTexture::Init();	// CTexture
 	SetPlayerUseFlag(true);
-	SetTextureInf(SCREEN_CENTER, TEXTURE_SIZE, DEFAULT_COLOR, 0.0f, ZERO_VECTOR2);
-	SetAnimInf(1, 1, 10);
+	SetTextureInf(SCREEN_CENTER, TEXTURE_SIZE, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 0.0f, ZERO_VECTOR2);
+	SetAnimInf(6, 1, ANIM_WAIT);
 }
 
 
@@ -87,11 +89,11 @@ void CPlayer::Update()
 	if (m_bUse == true)
 	{
 		// アニメーション
-	//	UpdateAnimIndex(0, 0);	// 
+		UpdateAnimIndex(0, 5);	// 
 
 		{
 			D3DXVECTOR2 move;	// プレイヤーの値を保存する変数
-			move = GetTexPos();	// 現在のプレイヤーの座標で初期化
+			move = GetPlayerPos();	// 現在のプレイヤーの座標で初期化
 
 			// キー入力で移動
 			if (GetKeyboardPress(DIK_DOWN))
@@ -130,20 +132,20 @@ void CPlayer::Update()
 			}
 
 			// プレイヤーの最終的な座標をセット
-			SetTexPos(move);
+			SetPlayerPos(move);
 		}
 
 
 		//=================== スクロール座標の更新
 		{
 			D3DXVECTOR2 pos;	// 一時的な変数
-			pos.x = GetTexPos().x - SCROLL_SET_X;			// スクロール座標<x>に値を代入
-	//		pos.x = (GetScrollPosition()->x < 0.0f) ? 0.0f : GetScrollPosition()->x;	// スクロール座標<x>が負なら「0」にリセット、正の数ならそのまま
-	//		pos.x = (GetScrollPosition()->x + SCREEN_WIDTH > GetMapSize().x) ? GetMapSize().x - SCREEN_WIDTH : GetScrollPosition()->x;		// 画面右上の点がワールドの端に来たら"STAGE_W"の値にリセット
-	//
-			pos.y = GetTexPos().y - SCROLL_SET_Y;			// スクロール座標<y>に値を代入
-	//		pos.y = (GetScrollPosition()->y < 0.0f) ? 0.0f : GetScrollPosition()->y;	// スクロール座標<y>負なら「0」にリセット、正の数ならそのまま
-	//		pos.y = (GetScrollPosition()->y + SCREEN_HEIGHT > GetMapSize().y) ? GetMapSize().y - SCREEN_HEIGHT : GetScrollPosition()->y;	// 画面右上の点がワールドの端に来たら"STAGE_H"の値にリセット
+			pos.x = GetPlayerPos().x - SCROLL_SET_X;			// スクロール座標<x>に値を代入
+			pos.x = (pos.x < 0.0f) ? 0.0f : pos.x;	// スクロール座標<x>が負なら「0」にリセット、正の数ならそのまま
+			pos.x = (pos.x + SCREEN_WIDTH > GetGame()->GetMapchip()->GetStageSize().x) ? GetGame()->GetMapchip()->GetStageSize().x - SCREEN_WIDTH : pos.x;		// 画面右上の点がワールドの端に来たら"STAGE_W"の値にリセット
+	
+			pos.y = GetPlayerPos().y - SCROLL_SET_Y;			// スクロール座標<y>に値を代入
+			pos.y = (pos.y < 0.0f) ? 0.0f : pos.y;	// スクロール座標<y>負なら「0」にリセット、正の数ならそのまま
+			pos.y = (pos.y + SCREEN_HEIGHT > GetGame()->GetMapchip()->GetStageSize().y) ? GetGame()->GetMapchip()->GetStageSize().y - SCREEN_HEIGHT : pos.y;	// 画面右上の点がワールドの端に来たら"STAGE_H"の値にリセット
 
 			// 座標をセット
 			GetGame()->SetScrollPosition(pos);
@@ -151,9 +153,17 @@ void CPlayer::Update()
 
 	}
 
+
+
+
+	PrintDebugProc("playerAnimIdx : %d\n", GetCurrentAnim());
+	PrintDebugProc("Player座標　X:%f Y:%f\n", GetPlayerPos().x, GetPlayerPos().y);
+	PrintDebugProc("プレイヤー座標のマップチップ : %d\n", GetGame()->GetMapchip()->GetMapchipNo(GetPlayerPos()));
+
+
 #ifdef _DEBUG	// デバッグ情報を表示する
-//	char *str = GetDebugStr();
-//	sprintf(&str[strlen(str)], " PX:%.2f PY:%.2f", g_aPlayer[0].pos.x, g_aPlayer[0].pos.y);
+	char *str = GetDebugStr();
+	sprintf(&str[strlen(str)], " PX:%f PY:%f", GetPlayerPos().x, GetPlayerPos().y);
 
 	//PrintDebugProc("Player X:%f Y:%f \n", pos.x, pos.y );
 
@@ -171,7 +181,14 @@ void CPlayer::Draw()
 
 	if (m_bUse == true)
 		{
-			DrawTexture(g_VertexBuffer, g_Texture[0]);
+			// プレイヤーの表示座標を算出
+			D3DXVECTOR2 worldPos = GetPlayerPos();	// 現在の座標を退避
+			SetPlayerPos( GetPlayerPos() - GetGame()->GetScrollPosition() );	// 表示座標系にセット
+
+			// 描画
+			DrawTexture(g_VertexBuffer, g_Texture[m_nTexNo]);
+
+			SetPlayerPos(worldPos);	// ワールド座標系に戻す
 		}
 }
 
@@ -180,6 +197,12 @@ void CPlayer::Draw()
 //=============================================================================
 // セッター関数
 //=============================================================================
+// プレイヤーの座標をセット
+void CPlayer:: SetPlayerPos(D3DXVECTOR2 Pos)
+{
+	SetTexPos(Pos);	// プレイヤーテクスチャの座標 ＝ プレイヤーの座標
+}
+
 // プレイヤーのuseフラグのセット
 void CPlayer::SetPlayerUseFlag(bool Use)
 {

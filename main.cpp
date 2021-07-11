@@ -1,14 +1,13 @@
-//=============================================================================
+﻿//=============================================================================
 //
 // Main処理 [main.cpp]
 // Author : 杉本 幸宏
 //
-// エネミーとプレイヤー追加したら、SetModeの最後の方のコメントアウト解除しとく
 //=============================================================================
 #include "main.h"
 
 #include "title.h"		// タイトル画面
-#include "opening.h"  // オープニング画面
+#include "opening.h"	// オープニング画面
 #include "tutorial.h"	// チュートリアル画面
 //#include "game.h"		// ゲーム画面	【クラス化して、main.h の方でインクルードしてる】
 #include "result.h"		// リザルト画面
@@ -26,8 +25,13 @@
 #define CLASS_NAME			"AppClass"				// ウインドウのクラス名
 #define WINDOW_NAME			"GP23 DirectX11"		// ウインドウのキャプション名
 
-#define START_MODE			(MODE_OPENING)			// 起動時のモード
+#ifndef _DEBUG
+	#define START_MODE			(MODE_OPENING)			// 起動時のモード
+#endif // !_DEBUG
 
+#ifdef _DEBUG
+#define START_MODE			(MODE_GAME)			// 起動時のモード
+#endif // _DEBUG
 
 //*****************************************************************************
 // 構造体定義
@@ -531,7 +535,7 @@ char* GetDebugStr(void)
 
 /*******************************************************************************
 関数名	:	void LoadCsvData( void )
-引数	:	読み込むファイル名, 作成データの先頭アドレスを格納するポインタ, 1つのセルごとの最大文字数, 区切り文字（指定無ければNULL）
+引数		:	読み込むファイル名, 作成データの先頭アドレスを格納するポインタ, 1つのセルごとの最大文字数, 区切り文字（指定無ければNULL）
 返り値	:	格納データの総文字数。エラー時は「-1」
 説明	:	カンマ区切りのcsvファイルを、文字列のまま読み込む
 			"new演算子"でメモリを確保しているため、使った後は必ず"delete"すること
@@ -660,12 +664,9 @@ int SerchWordOffset(const char* String, const char SingleWord)
 	// 文字列が見つからない時
 	if (String == NULL) return -1;	// エラーを返す
 
-	// 指定文字の位置を格納する変数(返り値)
-	int		offset = 0;
-
 	// Bufに記載された文字列を先頭から一文字ずつ判別する
 	// 継続条件:Stringの終端まで 変数の更新内容:「String」が指すアドレスと「offset」の値をそれぞれ加算
-	for (; *String; ++String, ++offset)
+	for (int offset = 0; *String; ++String, ++offset)
 	{
 		// 1文字格納用のchar型配列
 		char singleWord[2] = { "\0" };
