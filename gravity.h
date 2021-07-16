@@ -1,15 +1,27 @@
+//=============================================================================
+//
+// 重力処理 [gravity.h]
+// Author : 稲垣佑二郎
+//
+//=============================================================================
 #pragma once
 
 #include "main.h"
 
+//*****************************************************************************
+// マクロ定義
+//*****************************************************************************
+
 enum DIRECTION
 {
-	GLAVITY_DEFAULT, 
-	GLAVITY_LEFT
+	GRAVITY_DEFAULT, 
+	GRAVITY_LEFT
 };
 
 
-// クラス定義
+//*****************************************************************************
+// クラス
+//*****************************************************************************
 class CGravity
 {
 public:
@@ -18,26 +30,13 @@ public:
 //	void Uninit();
 
 private:
-	D3DXVECTOR2 m_Position;
-	float m_GravityWait;
-	int m_nFlameCount;
-
+	D3DXVECTOR2 m_Position;	// 座標
+	float m_GravityWait;	// 重力加速度
+	int m_nFlameCount;		// 経過時間
+	bool m_bFall;			// 重力処理のフラグ
 };
 
 
-
-
-// cpp内
-void CGravity::Update(DIRECTION Direction)
-{
-	if (Direction == GLAVITY_DEFAULT)
-	{
-		// 重力でプレイヤーを下に動かす処理
-		m_Position.y += m_GravityWait * m_nFlameCount;
-	}
-	else if (Direction == GLAVITY_LEFT)
-	{
-		// 重力でプレイヤーを左に動かす処理
-		m_Position.x -= m_GravityWait * m_nFlameCount;
-	}
-}
+//*****************************************************************************
+// プロトタイプ宣言
+//*****************************************************************************
