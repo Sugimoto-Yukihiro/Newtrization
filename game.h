@@ -32,15 +32,12 @@ public:
 
 	//------------------- ゲッター関数
 	D3DXVECTOR2 GetScrollPosition();
-	CMapchip* GetMapchip();	// マップチップのインスタンスへのアクセス
-
 #ifdef _DEBUG
 	bool GetPauseFlag();				// ポーズフラグの取得
 #endif // _DEBUG
 
 	//------------------- セッター関数
 	void SetScrollPosition(D3DXVECTOR2 Pos);	// スクロール座標のセット
-
 #ifdef _DEBUG
 	void SetPauseFlag(bool Flag);		// ポーズフラグのセット
 #endif // _DEBUG
@@ -48,7 +45,7 @@ public:
 private:
 	//------------------- 各インスタンス
 	CPlayer m_Player[PLAYER_MAX];		// プレイヤーのインスタンス
-	CMapchip m_Mapchip;					// マップチップのサンプル
+	CMapchip m_Mapchip[MAPCHIP_MAX];	// マップチップのサンプル
 
 	//------------------- メンバ変数
 	D3DXVECTOR2 m_vScrollPos;			// スクロール座標
@@ -62,7 +59,8 @@ private:
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-//void RequestSetScrollPosition(D3DXVECTOR2 Pos);
+void RequestSetScrollPosition(D3DXVECTOR2 Pos);
+
 
 // 構造体管理
 #ifdef GAMEMODE_STRUCT

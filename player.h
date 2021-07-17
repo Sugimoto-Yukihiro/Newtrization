@@ -13,8 +13,8 @@
 //*****************************************************************************
 #define PLAYER_MAX		(1)			// プレイヤーのMax人数
 
-#define SCROLL_SET_X				(SCREEN_CENTER_X)			// スクロール座標のセット位置
-#define SCROLL_SET_Y				(SCREEN_CENTER_Y)			// スクロール座標のセット位置
+#define SCROLL_SET_X				(SCREEN_CENTER_X / 2)			// スクロール座標のセット位置
+#define SCROLL_SET_Y				(SCREEN_CENTER_Y * 2)			// スクロール座標のセット位置
 
 
 //*****************************************************************************
@@ -33,7 +33,6 @@ public:
 	void Draw();						// 描画処理
 
 	//------------------- セッター関数
-	void SetPlayerPos(D3DXVECTOR2 Pos);	// プレイヤーの座標をセット
 	void SetPlayerUseFlag(bool Use);	// プレイヤーのuseフラグのセット
 	void KillPlayer();					// プレイヤーを殺す処理
 

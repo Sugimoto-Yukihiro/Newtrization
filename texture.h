@@ -26,15 +26,15 @@ public:
 
 	//------------------- セッター関数
 	void SetAnimInf(int DivX, int DivY, int Wait);
-//	void SetCurrentAnim(int CurAnim);	// 現在のアニメーション番号をセット
-	void SetTexDivideX(int DivX);		// 横のアニメーションパターン数を格納
-	void SetTexDivideY(int DivY);		// 縦のアニメーションパターン数を格納
+	//void SetCurrentAnim(int CurAnim);	// 現在のアニメーション番号を取得
+	void SetDivideX(int DivX);		// 横のアニメーションパターン数を格納
+	void SetDivideY(int DivY);		// 縦のアニメーションパターン数を格納
 	void SetAnimWait(int Wait);		// アニメーションのWait値をセット
 
 	//------------------- ゲッター関数
 	int GetCurrentAnim();			// 現在のアニメーション番号を取得
-	int GetTexDivideX();			// 横のアニメーションパターン数を取得
-	int GetTexDivideY();			// 縦のアニメーションパターン数を取得
+	int GetDivideX();				// 横のアニメーションパターン数を取得
+	int GetDivideY();				// 縦のアニメーションパターン数を取得
 //	int GetAnimWait();				// アニメーションのWait値を取得
 
 private:
@@ -93,8 +93,3 @@ void SetSpriteColor(ID3D11Buffer *buf, float X, float Y, float Width, float Heig
 void SetSpriteColorRotation(ID3D11Buffer *buf, float X, float Y, float Width, float Height,
 	float U, float V, float UW, float VH,
 	D3DXCOLOR Color, float Rot);
-
-void CreateTexture(const char* TextureName, ID3D11ShaderResourceView** TexrureData);
-void CreateVertexBuffer(ID3D11Buffer** VertexBuffer);
-void ReleaseTexture(ID3D11ShaderResourceView** TexrureData, ID3D11Buffer** VertexBuffer);
-void PresetDraw2D(ID3D11Buffer** g_VertexBuffer);

@@ -20,7 +20,7 @@
 //#include "score.h"	// スコア
 #include "sound.h"		// サウンド
 
-#include "debugproc.h"	// デバッグ表示
+//#include "debugproc.h"	// デバッグ表示
 
 //*****************************************************************************
 // マクロ定義
@@ -47,20 +47,15 @@ void CModeGame::Init()
 	// スクロール座標の初期化
 	SetScrollPosition(ZERO_VECTOR2);
 
-
 	// 背景の初期化処理
 	InitBg();
 
 	// プレイヤーの初期化
-	CreatePlayerTextureAndBuffer();		// テクスチャ・頂点バッファ生成
+	CreatePlayerTextureAndBuffer();
 	for(int i =0; i < PLAYER_MAX; i++)
 	{
-		m_Player[i].Init();			// 初期化処理
+		(m_Player + i)->Init();
 	}
-
-	// マップチップの初期化
-	CreateMapchipTextureAndBuffer(MAPCHIP_STAGE_Sample);	// テクスチャ・頂点バッファ生成
-	m_Mapchip.Init();	// 初期化処理
 
 	// エネミーの初期化
 	InitEnemy();
@@ -92,14 +87,11 @@ void CModeGame::Uninit(void)
 	// 弾の終了処理
 //	UninitBullet();
 
-	// マップチップの終了処理
-	ReleaseMapchipTextureAndBuffer();	// テクスチャ・頂点バッファ解放
-
 	// エネミーの終了処理
 	UninitEnemy();
 
 	// プレイヤーの終了処理
-	ReleasePlayerTextureAndBuffer();	// テクスチャ・頂点バッファ解放
+	ReleasePlayerTextureAndBuffer();
 //	for (int i = 0; i < PLAYER_MAX; i++)
 //	{
 //		(m_Player + i)->Uninit();
@@ -133,13 +125,10 @@ void CModeGame::Update(void)
 	if ( GetPauseFlag() ) return;
 #endif // _DEBUG
 
-	// マップチップの更新処理
-	m_Mapchip.Update();
-
 	// プレイヤーの更新処理
 	for (int i = 0; i < PLAYER_MAX; i++)
 	{
-		m_Player[i].Update();
+		(m_Player + i)->Update();
 	}
 
 	// エネミーの更新処理
@@ -159,10 +148,6 @@ void CModeGame::Update(void)
 
 	// 背景の更新処理
 	UpdateBg();
-
-#ifdef _DEBUG
-	PrintDebugProc("\nスクロール座標 X: %f  Y: %f\n", GetScrollPosition().x, GetScrollPosition().y);
-#endif // _DEBUG
 }
 
 //=============================================================================
@@ -173,14 +158,11 @@ void CModeGame::Draw()
 	// 背景の描画処理
 	DrawBg();
 
-	// マップチップの描画
-	m_Mapchip.Draw();
-
 	// テスト画像表示
 //	DrawPolygon();
 
 	// エネミーの描画処理
-//	DrawEnemy();
+	DrawEnemy();
 
 	// プレイヤーの描画処理
 	for(int i = 0; i < PLAYER_MAX; i++)
@@ -214,16 +196,10 @@ void CModeGame::CollisionCheck()
 //=============================================================================
 // ゲッター関数
 //=============================================================================
-// スクロール座標のセット
-D3DXVECTOR2 CModeGame::GetScrollPosition()
+// スクロール座標の取得
+void CModeGame::SetScrollPosition(D3DXVECTOR2 Pos)
 {
-	return m_vScrollPos;
-}
-
-// マップチップへのアクセス
-CMapchip* CModeGame::GetMapchip()
-{
-	return &m_Mapchip;	// マップチップの情報を返す
+	m_vScrollPos = Pos;
 }
 
 #ifdef _DEBUG
@@ -239,10 +215,10 @@ bool CModeGame::GetPauseFlag()
 //=============================================================================
 // セッター関数
 //=============================================================================
-// スクロール座標の取得
-void CModeGame::SetScrollPosition(D3DXVECTOR2 Pos)
+// スクロール座標のセット
+D3DXVECTOR2 CModeGame::GetScrollPosition()
 {
-	m_vScrollPos = Pos;
+	return m_vScrollPos;
 }
 
 // ポーズフラグのセット

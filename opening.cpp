@@ -44,63 +44,40 @@ static char *g_TexturName[] = {
 	"data/TEXTURE/bg_opening.jpg",
 };
 
-
-static bool						g_Use;						// true:使っている  false:未使用
-static float					g_w, g_h;					// 幅と高さ
-static D3DXVECTOR3				g_Pos;						// ポリゴンの座標
-static int						g_TexNo;					// テクスチャ番号
-
-float	beta;
-bool	flag_beta;
-
 //=============================================================================
 // 初期化処理
 //=============================================================================
-HRESULT InitOpening(void)
+void CModeOpening::Init()
 {
 	ID3D11Device *pDevice = GetDevice();
 
-	//テクスチャ生成
-	for (int i = 0; i < TEXTURE_MAX; i++)
-	{
-		g_Texture[i] = NULL;
-		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-			g_TexturName[i],
-			NULL,
-			NULL,
-			&g_Texture[i],
-			NULL);
-	}
+	////テクスチャ生成
+	//for (int i = 0; i < TEXTURE_MAX; i++)
+	//{
+	//	g_Texture[i] = NULL;
+	//	D3DX11CreateShaderResourceViewFromFile(GetDevice(),
+	//		g_TexturName[i],
+	//		NULL,
+	//		NULL,
+	//		&g_Texture[i],
+	//		NULL);
+	//}
 
 
-	// 頂点バッファ生成
-	D3D11_BUFFER_DESC bd;
-	ZeroMemory(&bd, sizeof(bd));
-	bd.Usage = D3D11_USAGE_DYNAMIC;
-	bd.ByteWidth = sizeof(VERTEX_3D) * 4;
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
-
-
-	// 変数の初期化
-	g_Use = true;
-	g_w = TEXTURE_WIDTH;
-	g_h = TEXTURE_HEIGHT;
-	g_Pos = D3DXVECTOR3(g_w / 2, g_h / 2, 0.0f);
-	g_TexNo = 0;
-
-	beta = 1.0f;
-	flag_beta = true;
-
-
-	return S_OK;
+	//// 頂点バッファ生成
+	//D3D11_BUFFER_DESC bd;
+	//ZeroMemory(&bd, sizeof(bd));
+	//bd.Usage = D3D11_USAGE_DYNAMIC;
+	//bd.ByteWidth = sizeof(VERTEX_3D) * 4;
+	//bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	//bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	//GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
 }
 
 //=============================================================================
 // 終了処理
 //=============================================================================
-void UninitOpening(void)
+void CModeOpening::Uninit(void)
 {
 	if (g_VertexBuffer)
 	{
@@ -122,7 +99,7 @@ void UninitOpening(void)
 //=============================================================================
 // 更新処理
 //=============================================================================
-void UpdateOpening(void)
+void CModeOpening::Update(void)
 {
 	//------------------- キー・ゲームパットでの入力で次のモードへ
 	if (KEY_MODE_CHANGE)
@@ -137,22 +114,22 @@ void UpdateOpening(void)
 	//	SetMode(NEXT_MODE);				// 次のモードにシーン遷移
 	}
 
-	if (flag_beta == true)
+	if (m_bflag_beta == true)
 	{
-		beta -= 0.02f;
-		if (beta <= 0.0f)
+		m_fbeta -= 0.02f;
+		if (m_fbeta <= 0.0f)
 		{
-			beta = 0.0f;
-			flag_beta = false;
+			m_fbeta = 0.0f;
+			m_bflag_beta = false;
 		}
 	}
 	else
 	{
-		beta += 0.02f;
-		if (beta >= 1.0f)
+		m_fbeta += 0.02f;
+		if (m_fbeta >= 1.0f)
 		{
-			beta = 1.0f;
-			flag_beta = true;
+			m_fbeta = 1.0f;
+			m_bflag_beta = true;
 		}
 	}
 
@@ -165,7 +142,59 @@ void UpdateOpening(void)
 //=============================================================================
 // 描画処理
 //=============================================================================
-void DrawOpening(void)
+void CModeOpening::Draw(void)
+{
+	PresetDrawOpening();
+	if (m_bUse == true)
+	{
+		m_Logo.DrawTexture(g_VertexBuffer, g_Texture[0]);
+	}
+
+}
+void CreateOpeningTextureAndBuffer()
+{
+	//テクスチャ生成
+	for (int i = 0; i < TEXTURE_MAX; i++)
+	{
+		g_Texture[i] = NULL;
+		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
+			g_TexturName[i],
+			NULL,
+			NULL,
+			&g_Texture[i],
+			NULL);
+	}
+
+	// 頂点バッファ生成
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DYNAMIC;
+	bd.ByteWidth = sizeof(VERTEX_3D) * 4;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
+}
+
+void ReleaseOpeningTextureAndBuffer()
+{
+	if (g_VertexBuffer)
+	{
+		g_VertexBuffer->Release();
+		g_VertexBuffer = NULL;
+	}
+
+	for (int i = 0; i < TEXTURE_MAX; i++)
+	{
+		if (g_Texture[i])
+		{
+			g_Texture[i]->Release();
+			g_Texture[i] = NULL;
+		}
+	}
+
+}
+
+void PresetDrawOpening(void)
 {
 	// 頂点バッファ設定
 	UINT stride = sizeof(VERTEX_3D);
@@ -183,54 +212,4 @@ void DrawOpening(void)
 	ZeroMemory(&material, sizeof(material));
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
-
-	// オープニングの背景を描画
-	{
-		// テクスチャ設定
-		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
-
-		// １枚のポリゴンの頂点とテクスチャ座標を設定
-		SetSprite(g_VertexBuffer, g_Pos.x, g_Pos.y, g_w, g_h, 0.0f, 0.0f, 1.0f, 1.0f);
-
-		// ポリゴン描画
-		GetDeviceContext()->Draw(4, 0);
-	}
-
-	//// ロゴを描画
-	//{
-	//	// テクスチャ設定
-	//	GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[1]);
-
-	//	// １枚のポリゴンの頂点とテクスチャ座標を設定
-	////	SetSprite(g_VertexBuffer, g_Pos.x, g_Pos.y, TEXTURE_WIDTH_LOGO, TEXTURE_HEIGHT_LOGO, 0.0f, 0.0f, 1.0f, 1.0f);
-	//	SetSpriteColor(g_VertexBuffer, g_Pos.x, g_Pos.y, TEXTURE_WIDTH_LOGO, TEXTURE_HEIGHT_LOGO, 0.0f, 0.0f, 1.0f, 1.0f,
-	//					D3DXCOLOR(1.0f, 1.0f, 1.0f, alpha));
-
-	//	// ポリゴン描画
-	//	GetDeviceContext()->Draw(4, 0);
-	//}
-
-//	// 加減算のテスト
-//	SetBlendState(BLEND_MODE_ADD);		// 加算合成
-////	SetBlendState(BLEND_MODE_SUBTRACT);	// 減算合成
-//	for(int i=0; i<30; i++)
-//	{
-//		// テクスチャ設定
-//		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[2]);
-//
-//		// １枚のポリゴンの頂点とテクスチャ座標を設定
-//		float dx = 100.0f;
-//		float dy = 100.0f;
-//		float sx = (float)(rand() % 100);
-//		float sy = (float)(rand() % 100);
-//
-//
-//		SetSpriteColor(g_VertexBuffer, dx+sx, dy+sy, 50, 50, 0.0f, 0.0f, 1.0f, 1.0f,
-//			D3DXCOLOR(0.3f, 0.3f, 1.0f, 0.5f));
-//
-//		// ポリゴン描画
-//		GetDeviceContext()->Draw(4, 0);
-//	}
-//	SetBlendState(BLEND_MODE_ALPHABLEND);	// 半透明処理を元に戻す
-
 }

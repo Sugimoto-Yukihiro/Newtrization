@@ -39,6 +39,7 @@
 
 
 #include "game.h"
+#include "opening.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -76,15 +77,11 @@ typedef enum
 class CMode
 {
 public:
-	CMode();	// コンストラクタ
-	~CMode();	// デストラクタ
-
 	//------------------- メンバ関数
 	HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow);
-	void Uninit();
 	void Update();
 	void Draw();
-
+	void Uninit();
 	//------------------- ゲッター関数
 	MODE GetMode();
 
@@ -92,10 +89,11 @@ public:
 	void SetMode(MODE mode);
 
 	//------------------- 各モードのインスタンス
-	CModeGame m_GameMode;	// ゲーム画面
+	CModeGame m_GameMode;		// ゲーム画面
+	CModeOpening m_OpeningMode; // オープニング画面
 
 private:
-	MODE m_Mode;	// モードの状態を格納する変数
+	MODE g_Mode;	// モードの状態を格納する変数
 };
 
 //*****************************************************************************
@@ -106,15 +104,13 @@ long GetMousePosY(void);
 char *GetDebugStr(void);
 
 //------------------- 各インスタンスへのアクセス用関数
-CModeGame* GetGame();	// ゲームモードのインスタンスを取得
+CModeGame* GetGame();
+CModeOpening* GetOpening();
 
 //------------------- メンバ変数のアクセス用グローバル関数
-void RequestSetMode(MODE mode);					// セットモード
+void RequestSetMode(MODE mode);
 //MODE RequestGetMode();
-//void RequestSetScrollPosition(D3DXVECTOR2 Pos);	// スクロール座標のセット
-
 
 //------------------- ファイル関数
-int LoadCsvFile(const char* pCsvFileName, char* &pFirst, int MaxCharCell, char* DivMark);
-int DivideString(const char* String, int* retCol, int* retRow, char* DivMark);
+int DivideString(const char* String, int* Col, int* Row, char* DivMark);
 int SerchWordOffset(const char* String, const char SingleWord);

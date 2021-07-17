@@ -47,6 +47,7 @@ void CTexture::Init()	// 全てのメンバ変数を０で初期化
 // 引数 :	テクスチャのファイル名, 描画座標, 頂点色, 回転角
 // 説明 :	テクスチャを、引数に指定された値に描画する処理
 //=============================================================================
+//void CTexture::DrawTexture(D3DXVECTOR2 Position, D3DXVECTOR2 Size, D3DXCOLOR Color, float Rotation)
 void CTexture::DrawTexture(ID3D11Buffer* pVertexBuffer, ID3D11ShaderResourceView* pTextureData)
 {
 	float tw = 0.0f, th = 0.0f, tU = 0.0f, tV = 0.0f;
@@ -56,10 +57,10 @@ void CTexture::DrawTexture(ID3D11Buffer* pVertexBuffer, ID3D11ShaderResourceView
 
 	//------------------- アニメーションも考慮して、UV座標の値を決定する
 	// 1つのアニメーションパターンあたりの幅と高さを求める
-	tw = 1.0f / (float)GetTexDivideX();							// 幅
-	th = 1.0f / (float)GetTexDivideY();							// 高さ
-	if (GetCurrentAnim() != 0) tU = (float)(GetCurrentAnim() % GetTexDivideX()) * tw;	// テクスチャの左上X座標
-	if (GetCurrentAnim() != 0) tV = (float)(GetCurrentAnim() / GetTexDivideX()) * th;	// テクスチャの左上Y座標
+	tw = 1.0f / (float)GetDivideX();							// 幅
+	th = 1.0f / (float)GetDivideY();							// 高さ
+	if(tU != 0.0f) tU = (float)(GetCurrentAnim() % GetDivideX()) * tw;	// テクスチャの左上X座標
+	if(tV != 0.0f) tV = (float)(GetCurrentAnim() / GetDivideX()) * th;	// テクスチャの左上Y座標
 
 	// １枚のポリゴンの頂点とテクスチャ座標を設定
 	SetSpriteColorRotation(pVertexBuffer, m_vTexPos.x, m_vTexPos.y, m_vTexSize.x, m_vTexSize.y, tU, tV, tw, th,
@@ -160,7 +161,7 @@ void CAnimation::Init()	// 全てのメンバ変数を０で初期化
 //=============================================================================
 void CAnimation::UpdateAnimIndex(int MotionStartIndex, int MotionEndIndex)
 {
-	// 現在の経過フレームを加算
+	// 1フレーム加算
 	m_nCurrentFlame++;
 
 	// 切り替えるフレームになったか判別
@@ -195,13 +196,13 @@ void CAnimation::SetAnimInf(int DivX, int DivY, int Wait)
 }
 
 // 横のアニメーションパターン数を格納
-void CAnimation::SetTexDivideX(int DivX)
+void CAnimation::SetDivideX(int DivX)
 {
 	m_nDivideX = DivX;
 }
 
 // 縦のアニメーションパターン数を格納
-void CAnimation::SetTexDivideY(int DivY)
+void CAnimation::SetDivideY(int DivY)
 {
 	m_nDivideY = DivY;
 }
@@ -222,12 +223,12 @@ int CAnimation::GetCurrentAnim()		// 現在のアニメーション番号を取得する関数
 	return m_nCurrentAnimIndex;
 }
 
-int CAnimation::GetTexDivideX()			// 横方向のアニメーションパターン数を取得する関数
+int CAnimation::GetDivideX()			// 横方向のアニメーションパターン数を取得する関数
 {
 	return m_nDivideX;
 }
 
-int CAnimation::GetTexDivideY()			// 縦方向のアニメーションパターン数を取得する関数
+int CAnimation::GetDivideY()			// 縦方向のアニメーションパターン数を取得する関数
 {
 	return m_nDivideY;
 }
@@ -391,67 +392,3 @@ void SetSpriteColorRotation(ID3D11Buffer *buf, float X, float Y, float Width, fl
 
 }
 
-
-
-
-void CreateTexture(const char* TextureName, ID3D11ShaderResourceView** TexrureData)
-{
-	//テクスチャ生成
-	D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-		TextureName,
-		NULL,
-		NULL,
-		TexrureData,
-		NULL);
-
-}
-
-void CreateVertexBuffer(ID3D11Buffer** VertexBuffer)
-{
-	// 頂点バッファ生成
-	D3D11_BUFFER_DESC bd;
-	ZeroMemory(&bd, sizeof(bd));
-	bd.Usage = D3D11_USAGE_DYNAMIC;
-	bd.ByteWidth = sizeof(VERTEX_3D) * 4;	// 2Dは4頂点
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	GetDevice()->CreateBuffer(&bd, NULL, VertexBuffer);
-}
-
-
-void ReleaseTexture(ID3D11ShaderResourceView** TextureData, ID3D11Buffer** VertexBuffer)
-{
-	if (*VertexBuffer)
-	{
-		VertexBuffer[0]->Release();
-		*VertexBuffer = NULL;
-	}
-
-	if (*TextureData)
-	{
-		TextureData[0]->Release();
-		*TextureData = NULL;
-	}
-
-}
-
-
-void PresetDraw2D(ID3D11Buffer** VertexBuffer)
-{
-	// 頂点バッファ設定
-	UINT stride = sizeof(VERTEX_3D);
-	UINT offset = 0;
-	GetDeviceContext()->IASetVertexBuffers(0, 1, VertexBuffer, &stride, &offset);
-
-	// マトリクス設定
-	SetWorldViewProjection2D();
-
-	// プリミティブトポロジ設定
-	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-
-	// マテリアル設定
-	MATERIAL material;
-	ZeroMemory(&material, sizeof(material));
-	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-	SetMaterial(material);
-}
