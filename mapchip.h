@@ -53,26 +53,25 @@ public:
 	//------------------- セッター関数
 	int SetMapChipData(const char* pCsvString);	// マップチップ配列を取得
 
-	void SetMapchipBasePos(D3DXVECTOR2 Pos);
-	void SetMapchipSize(D3DXVECTOR2 Size);	// １つのチップの大きさを取得
-	void SetMapchipNumX(int Num);				// マップチップの列数を取得
-	void SetMapchipNumY(int Num);				// マップチップの列数を取得
-//	void SetRotationFlag(bool Flag);			// 回転フラグのセット
+//	void SetMapchipBasePos(D3DXVECTOR2 Pos);	// 描画の基準座標をセット
+	void SetMapchipSize(D3DXVECTOR2 Size);	// １つのチップの大きさをセット
+	void SetMapchipNumX(int Num);			// マップチップの列数をセット
+	void SetMapchipNumY(int Num);			// マップチップの列数をセット
+//	void SetRotationFlag(bool Flag);		// 回転フラグのセット
 
 
 	//------------------- ゲッター関数
 	int* GetMapChipData();				// マップチップ配列を取得
 	D3DXVECTOR2 GetStageSize();			// マップ全体の大きさを取得
-
 	D3DXVECTOR2 GetMapchipSize();		// １つのチップの大きさを取得
 	int GetMapchipNumX();				// マップチップの列数を取得
 	int GetMapchipNumY();				// マップチップの列数を取得
-	int GetMapchipNo(D3DXVECTOR2 Pos);	// 指定された座標にあるチップ番号を取得
+	int GetMapchipNo(D3DXVECTOR2 Pos, int* retIdxNumX = NULL, int* retIdxNumY = NULL);	// 指定された座標にあるチップ番号を取得
 //	bool GetRotationFlag();				// 回転フラグの取得
 
 private:
 	//------------------- メンバ変数
-	D3DXVECTOR2		m_vChipBasePos;		// 実際に描画するマップチップの基準（スクロール座標）
+//	D3DXVECTOR2		m_vChipBasePos;		// 実際に描画するマップチップの基準（スクロール座標）
 	D3DXVECTOR2		m_vChipSize;		// １つのチップの大きさ
 
 #ifdef MAPCHIP_STATIC
@@ -101,8 +100,3 @@ void ReleaseMapchipTextureAndBuffer();
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-#ifdef _DEBUG
-static char* pTestMapChipData = {
-	"1,2,3\n2,2,2\n3,3,3\n12,22,32\n22,22,22"
-};
-#endif // _DEBUG

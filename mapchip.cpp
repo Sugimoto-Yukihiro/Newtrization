@@ -39,7 +39,7 @@ static char *g_TextureName[] = {
 CMapchip::CMapchip()	// コンストラクタ
 {
 	//------------------- メンバ変数の初期化
-	SetMapchipBasePos(ZERO_VECTOR2);
+//	SetMapchipBasePos(ZERO_VECTOR2);
 	SetMapchipSize(MAPCHIP_SIZE_DEFAULT);	// １つのチップの大きさをセット
 	SetMapchipNumX(-1);				// マップチップの列数をセット
 	SetMapchipNumY(-1);				// マップチップの列数をセット
@@ -230,8 +230,8 @@ void CMapchip::DrawChip(D3DXVECTOR2 Pos, int Num)
 //=============================================================================
 // セッター関数
 //=============================================================================
-// マップチップ配列のセット
 //****************************************************
+// 説明		： マップチップ配列のセット
 // 引数		： マップチップの情報（char型）
 // 戻り値	： 成功(1), 失敗(0)
 //****************************************************
@@ -326,8 +326,6 @@ int CMapchip::SetMapChipData(const char* pCsvString)
 //	SetMapchipNumY(nLinesCnt);
 
 
-
-
 	// コピーした文字列の解放
 	delete[] pCopyStr;
 
@@ -351,10 +349,10 @@ int CMapchip::LoadMapchipData(char* pFileName)
 }
 
 // 描画の基準座標をセット
-void CMapchip::SetMapchipBasePos(D3DXVECTOR2 Pos)
-{
-	m_vChipBasePos = Pos;
-}
+//void CMapchip::SetMapchipBasePos(D3DXVECTOR2 Pos)
+//{
+//	m_vChipBasePos = Pos;
+//}
 
 // １つのチップの大きさをセット
 void CMapchip::SetMapchipSize(D3DXVECTOR2 Size)
@@ -417,8 +415,12 @@ int CMapchip::GetMapchipNumY()
 	return m_nChipNumY;
 }
 
-// 指定された座標にあるチップ番号を取得
-int CMapchip::GetMapchipNo(D3DXVECTOR2 Pos)
+//****************************************************
+// 説明		： 指定された座標にあるチップ番号を取得
+// 引数		： 任意の座標, マップチップの要素数(横)を返すポインタ, マップチップの要素数(縦)を返すポインタ
+// 戻り値	： 第一引数に指定された箇所のマップチップの番号
+//****************************************************
+int CMapchip::GetMapchipNo(D3DXVECTOR2 Pos, int* retIdxNumX, int* retIdxNumY)
 {
 	int cx = (int)(Pos.x / m_vChipSize.x);
 	int cy = (int)(Pos.y / m_vChipSize.y);
