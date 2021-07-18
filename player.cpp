@@ -52,9 +52,7 @@ static char *g_TextureName[] = {
 //=============================================================================
 CPlayer::CPlayer()		// コンストラクタ
 {
-	// プレイヤークラスの初期化
-	m_bUse = true;
-	m_nTexNo = 0;
+	Init();
 }
 
 CPlayer::~CPlayer()		// デストラクタ
@@ -72,10 +70,13 @@ void CPlayer::Init()
 	m_nTexNo = 1;
 
 	//------------------- ベースクラスの初期化
-	CTexture::Init();	// CTexture
+	CTexture::Init();	// テクスチャ描画処理
 	SetPlayerUseFlag(true);
 	SetTextureInf(SCREEN_CENTER, TEXTURE_SIZE, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 0.0f, ZERO_VECTOR2);
 	SetAnimInf(6, 1, ANIM_WAIT);
+
+	CGravity::Init();	// 重力処理
+	SetPlayerPos(SCREEN_CENTER);
 }
 
 
@@ -136,6 +137,10 @@ void CPlayer::Update()
 		}
 
 
+		// 重力処理
+		CGravity::Update( *GetGame()->GetMapchip() );
+
+
 		//=================== スクロール座標の更新
 		{
 			D3DXVECTOR2 pos;	// 一時的な変数
@@ -180,16 +185,17 @@ void CPlayer::Draw()
 	PresetDrawPlayer();
 
 	if (m_bUse == true)
-		{
-			// プレイヤーの表示座標を算出
-			D3DXVECTOR2 worldPos = GetPlayerPos();	// 現在の座標を退避
-			SetPlayerPos( GetPlayerPos() - GetGame()->GetScrollPosition() );	// 表示座標系にセット
+	{
+		// プレイヤーの表示座標を算出
+		SetTexPos( GetPlayerPos() - GetGame()->GetScrollPosition() );	// 表示座標系をセット
+	//1	D3DXVECTOR2 worldPos = GetPlayerPos();	// 現在の座標を退避
+	//1	SetPlayerPos( GetPlayerPos() - GetGame()->GetScrollPosition() );	// 表示座標系にセット
 
-			// 描画
-			DrawTexture(g_VertexBuffer, g_Texture[m_nTexNo]);
+		// 描画
+		DrawTexture(g_VertexBuffer, g_Texture[m_nTexNo]);
 
-			SetPlayerPos(worldPos);	// ワールド座標系に戻す
-		}
+	//1	SetPlayerPos(worldPos);	// ワールド座標系に戻す
+	}
 }
 
 
@@ -200,7 +206,8 @@ void CPlayer::Draw()
 // プレイヤーの座標をセット
 void CPlayer:: SetPlayerPos(D3DXVECTOR2 Pos)
 {
-	SetTexPos(Pos);	// プレイヤーテクスチャの座標 ＝ プレイヤーの座標
+//	SetTexPos(Pos);	// プレイヤーテクスチャの座標 ＝ プレイヤーの座標
+	SetGravityObjectPos(Pos);	// ワールド座標系
 }
 
 // プレイヤーのuseフラグのセット
@@ -225,7 +232,8 @@ void CPlayer::KillPlayer()
 // プレイヤーの座標を取得
 D3DXVECTOR2 CPlayer::GetPlayerPos()
 {
-	return GetTexPos();		// プレイヤーテクスチャの座標 ＝ プレイヤーの座標 ってこと
+//	return GetTexPos();				// プレイヤーテクスチャの座標 ＝ プレイヤーの座標 ってこと
+	return GetGravityObjectPos();	// ワールド座標系
 }
 
 // プレイヤーのuseフラグの取得
