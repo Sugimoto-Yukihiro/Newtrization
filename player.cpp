@@ -92,9 +92,10 @@ void CPlayer::Update()
 		// アニメーション
 		UpdateAnimIndex(0, 5);	// 
 
+		// プレイヤーの移動処理
 		{
-			D3DXVECTOR2 move;	// プレイヤーの値を保存する変数
-			move = GetPlayerPos();	// 現在のプレイヤーの座標で初期化
+			// プレイヤーの移動値を保存する変数
+			D3DXVECTOR2 move = GetPlayerPos();	// 現在のプレイヤーの座標で初期化
 
 			// キー入力で移動
 			if (GetKeyboardPress(DIK_DOWN))
@@ -132,13 +133,15 @@ void CPlayer::Update()
 				move.x -= MOVE_VALUE;
 			}
 
-			// プレイヤーの最終的な座標をセット
+			// プレイヤーのキー移動後の座標をセット
 			SetPlayerPos(move);
+
+			// 重力処理
+
+			CGravity::Update( *GetGame()->GetMapchip() );
 		}
 
 
-		// 重力処理
-		CGravity::Update( *GetGame()->GetMapchip() );
 
 
 		//=================== スクロール座標の更新

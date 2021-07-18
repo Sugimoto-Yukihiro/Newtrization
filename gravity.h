@@ -6,7 +6,7 @@
 //=============================================================================
 #pragma once
 
-#include "mapchip.h"	// マップチップ処理
+//#include "mapchip.h"	// マップチップ処理
 
 //*****************************************************************************
 // マクロ定義
@@ -34,10 +34,11 @@ public:
 	~CGravity();	// デストラクタ
 
 	void Init();
-	void Update(CMapchip MapchipInf);
+//	void Update(CMapchip MapchipInf);
+	void Update();
 //	void Uninit();
 
-	bool HitCheckMapchip(CMapchip MapchipInf, int* retIdxNumX, int* retIdxNumY);	// マップチップとの当たり判定を取る
+//	bool HitCheckMapchip(CMapchip MapchipInf, int* retIdxNumX, int* retIdxNumY);	// マップチップとの当たり判定を取る
 
 	//------------------- セッター関数
 	void SetGravityObjectPos(D3DXVECTOR2 Pos);

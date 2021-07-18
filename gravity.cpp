@@ -37,7 +37,7 @@ void CGravity::Init()
 	m_nDirection = GRAVITY_DEFAULT;
 	m_GravityWait = DEFAULT_GRAVITY_WAIT;
 	m_nFlameCount = 0;
-	m_bFall = false;	// 重力処理は"false"をデフォルトにセット
+	m_bFall = true;	// 重力処理は"true"をデフォルトにセット
 }
 
 //=============================================================================
@@ -48,7 +48,8 @@ void CGravity::Init()
 //=============================================================================
 // 更新処理
 //=============================================================================
-void CGravity::Update(CMapchip MapchipInf)
+//void CGravity::Update(CMapchip MapchipInf)
+void CGravity::Update()
 {
 	if (!m_bFall) return;	// 重力フラグが立っていなかったら、処理をしない
 
@@ -69,67 +70,67 @@ void CGravity::Update(CMapchip MapchipInf)
 		m_Position.x -= m_GravityWait * m_nFlameCount;
 	}
 
-	// マップチップとの当たり判定を取る
-	if (HitCheckMapchip(MapchipInf, &nIdxNumX, &nIdxNumY))
-	{	// 当たっていた時の処理
-		// 座標調整
-		m_Position.x = MapchipInf.GetMapchipSize().x * nIdxNumX;
-		m_Position.y = MapchipInf.GetMapchipSize().y * nIdxNumY;
-
-		// フレームカウントリセット
-		m_nFlameCount = 0;
-
-		// 重力処理フラグを折る
-		m_bFall = false;
-	}
+//	// マップチップとの当たり判定を取る
+//	if (HitCheckMapchip(MapchipInf, &nIdxNumX, &nIdxNumY))
+//	{	// 当たっていた時の処理
+//		// 座標調整
+//		m_Position.x = MapchipInf.GetMapchipSize().x * nIdxNumX;
+//		m_Position.y = MapchipInf.GetMapchipSize().y * nIdxNumY;
+//
+//		// フレームカウントリセット
+//		m_nFlameCount = 0;
+//
+//		// 重力処理フラグを折る
+//		m_bFall = false;
+//	}
 }
 
 //=============================================================================
 // マップチップとの当たり判定
 //=============================================================================
-bool CGravity::HitCheckMapchip(CMapchip MapchipInf, int* retIdxNumX, int* retIdxNumY)
-{
-	//	D3DXVECTOR2 pos1, pos2;
-	D3DXVECTOR2 pos;
-
-	//	pos1 = pos2 = m_Position;	// 中心座標で初期化
-	pos = m_Position;	// 中心座標で初期化
-
-	// マップチップと当たっているか判定
-	switch (m_nDirection)	// 重力の向きによって当たり判定の仕方を変える
-	{
-	case GRAVITY_DEFAULT:	// 下向きのとき
-
-		// posには左下の座標を格納
-		pos.x -= m_ObjectSize.x * 0.5f;
-		pos.y += m_ObjectSize.y * 0.5f;
-
-		for (int yi = 0; yi < 2; yi++)	// とりあえず二回やってみる
-		{
-			for (int xi = 0; xi < (m_ObjectSize.x / MapchipInf.GetMapchipSize().x); xi++)
-			{
-				pos.x += MapchipInf.GetMapchipSize().x * xi;	// 座標の位置を、マップチップのサイズ分だけ右へ
-
-				// 当たり判定チェック
-				if (MapchipInf.GetMapchipNo(pos, retIdxNumX, retIdxNumY) == 1)
-				{
-					return (true);	// 当たっている
-				}
-			}
-		}
-		break;
-
-	case GRAVITY_LEFT:
-
-		break;
-
-	default:
-		break;
-	}
-
-	// 当たっていない
-	return false;
-}
+//bool CGravity::HitCheckMapchip(CMapchip MapchipInf, int* retIdxNumX, int* retIdxNumY)
+//{
+//	//	D3DXVECTOR2 pos1, pos2;
+//	D3DXVECTOR2 pos;
+//
+//	//	pos1 = pos2 = m_Position;	// 中心座標で初期化
+//	pos = m_Position;	// 中心座標で初期化
+//
+//	// マップチップと当たっているか判定
+//	switch (m_nDirection)	// 重力の向きによって当たり判定の仕方を変える
+//	{
+//	case GRAVITY_DEFAULT:	// 下向きのとき
+//
+//		// posには左下の座標を格納
+//		pos.x -= m_ObjectSize.x * 0.5f;
+//		pos.y += m_ObjectSize.y * 0.5f;
+//
+//		for (int yi = 0; yi < 2; yi++)	// とりあえず二回やってみる
+//		{
+//			for (int xi = 0; xi < (m_ObjectSize.x / MapchipInf.GetMapchipSize().x); xi++)
+//			{
+//				pos.x += MapchipInf.GetMapchipSize().x * xi;	// 座標の位置を、マップチップのサイズ分だけ右へ
+//
+//				// 当たり判定チェック
+//				if (MapchipInf.GetMapchipNo(pos, retIdxNumX, retIdxNumY) == 1)
+//				{
+//					return (true);	// 当たっている
+//				}
+//			}
+//		}
+//		break;
+//
+//	case GRAVITY_LEFT:
+//
+//		break;
+//
+//	default:
+//		break;
+//	}
+//
+//	// 当たっていない
+//	return false;
+//}
 
 
 
