@@ -6,21 +6,22 @@
 //=============================================================================
 #pragma once
 
-#include "texture.h"
+#include "texture.h"	// テクスチャ描画処理
+#include "gravity.h"	// 重力処理
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
 #define PLAYER_MAX		(1)			// プレイヤーのMax人数
 
-#define SCROLL_SET_X				(SCREEN_CENTER_X)			// スクロール座標のセット位置
-#define SCROLL_SET_Y				(SCREEN_CENTER_Y)			// スクロール座標のセット位置
+#define SCROLL_SET_X	(SCREEN_CENTER_X)	// スクロール座標のセット位置
+#define SCROLL_SET_Y	(SCREEN_CENTER_Y)	// スクロール座標のセット位置
 
 
 //*****************************************************************************
 // クラス定義
 //*****************************************************************************
-class CPlayer : public CTexture
+class CPlayer : public CTexture, public CGravity
 {
 public:
 	CPlayer();							// コンストラクタ
