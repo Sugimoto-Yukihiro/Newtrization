@@ -40,15 +40,21 @@ public:
 
 	//------------------- ゲッター関数
 	D3DXVECTOR2 GetPlayerPos();			// プレイヤーの座標を取得
+	D3DXVECTOR2 GetPlayerSize();		// プレイヤーの大きさを取得
 	bool GetPlayerUseFlag();			// プレイヤーのuseフラグの取得
 
 	//------------------- マクロ定義
 	#define PLAYER_ALIVE	SetPlayerUseFlag(true)	// プレイヤーを生き返らせる
 
 private:
+	//------------------- メンバ関数
+//	void MovePlayerInput();				// プレイヤーをキー入力で動かす
+
 	//------------------- メンバ変数
-	int				m_nTexNo;			// テクスチャ番号
-	bool			m_bUse;				// true:使っている  false:未使用
+	int				m_nCurrentMapChipNo;		// プレイヤーの現在いるマップチップ番号
+	int				m_nMapchipX, m_nMapchipY;	// マップチップ座標系での、プレイヤーの現在位置
+	int				m_nTexNo;					// テクスチャ番号
+	bool			m_bUse;						// true:使っている(生存)  false:未使用(死亡)
 };
 
 //*****************************************************************************

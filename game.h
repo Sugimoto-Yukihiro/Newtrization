@@ -62,7 +62,11 @@ private:
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-//void RequestSetScrollPosition(D3DXVECTOR2 Pos);
+//int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPos, D3DXVECTOR2 HalfObjectSize);
+int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPos);
+
+
+
 
 // 構造体管理
 #ifdef GAMEMODE_STRUCT

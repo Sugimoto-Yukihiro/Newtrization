@@ -69,7 +69,7 @@ public:
 	D3DXVECTOR2 GetTexSize();				// テクスチャのサイズを取得
 
 	//------------------- メンバ変数(public)
-	int		m_nTexNo;		// テクスチャ番号
+//	int		m_nTexNo;		// テクスチャ番号		// tecture.cpp内で使ってないからいらん
 
 private:
 	//------------------- メンバ変数

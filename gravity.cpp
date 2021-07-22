@@ -11,7 +11,9 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define DEFAULT_GRAVITY_WAIT		(0.55f)		// 重力の値
+#define DEFAULT_GRAVITY_WAIT		(0.55f)		// 重力の値(デフォルトの時)
+#define LEFT_GRAVITY_WAIT			(0.55f)		// 重力の値(左方向の時)
+
 
 
 //=============================================================================
@@ -61,13 +63,13 @@ void CGravity::Update()
 	// 重力の方向によって処理内容を変える
 	if (m_nDirection == GRAVITY_DEFAULT)	// デフォルト（下向き）
 	{
-		// 重力で物体を下に動かす処理
+		// 変化するのはx座標
 		m_Position.y += m_GravityWait * m_nFlameCount;
 	}
 	else if (m_nDirection == GRAVITY_LEFT)	// 左向き
 	{
-		// 重力で物体を左に動かす処理
-		m_Position.x -= m_GravityWait * m_nFlameCount;
+		// 変化するのはx座標
+		m_Position.x += m_GravityWait * m_nFlameCount;
 	}
 
 //	// マップチップとの当たり判定を取る
@@ -159,6 +161,12 @@ void CGravity::SetGravityWait(float GravityWait)
 
 void CGravity::SetGravityFlag(bool Flag)
 {
+	// フラグが"false"のとき
+	if (Flag == false)
+	{
+		m_nFlameCount = 0;	// フレームカウントをリセット
+	}
+
 	m_bFall = Flag;
 }
 

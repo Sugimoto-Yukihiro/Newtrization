@@ -25,10 +25,13 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define NEXT_MODE					MODE_RESULT		// 次のモード
-#define KEY_MODE_CHANGE				GetKeyboardTrigger(DIK_RETURN)
-#define PAD_MODE_CHANGE				IsButtonTriggered(0, BUTTON_START) || IsButtonTriggered(0, BUTTON_B)
+//-------- キー操作
+#define KEY_MODE_CHANGE			GetKeyboardTrigger(DIK_RETURN)
+#define NEXT_MODE				MODE_RESULT		// 次のモード
+#define KEY_RESTART				GetKeyboardTrigger(DIK_1)
 
+//-------- ゲームパッド操作
+#define PAD_MODE_CHANGE			IsButtonTriggered(0, BUTTON_START) || IsButtonTriggered(0, BUTTON_B)
 
 // クラス管理
 #ifdef GAMEMODE_CLASS
@@ -46,7 +49,6 @@ void CModeGame::Init()
 
 	// スクロール座標の初期化
 	SetScrollPosition(ZERO_VECTOR2);
-
 
 	// 背景の初期化処理
 	InitBg();
@@ -131,6 +133,12 @@ void CModeGame::Update(void)
 #ifdef _DEBUG
 	// ポーズフラグがtrueなら処理を行わない。
 	if ( GetPauseFlag() ) return;
+
+	// リスタートのキーが押されたとき
+	if( KEY_RESTART )
+	{
+		CModeGame::Init();	// ゲームモードの初期化
+	}
 #endif // _DEBUG
 
 	// マップチップの更新処理
@@ -207,6 +215,75 @@ void CModeGame::Draw()
 void CModeGame::CollisionCheck()
 {
 
+}
+
+//****************************************************
+// 説明		： マップチップとの当たり判定をとり、座標の調整も行う
+// 引数		： マップチップ情報, 現在の座標, 移動前の座標
+// 戻り値	： 【当たり】当たったチップの番号　　【外れ】「-1」
+//****************************************************
+//int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPos, D3DXVECTOR2 HalfObjectSize)
+int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPos)
+{
+	int nCurX, nCurY, nCurNo;
+	int nOldX, nOldY, nOldNo;
+
+	// 現在の座標のチップ番号と、マップチップ座標系での位置を求める
+	nCurNo = Mapchip.GetMapchipNo(*CurrentPos, &nCurX, &nCurY);	// 移動後の情報
+	nOldNo = Mapchip.GetMapchipNo(OldPos, &nOldX, &nOldY);		// 移動前の情報
+
+	// チップと当たっているか判定
+	// 移動後の座標にあるマップチップ番号が、当たり判定属性を持っていた時 → 当たっている
+	if (MAPCHIP_HIT_min <= nCurNo && nCurNo <= MAPCHIP_HIT_MAX)	// 移動後の座標にあるマップチップ番号が、「MAPCHIP_HIT_min」と「MAPCHIP_HIT_MAX」の間のとき
+	{	// マップチップと当たっている時の処理
+
+		//========= 1.座標を調整
+		// x軸
+		{
+			// まずは、チップ と 移動前座標(プレイヤー) の位置関係を調べる
+			int isLeft = (nOldX < nCurX);	// 移動前座標が左側にあるときは「1」になる
+	
+			if (isLeft)
+			{	// 移動前座標が左側の時
+			//	CurrentPos->x = (Mapchip.GetMapchipSize().x * nCurX) - HalfObjectSize.x;
+				CurrentPos->x = (Mapchip.GetMapchipSize().x * nCurX);
+
+				/* 上の命令だけだと、次ループ時に、isLeft=0判定となり、すりぬけちゃう */
+				CurrentPos->x -= 1.0f;		// ↑これ対策の、やりたくないけど応急処置
+			}
+			else
+			{
+			//	CurrentPos->x = (Mapchip.GetMapchipSize().x * (nCurX + 1)) + HalfObjectSize.x;
+				CurrentPos->x = (Mapchip.GetMapchipSize().x * (nCurX + 1) );
+			}
+		}
+
+		// y軸
+		{
+			// まずは、チップ と 移動前座標(プレイヤー) の位置関係を調べる
+			int isTop = (nOldY < nCurY);	// 移動前座標が上側にあるときは「1」になる
+
+			if (isTop)
+			{	// 移動前座標が左側の時
+			//	CurrentPos->y = (Mapchip.GetMapchipSize().y * nCurY) - HalfObjectSize.y;
+				CurrentPos->y = (Mapchip.GetMapchipSize().y * nCurY);
+
+				/* 上の命令だけだと、次ループ時に、isTop=0 判定となり、すりぬけちゃう */
+				CurrentPos->y -= 1.0f;		// ↑これ対策の、やりたくないけど応急処置
+			}
+			else
+			{
+				//	CurrentPos->y = (Mapchip.GetMapchipSize().y * (nCurY + 1)) + HalfObjectSize.y;
+				CurrentPos->y = (Mapchip.GetMapchipSize().y * (nCurY + 1));
+			}
+		}
+
+		//========= 2.当たったチップの番号を返す
+		return nCurNo;
+	}
+
+	// 当たっていない時　→ 「-1」を返す
+	return (-1);
 }
 
 

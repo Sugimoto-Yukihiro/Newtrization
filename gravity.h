@@ -47,19 +47,24 @@ public:
 	void SetGravityWait(float GravityWait);
 	void SetGravityFlag(bool Flag);
 
+	void SetAnotherForce(float Force);
+
 	//------------------- ゲッター関数
 	D3DXVECTOR2 GetGravityObjectPos();
 	D3DXVECTOR2 GetGravityObjectSize();
 	DIRECTION GetGravityObjectDirection();
 	float GetGravityWait();
-	int GetGravityFlameCnt();
-	bool GetGravityFlag();
+	float GetAnotherForce();
+	int GetGravityFlameCnt();				// 経過フレーム数の取得
+	bool GetGravityFlag();					
 
 private:
+	//------------------- メンバ変数
 	D3DXVECTOR2 m_Position;		// 物体の中心座標
 	D3DXVECTOR2 m_ObjectSize;	// 物体のサイズ
 	DIRECTION m_nDirection;		// 重力の向き
 	float m_GravityWait;		// 重力加速度
+	float m_fForce;				// 重力以外に加わっている力
 	int m_nFlameCount;			// 経過時間
 	bool m_bFall;				// 重力処理のフラグ
 };
