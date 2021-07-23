@@ -109,14 +109,14 @@ void CPlayer::Update()
 			D3DXVECTOR2 move = OldPosPlayer;	// 現在のプレイヤーの座標で初期化
 
 			// キー入力で移動
-			//if (GetKeyboardPress(DIK_DOWN))
-			//{
-			//	move.y += MOVE_VALUE;
-			//}
-			//if (GetKeyboardPress(DIK_UP))
-			//{
-			//	move.y -= MOVE_VALUE;
-			//}
+			if (GetKeyboardPress(DIK_DOWN))
+			{
+				move.y += MOVE_VALUE;
+			}
+			if (GetKeyboardPress(DIK_UP))
+			{
+				move.y -= MOVE_VALUE;
+			}
 			if (GetKeyboardPress(DIK_RIGHT))
 			{
 				move.x += MOVE_VALUE;
@@ -177,7 +177,7 @@ void CPlayer::Update()
 
 
 			// 重力処理を行っている時のみ、上下の判定を行う
-			if (GetGravityFlag())
+		//	if (GetGravityFlag())
 			{
 				// プレイヤーの上側の判定
 				CurrentPosPlayer.y -= HalfPlayer.y;	// 座標情報をプレイヤーテクスチャの上側へずらす
@@ -191,7 +191,7 @@ void CPlayer::Update()
 				// 当たり判定実行 ＆ 下側の座標調整
 				if (HitCheckMapchip(*GetGame()->GetMapchip(), &CurrentPosPlayer, OldPosPlayer) == -1 )
 				{	// 下側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
-				//	SetGravityFlag(true);
+					SetGravityFlag(true);
 				}
 				else
 				{	// 下側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る

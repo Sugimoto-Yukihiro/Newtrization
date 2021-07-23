@@ -239,6 +239,7 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 
 		//========= 1.座標を調整
 		// x軸
+		if ( (nCurX - nOldX) != 0)
 		{
 			// まずは、チップ と 移動前座標(プレイヤー) の位置関係を調べる
 			int isLeft = (nOldX < nCurX);	// 移動前座標が左側にあるときは「1」になる
@@ -259,6 +260,7 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 		}
 
 		// y軸
+		if ( (nCurY - nOldY) != 0)
 		{
 			// まずは、チップ と 移動前座標(プレイヤー) の位置関係を調べる
 			int isTop = (nOldY < nCurY);	// 移動前座標が上側にあるときは「1」になる
@@ -268,7 +270,7 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 			//	CurrentPos->y = (Mapchip.GetMapchipSize().y * nCurY) - HalfObjectSize.y;
 				CurrentPos->y = (Mapchip.GetMapchipSize().y * nCurY);
 
-				/* 上の命令だけだと、次ループ時に、isTop=0 判定となり、すりぬけちゃう */
+				/* 上の命令だけだと、次ループ時に、isTop =0 判定となり、すりぬけちゃう */
 				CurrentPos->y -= 1.0f;		// ↑これ対策の、やりたくないけど応急処置
 			}
 			else
