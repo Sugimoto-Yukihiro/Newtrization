@@ -166,7 +166,18 @@ void CPlayer::Update()
 
 			// プレイヤーの左側の判定
 			CurrentPosPlayer.x -= HalfPlayer.x;	// 座標情報をプレイヤーテクスチャの左側へずらす
-			HitCheckMapchip(*GetGame()->GetMapchip(), &CurrentPosPlayer, OldPosPlayer);	// 当たり判定実行 ＆ 左側の座標調整
+			//HitCheckMapchip(*GetGame()->GetMapchip(), &CurrentPosPlayer, OldPosPlayer);	// 当たり判定実行 ＆ 左側の座標調整
+
+			// 当たり判定実行 ＆ 下側の座標調整
+			if (HitCheckMapchip(*GetGame()->GetMapchip(), &CurrentPosPlayer, OldPosPlayer) == -1)
+			{	// 下側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
+				if (GetGame()->GetGravityDirection() == GRAVITY_LEFT) SetGravityFlag(true);
+			}
+			else
+			{	// 下側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
+				if (GetGame()->GetGravityDirection() == GRAVITY_LEFT) SetGravityFlag(false);
+			}
+
 			CurrentPosPlayer.x += HalfPlayer.x;	// ずらした分を元に戻す
 
 			// プレイヤーの右側の判定
@@ -175,31 +186,26 @@ void CPlayer::Update()
 			CurrentPosPlayer.x -= HalfPlayer.x;	// ずらした分を元に戻す
 
 
-
-			// 重力処理を行っている時のみ、上下の判定を行う
-		//	if (GetGravityFlag())
-			{
-				// プレイヤーの上側の判定
-				CurrentPosPlayer.y -= HalfPlayer.y;	// 座標情報をプレイヤーテクスチャの上側へずらす
-				HitCheckMapchip(*GetGame()->GetMapchip(), &CurrentPosPlayer, OldPosPlayer);	// 当たり判定実行 ＆ 上側の座標調整
-				CurrentPosPlayer.y += HalfPlayer.y;	// ずらした分を元に戻す
+			// プレイヤーの上側の判定
+			CurrentPosPlayer.y -= HalfPlayer.y;	// 座標情報をプレイヤーテクスチャの上側へずらす
+			HitCheckMapchip(*GetGame()->GetMapchip(), &CurrentPosPlayer, OldPosPlayer);	// 当たり判定実行 ＆ 上側の座標調整
+			CurrentPosPlayer.y += HalfPlayer.y;	// ずらした分を元に戻す
 	
 
-				// プレイヤーの下側の判定
-				CurrentPosPlayer.y += HalfPlayer.y;	// 座標情報をプレイヤーテクスチャの下側へずらす
+			// プレイヤーの下側の判定
+			CurrentPosPlayer.y += HalfPlayer.y;	// 座標情報をプレイヤーテクスチャの下側へずらす
 	
-				// 当たり判定実行 ＆ 下側の座標調整
-				if (HitCheckMapchip(*GetGame()->GetMapchip(), &CurrentPosPlayer, OldPosPlayer) == -1 )
-				{	// 下側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
-					SetGravityFlag(true);
-				}
-				else
-				{	// 下側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
-					SetGravityFlag(false);
-				}
-
-				CurrentPosPlayer.y -= HalfPlayer.y;	// ずらした分を元に戻す
+			// 当たり判定実行 ＆ 下側の座標調整
+			if (HitCheckMapchip(*GetGame()->GetMapchip(), &CurrentPosPlayer, OldPosPlayer) == -1 )
+			{	// 下側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
+				if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT) SetGravityFlag(true);
 			}
+			else
+			{	// 下側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
+				if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT) SetGravityFlag(false);
+			}
+
+			CurrentPosPlayer.y -= HalfPlayer.y;	// ずらした分を元に戻す
 
 			// 最終的な座標をセット
 			SetPlayerPos(CurrentPosPlayer);

@@ -32,14 +32,16 @@ public:
 
 	//------------------- ゲッター関数
 	D3DXVECTOR2 GetScrollPosition();
-	CMapchip* GetMapchip();	// マップチップのインスタンスへのアクセス
+	CMapchip* GetMapchip();			// マップチップのインスタンスへのアクセス
+	int GetGravityDirection();		// 重力の方向を取得
 
 #ifdef _DEBUG
-	bool GetPauseFlag();				// ポーズフラグの取得
+	bool GetPauseFlag();			// ポーズフラグの取得
 #endif // _DEBUG
 
 	//------------------- セッター関数
-	void SetScrollPosition(D3DXVECTOR2 Pos);	// スクロール座標のセット
+	void SetScrollPosition(D3DXVECTOR2 Pos);		// スクロール座標のセット
+	void SetGravityDirection(int Direction);	// 重力の向きを変更
 
 #ifdef _DEBUG
 	void SetPauseFlag(bool Flag);		// ポーズフラグのセット
@@ -52,6 +54,7 @@ private:
 
 	//------------------- メンバ変数
 	D3DXVECTOR2 m_vScrollPos;			// スクロール座標
+	int m_GravityDirection;	// 重力の方向
 #ifdef _DEBUG
 	bool	m_bPauseFlag;				// ポーズON/OFF
 #endif // _DEBUG

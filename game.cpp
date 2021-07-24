@@ -30,6 +30,8 @@
 #define NEXT_MODE				MODE_RESULT		// 次のモード
 #define KEY_RESTART				GetKeyboardTrigger(DIK_1)
 
+#define KEY_CHANGE_GRAVITY		GetKeyboardTrigger(DIK_2)
+
 //-------- ゲームパッド操作
 #define PAD_MODE_CHANGE			IsButtonTriggered(0, BUTTON_START) || IsButtonTriggered(0, BUTTON_B)
 
@@ -49,6 +51,8 @@ void CModeGame::Init()
 
 	// スクロール座標の初期化
 	SetScrollPosition(ZERO_VECTOR2);
+
+	m_GravityDirection = GRAVITY_DEFAULT;
 
 	// 背景の初期化処理
 	InitBg();
@@ -140,6 +144,14 @@ void CModeGame::Update(void)
 		CModeGame::Init();	// ゲームモードの初期化
 	}
 #endif // _DEBUG
+
+	// 重力方向の変更
+	if (KEY_CHANGE_GRAVITY)
+	{
+		m_GravityDirection = (m_GravityDirection + 1) % GRAVITY_DIRECTION_MAX;
+		SetGravityDirection(m_GravityDirection);
+	}
+
 
 	// マップチップの更新処理
 	m_Mapchip.Update();
@@ -271,7 +283,7 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 				CurrentPos->y = (Mapchip.GetMapchipSize().y * nCurY);
 
 				/* 上の命令だけだと、次ループ時に、isTop =0 判定となり、すりぬけちゃう */
-				CurrentPos->y -= 1.0f;		// ↑これ対策の、やりたくないけど応急処置
+				CurrentPos->y -= 0.5f;		// ↑これ対策の、やりたくないけど応急処置
 			}
 			else
 			{
@@ -305,6 +317,12 @@ CMapchip* CModeGame::GetMapchip()
 	return &m_Mapchip;	// マップチップの情報を返す
 }
 
+// 重力方向の取得
+int CModeGame::GetGravityDirection()
+{
+	return m_GravityDirection;
+}
+
 #ifdef _DEBUG
 // ポーズフラグの取得
 bool CModeGame::GetPauseFlag()
@@ -328,6 +346,17 @@ void CModeGame::SetScrollPosition(D3DXVECTOR2 Pos)
 void CModeGame::SetPauseFlag(bool Flag)
 {
 	m_bPauseFlag = Flag;
+}
+
+void CModeGame::SetGravityDirection(int Direction)
+{
+	// 重力処理クラスを継承している全てのオブジェクトの、重力方向の向きを変更
+	for (int i = 0; i < PLAYER_MAX; i++)
+	{
+		if (!m_Player->GetPlayerUseFlag()) return;	// プレイヤーが未使用なら行わない
+		m_Player[i].SetGravityObjectDirection(Direction);	// プレイヤーの重力方向をセット
+	}
+	
 }
 
 #endif // GAMEMODE_CLASS

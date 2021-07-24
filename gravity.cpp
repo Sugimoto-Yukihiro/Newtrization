@@ -69,7 +69,7 @@ void CGravity::Update()
 	else if (m_nDirection == GRAVITY_LEFT)	// 左向き
 	{
 		// 変化するのはx座標
-		m_Position.x += m_GravityWait * m_nFlameCount;
+		m_Position.x -= m_GravityWait * m_nFlameCount;
 	}
 
 //	// マップチップとの当たり判定を取る
@@ -149,7 +149,7 @@ void CGravity::SetGravityObjectSize(D3DXVECTOR2 Size)
 	m_ObjectSize = Size;
 }
 
-void CGravity::SetGravityObjectDirection(DIRECTION Direction)
+void CGravity::SetGravityObjectDirection(int Direction)
 {
 	m_nDirection = Direction;
 }
@@ -183,7 +183,7 @@ D3DXVECTOR2 CGravity::GetGravityObjectSize()
 	return m_Position;
 }
 
-DIRECTION CGravity::GetGravityObjectDirection()
+int CGravity::GetGravityObjectDirection()
 {
 	return m_nDirection;
 }

@@ -17,10 +17,12 @@
 //*****************************************************************************
 // 列挙型
 //*****************************************************************************
-enum DIRECTION
+enum
 {
 	GRAVITY_DEFAULT, 
-	GRAVITY_LEFT
+	GRAVITY_LEFT,
+
+	GRAVITY_DIRECTION_MAX
 };
 
 
@@ -43,7 +45,7 @@ public:
 	//------------------- セッター関数
 	void SetGravityObjectPos(D3DXVECTOR2 Pos);
 	void SetGravityObjectSize(D3DXVECTOR2 Size);
-	void SetGravityObjectDirection(DIRECTION Direction);
+	void SetGravityObjectDirection(int Direction);
 	void SetGravityWait(float GravityWait);
 	void SetGravityFlag(bool Flag);
 
@@ -52,7 +54,7 @@ public:
 	//------------------- ゲッター関数
 	D3DXVECTOR2 GetGravityObjectPos();
 	D3DXVECTOR2 GetGravityObjectSize();
-	DIRECTION GetGravityObjectDirection();
+	int GetGravityObjectDirection();
 	float GetGravityWait();
 	float GetAnotherForce();
 	int GetGravityFlameCnt();				// 経過フレーム数の取得
@@ -62,7 +64,7 @@ private:
 	//------------------- メンバ変数
 	D3DXVECTOR2 m_Position;		// 物体の中心座標
 	D3DXVECTOR2 m_ObjectSize;	// 物体のサイズ
-	DIRECTION m_nDirection;		// 重力の向き
+	int m_nDirection;		// 重力の向き
 	float m_GravityWait;		// 重力加速度
 	float m_fForce;				// 重力以外に加わっている力
 	int m_nFlameCount;			// 経過時間
