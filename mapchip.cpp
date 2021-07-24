@@ -123,11 +123,11 @@ void CMapchip::Draw()
 	offset_y = -ScrollPos.y;
 
 	// 描画するチップ数を算出
-	nDrawChipNumX = SCREEN_WIDTH / (int)GetMapchipSize().x + numx;		// 横方向(x軸)のチップ数
+	nDrawChipNumX = SCREEN_WIDTH / (int)GetMapchipSize().x + numx;	// 横方向(x軸)のチップ数
 	nDrawChipNumY = SCREEN_HEIGHT / (int)GetMapchipSize().y + numy;	// 縦方向(y軸)のチップ数
 
 	// マップ描画
-	for (int y = numy; y < nDrawChipNumY + 2; y++)
+	for (int y = numy; y < nDrawChipNumY + 2; y++)	// 2は中途半端に出てるやつ
 	{
 		for (int x = numx; x < nDrawChipNumX + 2; x++)
 		{
@@ -138,15 +138,15 @@ void CMapchip::Draw()
 			if(nChipId == 0) continue;
 
 			// チップの描画位置を算出
-			D3DXVECTOR2 ChipCenterPos;
-			ChipCenterPos.y = (float)(offset_y + (GetMapchipSize().y * y));	// 背景の表示座標Y
-			ChipCenterPos.x = (float)(offset_x + (GetMapchipSize().x * x));	// 背景の表示座標X
+			D3DXVECTOR2 ChipPos;
+			ChipPos.y = (float)(offset_y + (GetMapchipSize().y * y));	// 背景の表示座標Y
+			ChipPos.x = (float)(offset_x + (GetMapchipSize().x * x));	// 背景の表示座標X
 
-			ChipCenterPos.y += GetMapchipSize().y * 0.5f;	// 中心座標にする
-			ChipCenterPos.x += GetMapchipSize().x * 0.5f;	// 中心座標にする
+		//	ChipPos.y += GetMapchipSize().y * 0.5f;	// 中心座標にする
+		//	ChipPos.x += GetMapchipSize().x * 0.5f;	// 中心座標にする
 
 			// 描画
-			DrawChip(ChipCenterPos, nChipId);	// 描画座標が中心指定のとき
+			DrawChip(ChipPos, nChipId);	// 描画座標が中心指定のとき
 		}
 	}
 
@@ -164,7 +164,7 @@ void CMapchip::DrawChip(D3DXVECTOR2 Pos, int Num)
 	float ty = (float)(Num / GetTexDivideX()) * th;	// テクスチャの左上Y座標
 
 	// １枚のポリゴンの頂点とテクスチャ座標を設定
-	SetSprite(g_VertexBuffer, Pos.x, Pos.y, GetMapchipSize().x, GetMapchipSize().y, tx, ty, tw, th);
+	SetVertex(g_VertexBuffer, Pos.x, Pos.y, GetMapchipSize().x, GetMapchipSize().y, tx, ty, tw, th);
 
 	// ポリゴン描画
 	GetDeviceContext()->Draw(4, 0);
