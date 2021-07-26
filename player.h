@@ -8,6 +8,7 @@
 
 #include "texture.h"	// テクスチャ描画処理
 #include "gravity.h"	// 重力処理
+#include "mapchip.h"	// マップチップ
 
 //*****************************************************************************
 // マクロ定義
@@ -46,14 +47,16 @@ public:
 	#define PLAYER_ALIVE	SetPlayerUseFlag(true)	// プレイヤーを生き返らせる
 
 private:
-	//------------------- メンバ関数
-//	void MovePlayerInput();				// プレイヤーをキー入力で動かす
+	//------------------- メンバ関数(private)
+	void ControllPlayerInput(D3DXVECTOR2 NowPosition);					// プレイヤーを キーまたはゲームパッド入力 で動かす
+	void CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos);	// マップチップとの当たり判定を取って押し出し処理を行う
 
 	//------------------- メンバ変数
-	int				m_nCurrentMapChipNo;		// プレイヤーの現在いるマップチップ番号
-	int				m_nMapchipX, m_nMapchipY;	// マップチップ座標系での、プレイヤーの現在位置
-	int				m_nTexNo;					// テクスチャ番号
-	bool			m_bUse;						// true:使っている(生存)  false:未使用(死亡)
+//	int		m_nCurrentMapChipNo;		// プレイヤーの現在いるマップチップ番号
+//-	int		m_nMapchipX, m_nMapchipY;	// マップチップ座標系での、プレイヤーの現在位置
+	int		m_nTexNo;					// テクスチャ番号
+	bool	m_bUse;						// true:使っている(生存)  false:未使用(死亡)
+	bool	m_bDush;					// プレイヤーがダッシュ中かどうか
 };
 
 //*****************************************************************************

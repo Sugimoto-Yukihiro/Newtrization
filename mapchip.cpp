@@ -41,8 +41,8 @@ CMapchip::CMapchip()	// コンストラクタ
 	//------------------- メンバ変数の初期化
 //	SetMapchipBasePos(ZERO_VECTOR2);
 	SetMapchipSize(MAPCHIP_SIZE_DEFAULT);	// １つのチップの大きさをセット
-	SetMapchipNumX(-1);				// マップチップの列数をセット
-	SetMapchipNumY(-1);				// マップチップの列数をセット
+	SetMapchipNumX(-1);						// マップチップの列数をセット
+	SetMapchipNumY(-1);						// マップチップの列数をセット
 
 }
 
@@ -56,7 +56,7 @@ CMapchip::~CMapchip()	// デストラクタ
 //=============================================================================
 // 初期化処理
 //=============================================================================
-void CMapchip::Init()
+void CMapchip::Init(char* pMapFileName)
 {
 	//------------------- メンバ変数の初期化
 	m_nChipNumX = 1;	// マップチップの列数
@@ -66,12 +66,12 @@ void CMapchip::Init()
 	SetTexDivideX(4);
 	SetTexDivideY(4);
 
-
 	// マップチップ配列のセット
-//	SetMapChipData(pTestMapChipData);
-//	LoadMapchipData("data/MAPCHIP/mapdata1.01.csv");
-//	LoadMapchipData("data/MAPCHIP/mapdata1.02.csv");
-	LoadMapchipData("data/MAPCHIP/mapdata1.csv");
+	if (pMapFileName == NULL)	// NULLならゼロで初期化
+	{
+		for (int i = 0; i < MAPCHIP_NUM_MAX; i++) m_MapChipData[i] = 0;
+	}
+	else LoadMapchipData(pMapFileName);
 }
 
 
@@ -182,13 +182,18 @@ void CMapchip::DrawChip(D3DXVECTOR2 Pos, int Num)
 //****************************************************
 int CMapchip::LoadMapchipData(char* pFileName)
 {
+	// エラーチェック
+	if (pFileName == NULL) 0;	// NULLなら失敗を返す
+ 
 	char* pLoad = NULL;
-	LoadCsvFile(pFileName, pLoad, 8, ",");	// 読み込み
+	// Csvファイルの、コメント部分を削除した状態のものを読み込み（カンマで区切られた数値データを抽出）
+	LoadCsvFile(pFileName, pLoad, 8, ",");
 
+	// カンマ区切りの数値を読み取って代入する
 	SetMapChipData(pLoad);
 
 	delete[] pLoad;
-	return 0;	// 成功
+	return 1;	// 成功
 }
 
 
@@ -220,21 +225,31 @@ int CMapchip::SetMapChipData(const char* pCsvString)
 	pToken = pCopyStr;
 	while (pToken = strtok(pToken, ","))
 	{
-		if (strrchr(pToken, '\n') != NULL)	// 改行コードがあったとき
-		{
-			// 先頭の１文字のみを抽出
-			char singleWord[2] = { "\0" };
-			strncat(singleWord, pToken, 1);
+	//	if (strrchr(pToken, '\n') != NULL)	// 改行コードがあったとき
+	//	{
+	//		// 先頭の１文字のみを抽出
+	//	//	char singleWord[2] = { "\0" };
+	//	//	strncat(singleWord, pToken, 1);
+	//
+	//	//	m_MapChipData[nTokenCnt] = atoi(singleWord);	// 数値代入
+	//		m_MapChipData[nTokenCnt] = atoi(pToken);		// 数値代入
+	//		nTokenCnt++;	// マップチップの列数を加算
+	//		nLinesCnt++;	// マップチップの行数も加算
+	//	}
+	//	else
+	//	{
+	//		m_MapChipData[nTokenCnt] = atoi(pToken);		// 数値代入
+	//		nTokenCnt++;	// マップチップの列数を加算
+	//	}
 
-			m_MapChipData[nTokenCnt] = atoi(singleWord);	// 数値代入
-			nTokenCnt++;	// マップチップの列数を加算
+		// 改行コードがあったとき
+		if (strrchr(pToken, '\n') != NULL)
+		{
 			nLinesCnt++;	// マップチップの行数も加算
 		}
-		else
-		{
-			m_MapChipData[nTokenCnt] = atoi(pToken);		// 数値代入
-			nTokenCnt++;	// マップチップの列数を加算
-		}
+
+		m_MapChipData[nTokenCnt] = atoi(pToken);		// 数値代入
+		nTokenCnt++;	// マップチップの列数を加算
 
 		pToken = NULL;		// 次の字句を取得するためNULLをセット
 	}

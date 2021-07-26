@@ -17,10 +17,10 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define TEXTURE_WIDTH				(MAPCHIP_SIZE_X)	// キャラサイズ	X
-#define TEXTURE_HEIGHT				(MAPCHIP_SIZE_Y)	//				Y
-//#define TEXTURE_SIZE				D3DXVECTOR2(TEXTURE_WIDTH, TEXTURE_HEIGHT)	// キャラサイズ
-#define TEXTURE_SIZE				MAPCHIP_SIZE_DEFAULT	// キャラサイズ
+#define TEXTURE_WIDTH				(MAPCHIP_SIZE_DEFAULT.x)		// キャラサイズ	X
+#define TEXTURE_HEIGHT				(MAPCHIP_SIZE_DEFAULT.y * 2)	//				Y
+#define TEXTURE_SIZE				D3DXVECTOR2(TEXTURE_WIDTH, TEXTURE_HEIGHT)	// キャラサイズ
+//#define TEXTURE_SIZE				MAPCHIP_SIZE_DEFAULT	// キャラサイズ
 
 #define TEXTURE_MAX					(3)			// テクスチャの数
 
@@ -28,7 +28,9 @@
 #define TEXTURE_PATTERN_DIVIDE_Y	(1)			// アニメパターンのテクスチャ内分割数（Y)
 #define ANIM_PATTERN_NUM			(TEXTURE_PATTERN_DIVIDE_X*TEXTURE_PATTERN_DIVIDE_Y)	// アニメーションパターン数
 #define ANIM_WAIT					(5)			// アニメーションの切り替わるデフォルトWait値
+
 #define MOVE_VALUE					(10.0f)
+#define RATE_DUSH					(1.3f)		// プレイヤーダッシュ時の移動値の倍率
 
 
 //*****************************************************************************
@@ -49,7 +51,7 @@ static char *g_TextureName[] = {
 	"data/TEXTURE/player/player01_Back_Not_Invisible.png",	// TexNo : 2
 };
 
-//static CPlayer	g_aPlayer[PLAYER_MAX];								// プレイヤーインスタンス
+//static CPlayer	g_aPlayer[PLAYER_MAX];		// プレイヤーインスタンス
 
 //=============================================================================
 // コンストラクタ・デストラクタ
@@ -94,122 +96,20 @@ void CPlayer::Update()
 	// このプレイヤーが使われていたら更新処理実行
 	if (m_bUse == true)
 	{
-		// マップチップ情報の取得
-		CMapchip Mapchip = *GetGame()->GetMapchip();
-
-		// 移動処理前のプレイヤー座標を保存
-		D3DXVECTOR2 OldPosPlayer = GetPlayerPos();
+		CMapchip Mapchip = *GetGame()->GetMapchip();	// マップチップ情報の取得
+		D3DXVECTOR2 OldPosPlayer = GetPlayerPos();		// 移動処理前のプレイヤー座標を保存
 
 		// アニメーション
 		UpdateAnimIndex(0, 5);	// 0-5番目の間をアニメーションする
 
 		// プレイヤーの移動処理（入力処理）
-		{
-			// プレイヤーの移動値を保存する変数
-			D3DXVECTOR2 move = OldPosPlayer;	// 現在のプレイヤーの座標で初期化
-
-			// キー入力で移動
-			if (GetKeyboardPress(DIK_DOWN))
-			{
-				move.y += MOVE_VALUE;
-			}
-			if (GetKeyboardPress(DIK_UP))
-			{
-				move.y -= MOVE_VALUE;
-			}
-			if (GetKeyboardPress(DIK_RIGHT))
-			{
-				move.x += MOVE_VALUE;
-			}
-			else if (GetKeyboardPress(DIK_LEFT))
-			{
-				move.x -= MOVE_VALUE;
-			}
-
-			// ゲームパッドで移動処理
-			if (IsButtonPressed(0, BUTTON_DOWN))
-			{
-				move.y += MOVE_VALUE;
-			}
-			else if (IsButtonPressed(0, BUTTON_UP))
-			{
-				move.y -= MOVE_VALUE;
-			}
-			else if (IsButtonPressed(0, BUTTON_RIGHT))
-			{
-				move.x += MOVE_VALUE;
-			}
-			else if (IsButtonPressed(0, BUTTON_LEFT))
-			{
-				move.x -= MOVE_VALUE;
-			}
-
-			// プレイヤーのキー移動後の座標をセット
-			SetPlayerPos(move);
-		}
+		ControllPlayerInput(GetPlayerPos());
 
 		// 重力処理
-		{
-			// 重力処理実行
-			CGravity::Update();	// プレイヤー座標の更新も自動的に行ってる
-		}
+		CGravity::Update();	// プレイヤー座標の更新も自動的に行ってる
 
 		// マップチップとの当たり判定をとって、最終的な座標をセット
-		{
-			// 移動処理後のプレイヤーの座標を保存
-			D3DXVECTOR2 CurrentPosPlayer = GetPlayerPos();
-
-			// プレイヤーの半分のサイズを保存
-			D3DXVECTOR2 HalfPlayer = GetPlayerSize() * 0.5f;
-
-		//	HitCheckMapchip(*GetGame()->GetMapchip(), &CurrentPosPlayer, OldPosPlayer, GetPlayerSize() * 0.5f);	// 当たり判定実行 ＆ 上側の座標調整
-
-			// プレイヤーの左側の判定
-			CurrentPosPlayer.x -= HalfPlayer.x;	// 座標情報をプレイヤーテクスチャの左側へずらす
-			//HitCheckMapchip(*GetGame()->GetMapchip(), &CurrentPosPlayer, OldPosPlayer);	// 当たり判定実行 ＆ 左側の座標調整
-
-			// 当たり判定実行 ＆ 下側の座標調整
-			if (HitCheckMapchip(*GetGame()->GetMapchip(), &CurrentPosPlayer, OldPosPlayer) == -1)
-			{	// 下側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
-				if (GetGame()->GetGravityDirection() == GRAVITY_LEFT) SetGravityFlag(true);
-			}
-			else
-			{	// 下側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
-				if (GetGame()->GetGravityDirection() == GRAVITY_LEFT) SetGravityFlag(false);
-			}
-
-			CurrentPosPlayer.x += HalfPlayer.x;	// ずらした分を元に戻す
-
-			// プレイヤーの右側の判定
-			CurrentPosPlayer.x += HalfPlayer.x;	// 座標情報をプレイヤーテクスチャの右側へずらす
-			HitCheckMapchip(*GetGame()->GetMapchip(), &CurrentPosPlayer, OldPosPlayer);	// 当たり判定実行 ＆ 右側の座標調整
-			CurrentPosPlayer.x -= HalfPlayer.x;	// ずらした分を元に戻す
-
-
-			// プレイヤーの上側の判定
-			CurrentPosPlayer.y -= HalfPlayer.y;	// 座標情報をプレイヤーテクスチャの上側へずらす
-			HitCheckMapchip(*GetGame()->GetMapchip(), &CurrentPosPlayer, OldPosPlayer);	// 当たり判定実行 ＆ 上側の座標調整
-			CurrentPosPlayer.y += HalfPlayer.y;	// ずらした分を元に戻す
-	
-
-			// プレイヤーの下側の判定
-			CurrentPosPlayer.y += HalfPlayer.y;	// 座標情報をプレイヤーテクスチャの下側へずらす
-	
-			// 当たり判定実行 ＆ 下側の座標調整
-			if (HitCheckMapchip(*GetGame()->GetMapchip(), &CurrentPosPlayer, OldPosPlayer) == -1 )
-			{	// 下側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
-				if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT) SetGravityFlag(true);
-			}
-			else
-			{	// 下側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
-				if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT) SetGravityFlag(false);
-			}
-
-			CurrentPosPlayer.y -= HalfPlayer.y;	// ずらした分を元に戻す
-
-			// 最終的な座標をセット
-			SetPlayerPos(CurrentPosPlayer);
-		}
+		CollisionMapchip(Mapchip, OldPosPlayer);
 
 		//=================== スクロール座標の更新
 		{
@@ -266,11 +166,6 @@ void CPlayer::Draw()
 
 
 //=============================================================================
-// メンバ関数
-//=============================================================================
-
-
-//=============================================================================
 // セッター関数
 //=============================================================================
 // プレイヤーの座標をセット
@@ -316,6 +211,111 @@ D3DXVECTOR2 CPlayer::GetPlayerSize()
 bool CPlayer::GetPlayerUseFlag()
 {
 	return m_bUse;
+}
+
+
+
+//=============================================================================
+// メンバ関数(private)
+//=============================================================================
+// プレイヤーを キーまたはゲームパッド入力 で動かす
+void CPlayer::ControllPlayerInput(D3DXVECTOR2 NowPosition)
+{
+	// 移動値の倍率
+	float fMagnification = 1.0f;
+
+	// ダッシュ時の倍率を適用
+	if(KEY_MOVE_PLAYER_DUSH) fMagnification = fMagnification * RATE_DUSH;
+
+	// キー入力で移動
+	if (GetKeyboardPress(DIK_DOWN))	// 上方向移動
+	{
+		NowPosition.y += MOVE_VALUE * fMagnification;
+	}
+	if (GetKeyboardPress(DIK_UP))	// 上方向移動
+	{
+		NowPosition.y -= MOVE_VALUE * fMagnification;
+	}
+	if (GetKeyboardPress(DIK_RIGHT))	// 右方向移動
+	{
+		NowPosition.x += MOVE_VALUE * fMagnification;
+	}
+	if (GetKeyboardPress(DIK_LEFT))	// 左方向移動
+	{
+		NowPosition.x -= MOVE_VALUE * fMagnification;
+	}
+
+	// ゲームパッドで移動処理
+	if (IsButtonPressed(0, BUTTON_DOWN))
+	{
+		NowPosition.y += MOVE_VALUE * fMagnification;
+	}
+	else if (IsButtonPressed(0, BUTTON_UP))
+	{
+		NowPosition.y -= MOVE_VALUE * fMagnification;
+	}
+	else if (IsButtonPressed(0, BUTTON_RIGHT))
+	{
+		NowPosition.x += MOVE_VALUE * fMagnification;
+	}
+	else if (IsButtonPressed(0, BUTTON_LEFT))
+	{
+		NowPosition.x -= MOVE_VALUE * fMagnification;
+	}
+
+	// プレイヤーのキー移動後の座標をセット
+	SetPlayerPos(NowPosition);
+}
+
+// マップチップとの当たり判定を取って押し出し処理を行う
+void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
+{
+	// 移動処理後のプレイヤーの座標を保存
+	D3DXVECTOR2 CurrentPosPlayer = GetPlayerPos();
+
+	// プレイヤーの半分のサイズを保存
+	D3DXVECTOR2 HalfPlayer = GetPlayerSize() * 0.5f;
+
+	//============ プレイヤーの左側の判定
+	CurrentPosPlayer.x -= HalfPlayer.x;	// 座標情報をプレイヤーテクスチャの左側へずらす
+	// 当たり判定実行 ＆ 下側の座標調整
+	if (HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos) == -1)	// 当たっていない時
+	{
+		// 左側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
+		if (GetGame()->GetGravityDirection() == GRAVITY_LEFT) SetGravityFlag(true);	// 重力方向が左向きなら実行
+	}
+	else
+	{	// 左側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
+		if (GetGame()->GetGravityDirection() == GRAVITY_LEFT) SetGravityFlag(false);// 重力方向が右向きなら実行
+	}
+	CurrentPosPlayer.x += HalfPlayer.x;	// ずらした分を元に戻す
+
+	//============ プレイヤーの右側の判定
+	CurrentPosPlayer.x += HalfPlayer.x;	// 座標情報をプレイヤーテクスチャの右側へずらす
+	HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos);	// 当たり判定実行 ＆ 右側の座標調整
+	CurrentPosPlayer.x -= HalfPlayer.x;	// ずらした分を元に戻す
+
+	//============ プレイヤーの上側の判定
+	CurrentPosPlayer.y -= HalfPlayer.y;	// 座標情報をプレイヤーテクスチャの上側へずらす
+	HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos);	// 当たり判定実行 ＆ 上側の座標調整
+	CurrentPosPlayer.y += HalfPlayer.y;	// ずらした分を元に戻す
+
+	//============ プレイヤーの下側の判定
+	CurrentPosPlayer.y += HalfPlayer.y;	// 座標情報をプレイヤーテクスチャの下側へずらす
+	// 当たり判定実行 ＆ 下側の座標調整
+	if (HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos) == -1)	// 当たっていない時
+	{	// 下側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
+		if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT) SetGravityFlag(true);
+	}
+	else
+	{
+		// 下側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
+		if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT) SetGravityFlag(false);
+	}
+	CurrentPosPlayer.y -= HalfPlayer.y;	// ずらした分を元に戻す
+
+	// 最終的な座標をセット
+	SetPlayerPos(CurrentPosPlayer);
 }
 
 

@@ -122,7 +122,6 @@ void DrawBg(void)
 	// ‚P–‡‚Ìƒ|ƒŠƒSƒ“‚Ì’¸“_‚ÆƒeƒNƒXƒ`ƒƒÀ•W‚ðÝ’è
 	SetVertex(g_VertexBuffer, 0.0f, 0.0f, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f);
 
-
 	// ƒ|ƒŠƒSƒ“•`‰æ
 	GetDeviceContext()->Draw(4, 0);
 }

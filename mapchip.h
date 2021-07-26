@@ -18,7 +18,7 @@
 
 /* "MAPCHIP_HIT_min" ~ "MAPCHIP_HIT_MAX" の番号が当たり判定属性を持つマップチップ */
 #define MAPCHIP_HIT_min		(1)		// 当たり判定属性のマップチップ番号の最小値
-#define MAPCHIP_HIT_MAX		(10)		// 当たり判定属性のマップチップ番号の最大値
+#define MAPCHIP_HIT_MAX		(9)		// 当たり判定属性のマップチップ番号の最大値
 
 #define MAPCHIP_NUM_MAX_X	(64)	// マップチップの最大列数
 #define MAPCHIP_NUM_MAX_Y	(64)	// マップチップの最大行数
@@ -40,11 +40,13 @@ enum
 class CMapchip : public CTexture
 {
 public:
-	CMapchip();			// コンストラクタ
-	~CMapchip();		// デストラクタ
+	CMapchip();		// コンストラクタ
+	~CMapchip();	// デストラクタ
 
 	//------------------- メンバ関数
-	void Init();	// 初期化
+//	void Init();	// 初期化
+	void Init(char* pMapFileName = NULL);	// 初期化
+
 	void Uninit();	// 終了処理
 	void Draw();	// 描画処理
 	void Update();	// 更新処理
