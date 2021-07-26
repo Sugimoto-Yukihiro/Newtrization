@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // d—Íˆ— [gravity.cpp]
-// Author : ˆîŠ_—C“ñ˜Y
+// Author : ˆîŠ_—C“ñ˜Y, ™–{KG
 //
 //=============================================================================
 
@@ -180,7 +180,7 @@ D3DXVECTOR2 CGravity::GetGravityObjectPos()
 
 D3DXVECTOR2 CGravity::GetGravityObjectSize()
 {
-	return m_Position;
+	return m_ObjectSize;
 }
 
 int CGravity::GetGravityObjectDirection()

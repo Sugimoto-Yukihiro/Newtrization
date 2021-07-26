@@ -28,7 +28,7 @@
 #define NEXT_MODE				MODE_RESULT		// 次のモード
 
 // マップチップのファイル名
-#define GAME_MAP_DATA			"data/MAPCHIP/mapdata32×64.csv"		// マップ情報のファイル名
+#define GAME_MAP_DATA			"data/MAPCHIP/alpha_MAP.csv"		// マップ情報のファイル名
 
 // クラス管理
 #ifdef GAMEMODE_CLASS
@@ -187,9 +187,11 @@ void CModeGame::Update(void)
 	UpdateBg();
 
 #ifdef _DEBUG
-	PrintDebugProc("\nスクロール座標 X: %f  Y: %f\n", GetScrollPosition().x, GetScrollPosition().y);
+	PrintDebugProc("\nスクロール座標 X: %f  Y: %a\n", GetScrollPosition().x, GetScrollPosition().y);
 
-	PrintDebugProc("　　重力の方向:%d ", GetGravityDirection());
+	PrintDebugProc("　重力の方向 :");
+	if (GetGravityDirection() == GRAVITY_DEFAULT) 	PrintDebugProc("　下方向");
+	if (GetGravityDirection() == GRAVITY_LEFT)		PrintDebugProc("　左方向");
 
 	//char *str = GetDebugStr();
 	//sprintf(&str[strlen(str)], "　　重力の方向:%d ", GetGravityDirection());
@@ -245,22 +247,37 @@ void CModeGame::CollisionCheck()
 	//	switch (Num)
 		switch ( m_Mapchip.GetMapchipNo(m_Player->GetPlayerPos()) )	// プレイヤー座標のマップチップを取得
 		{
-		// 重力変更エンジンに触れたとき
+			// 重力変更エンジンに触れたとき
 		case 10:
 			// 重力方向の変更
-			if (!m_bIsTouchGrvityChange)	// 重力装置に触れていないという数値の時
+			if (!m_bIsTouchGrvityChange)	// 初めて重力装置に触れた時の一回だけ行う
 			{
 				/*これ関数化できるな*/
-				m_GravityDirection = (m_GravityDirection + 1) % GRAVITY_DIRECTION_MAX;
-				SetGravityDirection(m_GravityDirection);
-				m_bIsTouchGrvityChange = true;	// 重力装置に触れていますよ
+				m_GravityDirection = (m_GravityDirection + 1) % GRAVITY_DIRECTION_MAX;	// 重力の方向を変更
+				SetGravityDirection(m_GravityDirection);	// 重力方向セット
+
+				if (GRAVITY_LEFT)	// 左向きへ変わったのなら
+				{
+					m_Player->SetTexRotation(D3DXToRadian(90));	// プレイヤーテクスチャを90°回転
+				//	m_Player->SetPlayerSize(D3DXVECTOR2(m_Player->GetPlayerSize().y, m_Player->GetPlayerSize().x));	// サイズも入れ替え
+				}
+				else if (GRAVITY_DEFAULT)	// デフォルトへ変わったのなら
+				{
+					m_Player->SetTexRotation(-D3DXToRadian(90));	// プレイヤーテクスチャを90°回転
+				}
+				m_Player->SetPlayerSize(D3DXVECTOR2(m_Player->GetPlayerSize().y, m_Player->GetPlayerSize().x));	// サイズ値を入れ替え
+				m_bIsTouchGrvityChange = true;				// 重力装置に触れていますよ
 			}
 			break;
 
-			// 重力装置に触れていません
-			m_bIsTouchGrvityChange = false;	// フラグを"false"にセット
+			// ゴールに着いたとき
+		case 11:
+			SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモード（リザルト画面）へ
+			break;
 
 		default:
+			// 重力装置に触れていません
+			m_bIsTouchGrvityChange = false;		// フラグを"false"にセット
 			break;
 		}
 
@@ -291,7 +308,7 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 		if(Flag)	// 座標調整を行うフラグが立っていたら、座標調整を行う
 		{
 			// x軸
-			if ( (nCurX - nOldX) != 0)
+			if ( (nCurX - nOldX) != 0)	// 差がないときは調整する必要がない
 			{
 				// まずは、チップ と 移動前座標(プレイヤー) の位置関係を調べる
 				int isLeft = (nOldX < nCurX);	// 移動前座標が左側にあるときは「1」になる
@@ -302,17 +319,19 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 					CurrentPos->x = (Mapchip.GetMapchipSize().x * nCurX);			// 座標調整（押し出し処理）
 
 					/* 上の命令だけだと、次ループ時に、isLeft=0判定となり、すりぬけちゃう */
-					CurrentPos->x -= 1.0f;		// ↑これ対策の、やりたくないけど応急処置
+					CurrentPos->x -= 0.5f;		// ↑これ対策の、やりたくないけど応急処置
 				}
 				else
 				{
 				//	CurrentPos->x = (Mapchip.GetMapchipSize().x * (nCurX + 1)) + HalfObjectSize.x;
 					CurrentPos->x = (Mapchip.GetMapchipSize().x * (nCurX + 1) );	// 座標調整（押し出し処理）
+
+					CurrentPos->x += 0.5f;
 				}
 			}
 
 			// y軸
-			if ( (nCurY - nOldY) != 0)
+			if ( (nCurY - nOldY) != 0)	// 差がないときは調整する必要がない
 			{
 				// まずは、チップ と 移動前座標(プレイヤー) の位置関係を調べる
 				int isTop = (nOldY < nCurY);	// 移動前座標が上側にあるときは「1」になる
@@ -329,6 +348,8 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 				{
 				//	CurrentPos->y = (Mapchip.GetMapchipSize().y * (nCurY + 1)) + HalfObjectSize.y;
 					CurrentPos->y = (Mapchip.GetMapchipSize().y * (nCurY + 1));	// 座標調整（押し出し処理）
+
+					CurrentPos->x += 0.5f;
 				}
 			}
 		}

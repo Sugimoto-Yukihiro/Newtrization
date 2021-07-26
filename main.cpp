@@ -331,6 +331,10 @@ void CMode::Uninit(void)
 //=============================================================================
 void CMode::Update(void)
 {
+	// フェードの更新処理
+	UpdateFade();
+	if(GetFade() != FADE_NONE) return;	// フェード中なら更新処理は行わない
+
 	// キー・ゲームパッドの更新処理
 	UpdateInput();
 
@@ -363,9 +367,6 @@ void CMode::Update(void)
 	default:
 		break;
 	}
-
-	// フェードの更新処理
-	UpdateFade();
 
 }
 

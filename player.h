@@ -34,9 +34,10 @@ public:
 	void Draw();						// 描画処理
 
 	//------------------- セッター関数
-	void SetPlayerPos(D3DXVECTOR2 Pos);	// プレイヤーの座標をセット
-	void SetPlayerUseFlag(bool Use);	// プレイヤーのuseフラグのセット
-	void KillPlayer();					// プレイヤーを殺す処理
+	void SetPlayerPos(D3DXVECTOR2 Pos);		// プレイヤーの座標をセット
+	void SetPlayerSize(D3DXVECTOR2 Size);	// プレイヤーのサイズをセット
+	void SetPlayerUseFlag(bool Use);		// プレイヤーのuseフラグのセット
+	void KillPlayer();						// プレイヤーを殺す処理
 
 	//------------------- ゲッター関数
 	D3DXVECTOR2 GetPlayerPos();			// プレイヤーの座標を取得
@@ -57,6 +58,8 @@ private:
 	int		m_nTexNo;					// テクスチャ番号
 	bool	m_bUse;						// true:使っている(生存)  false:未使用(死亡)
 	bool	m_bDush;					// プレイヤーがダッシュ中かどうか
+	bool	m_bIsJump;					// プレイヤーがジャンプ中かどうか
+	bool	m_bIsMove;					// プレイヤーの動作フラグ   true:動いてる false:停止中
 };
 
 //*****************************************************************************

@@ -17,22 +17,26 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
+//------------------- テクスチャ関連
 #define TEXTURE_WIDTH				(MAPCHIP_SIZE_DEFAULT.x)		// キャラサイズ	X
 #define TEXTURE_HEIGHT				(MAPCHIP_SIZE_DEFAULT.y * 2)	//				Y
 #define TEXTURE_SIZE				D3DXVECTOR2(TEXTURE_WIDTH, TEXTURE_HEIGHT)	// キャラサイズ
 //#define TEXTURE_SIZE				MAPCHIP_SIZE_DEFAULT	// キャラサイズ
-
 #define TEXTURE_MAX					(3)			// テクスチャの数
-
+//------------------- アニメーション
+// アニメーションの分割数
 #define TEXTURE_PATTERN_DIVIDE_X	(3)			// アニメパターンのテクスチャ内分割数（X)
 #define TEXTURE_PATTERN_DIVIDE_Y	(1)			// アニメパターンのテクスチャ内分割数（Y)
 #define ANIM_PATTERN_NUM			(TEXTURE_PATTERN_DIVIDE_X*TEXTURE_PATTERN_DIVIDE_Y)	// アニメーションパターン数
-#define ANIM_WAIT					(5)			// アニメーションの切り替わるデフォルトWait値
+// アニメーションが切り替わるWait値
+#define ANIM_WAIT_DEFAULT			(5)			// デフォルト
+#define ANIM_WAIT_DUSH				(2)			// ダッシュ時
 
-#define MOVE_VALUE					(10.0f)
-#define RATE_DUSH					(1.3f)		// プレイヤーダッシュ時の移動値の倍率
-
-
+//------------------- 移動関連
+#define MOVE_VALUE					(10.0f)		// 基準移動値
+#define RATE_DUSH					(2.0f)		// プレイヤーダッシュ時の移動値の倍率
+#define JUMP_VALUE					(14.0f)		// プレイヤーのジャンプ力
+	
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -45,13 +49,11 @@ static ID3D11Buffer				*g_VertexBuffer = NULL;				// 頂点情報
 static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
 // テクスチャのファイル名
-static char *g_TextureName[] = {
+static char *g_TextureName[] = {	// ここに新しいファイル名を追加したり、削除した場合は、上の"TEXTURE_MAX"の値も変える！！！
 	"data/TEXTURE/player.png",				// TexNo : 0
 	"data/TEXTURE/player/player01.png",		// TexNo : 1
 	"data/TEXTURE/player/player01_Back_Not_Invisible.png",	// TexNo : 2
 };
-
-//static CPlayer	g_aPlayer[PLAYER_MAX];		// プレイヤーインスタンス
 
 //=============================================================================
 // コンストラクタ・デストラクタ
@@ -72,18 +74,22 @@ CPlayer::~CPlayer()		// デストラクタ
 void CPlayer::Init()
 {
 	// プレイヤークラスの初期化
-	m_bUse = true;
 	m_nTexNo = 2;		// ２番目のテクスチャ番号を使う
+	m_bUse = true;		// 使用
+	m_bDush = false;	// ダッシュフラグはfalseで初期化
+	m_bIsJump = false;	// ジャンプフラグはfalseで初期化
+	m_bIsMove = false;	// 動作フラグはfalseで初期化
 
 	//------------------- ベースクラスの初期化
 	CTexture::Init();	// テクスチャ
 	SetPlayerUseFlag(true);
 	SetTextureInf(SCREEN_CENTER, TEXTURE_SIZE, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 0.0f, ZERO_VECTOR2);
-	SetAnimInf(6, 1, ANIM_WAIT);
+	SetAnimInf(6, 1, ANIM_WAIT_DEFAULT);	// デフォルトでセット
 //	SetTexRotation(D3DXToRadian(90));	// 左側重力の時
 
 	CGravity::Init();	// 重力処理
-	SetPlayerPos(SCREEN_CENTER);
+	SetPlayerPos(SCREEN_CENTER);	// 後々マップチップデータで設定できるようにする
+	SetPlayerSize(TEXTURE_SIZE);	// テクスチャのサイズをセット
 }
 
 
@@ -100,16 +106,23 @@ void CPlayer::Update()
 		D3DXVECTOR2 OldPosPlayer = GetPlayerPos();		// 移動処理前のプレイヤー座標を保存
 
 		// アニメーション
-		UpdateAnimIndex(0, 5);	// 0-5番目の間をアニメーションする
+		if (m_bIsMove)	// 動作フラグが立っていたなら実行
+		{
+			SetAnimWait(ANIM_WAIT_DEFAULT);				// デフォルトのアニメーションWait値をセット
+			if(m_bDush) SetAnimWait(ANIM_WAIT_DUSH);	// ダッシュ時のアニメーションWait値をセット
+
+			UpdateAnimIndex(0, 5);	// 0-5番目の間をアニメーションする
+		}
+
 
 		// プレイヤーの移動処理（入力処理）
 		ControllPlayerInput(GetPlayerPos());
+		CollisionMapchip(Mapchip, OldPosPlayer);	// マップチップとの当たり判定をとって、最終的な座標をセット
 
 		// 重力処理
-		CGravity::Update();	// プレイヤー座標の更新も自動的に行ってる
-
-		// マップチップとの当たり判定をとって、最終的な座標をセット
-		CollisionMapchip(Mapchip, OldPosPlayer);
+		OldPosPlayer = GetPlayerPos();				//移動前座標のセット
+		CGravity::Update();							// プレイヤー座標の更新も自動的に行ってる
+		CollisionMapchip(Mapchip, OldPosPlayer);	// マップチップと当たり判定を取って座標調整
 
 		//=================== スクロール座標の更新
 		{
@@ -175,6 +188,12 @@ void CPlayer:: SetPlayerPos(D3DXVECTOR2 Pos)
 	SetGravityObjectPos(Pos);	// ワールド座標系
 }
 
+// プレイヤーのサイズを取得
+void CPlayer::SetPlayerSize(D3DXVECTOR2 Size)
+{
+	return SetGravityObjectSize(Size);	// プレイヤーのサイズを返す
+}
+
 // プレイヤーのuseフラグのセット
 void CPlayer::SetPlayerUseFlag(bool Use)
 {
@@ -204,7 +223,8 @@ D3DXVECTOR2 CPlayer::GetPlayerPos()
 // プレイヤーのサイズを取得
 D3DXVECTOR2 CPlayer::GetPlayerSize()
 {
-	return GetTexSize();			// プレイヤーテクスチャのサイズを返す
+//	return GetTexSize();			// プレイヤーテクスチャのサイズを返す
+	return GetGravityObjectSize();	// プレイヤーのサイズを返す
 }
 
 // プレイヤーのuseフラグの取得
@@ -224,43 +244,60 @@ void CPlayer::ControllPlayerInput(D3DXVECTOR2 NowPosition)
 	// 移動値の倍率
 	float fMagnification = 1.0f;
 
-	// ダッシュ時の倍率を適用
-	if(KEY_MOVE_PLAYER_DUSH) fMagnification = fMagnification * RATE_DUSH;
+	m_bDush = false;		// ダッシュしていない
+	if(KEY_MOVE_PLAYER_DUSH || PAD_MOVE_PLAYER_DUSH)	// ダッシュボタンが押されているか
+	{	
+		fMagnification = fMagnification * RATE_DUSH;	// ダッシュ時の倍率を適用
+		m_bDush = true;		// ダッシュしてた！
+	}
 
 	// キー入力で移動
-	if (GetKeyboardPress(DIK_DOWN))	// 上方向移動
+	m_bIsMove = false;			// 動いてない
+	if (GetGravityObjectDirection() == GRAVITY_DEFAULT)		// デフォルトの重力方向（y軸方向）の時
 	{
-		NowPosition.y += MOVE_VALUE * fMagnification;
-	}
-	if (GetKeyboardPress(DIK_UP))	// 上方向移動
-	{
-		NowPosition.y -= MOVE_VALUE * fMagnification;
-	}
-	if (GetKeyboardPress(DIK_RIGHT))	// 右方向移動
-	{
-		NowPosition.x += MOVE_VALUE * fMagnification;
-	}
-	if (GetKeyboardPress(DIK_LEFT))	// 左方向移動
-	{
-		NowPosition.x -= MOVE_VALUE * fMagnification;
-	}
+		if (KEY_MOVE_PLAYER_RIGHT || PAD_MOVE_PLAYER_RIGHT)	// 右方向移動
+		{
+			NowPosition.x += MOVE_VALUE * fMagnification;	// x軸方向へ移動
+			m_bIsMove = true;	// 動いてた！
+		}
+		else if (KEY_MOVE_PLAYER_LEFT || PAD_MOVE_PLAYER_LEFT)	// 左方向移動
+		{
+			NowPosition.x -= MOVE_VALUE * fMagnification;	// x軸の負の方向へ移動
+			m_bIsMove = true;	// 動いてた！
+		}
 
-	// ゲームパッドで移動処理
-	if (IsButtonPressed(0, BUTTON_DOWN))
-	{
-		NowPosition.y += MOVE_VALUE * fMagnification;
+		// ジャンプ処理
+		if (KEY_MOVE_PLAYER_JUMP || PAD_MOVE_PLAYER_JUMP)	// ジャンプ操作のキーまたはボタンが押されたとき
+		{
+			m_bIsJump = true;	// ジャンプのフラグをtrueにする
+		//	NowPosition.y -= JUMP_VALUE;
+		}
+
+		// ジャンプ処理実行
+		if (m_bIsJump) NowPosition.y -= JUMP_VALUE;
 	}
-	else if (IsButtonPressed(0, BUTTON_UP))
+	else if (GetGravityObjectDirection() == GRAVITY_LEFT)	// 左向きの重力方向（x軸の負）の時
 	{
-		NowPosition.y -= MOVE_VALUE * fMagnification;
-	}
-	else if (IsButtonPressed(0, BUTTON_RIGHT))
-	{
-		NowPosition.x += MOVE_VALUE * fMagnification;
-	}
-	else if (IsButtonPressed(0, BUTTON_LEFT))
-	{
-		NowPosition.x -= MOVE_VALUE * fMagnification;
+		if (KEY_MOVE_PLAYER_RIGHT || PAD_MOVE_PLAYER_RIGHT)	// 右方向移動
+		{
+			NowPosition.y += MOVE_VALUE * fMagnification;	// y軸方向へ移動
+			m_bIsMove = true;	// 動いてる
+		}
+		else if (KEY_MOVE_PLAYER_LEFT || PAD_MOVE_PLAYER_LEFT)	// 左方向移動
+		{
+			NowPosition.y -= MOVE_VALUE * fMagnification;	// y軸の負の方向へ移動
+			m_bIsMove = true;	// 動いてる
+		}
+
+		// ジャンプ処理
+		if (KEY_MOVE_PLAYER_JUMP || PAD_MOVE_PLAYER_JUMP)
+		{
+			m_bIsJump = true;	// ジャンプのフラグをtrueにする
+		//	NowPosition.x += JUMP_VALUE;
+		}
+
+		// ジャンプ処理実行
+		if (m_bIsJump) NowPosition.x += JUMP_VALUE;
 	}
 
 	// プレイヤーのキー移動後の座標をセット
@@ -287,6 +324,7 @@ void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 	else
 	{	// 左側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
 		if (GetGame()->GetGravityDirection() == GRAVITY_LEFT) SetGravityFlag(false);// 重力方向が右向きなら実行
+		m_bIsJump = false;	// ジャンプフラグもfalseにする
 	}
 	CurrentPosPlayer.x += HalfPlayer.x;	// ずらした分を元に戻す
 
@@ -311,6 +349,7 @@ void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 	{
 		// 下側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
 		if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT) SetGravityFlag(false);
+		m_bIsJump = false;	// ジャンプフラグもfalseにする
 	}
 	CurrentPosPlayer.y -= HalfPlayer.y;	// ずらした分を元に戻す
 
