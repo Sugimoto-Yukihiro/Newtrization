@@ -36,7 +36,7 @@
 #define MOVE_VALUE					(10.0f)		// 基準移動値
 #define RATE_DUSH					(2.0f)		// プレイヤーダッシュ時の移動値の倍率
 #define JUMP_VALUE					(14.0f)		// プレイヤーのジャンプ力
-	
+
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -58,15 +58,17 @@ static char *g_TextureName[] = {	// ここに新しいファイル名を追加�
 //=============================================================================
 // コンストラクタ・デストラクタ
 //=============================================================================
-CPlayer::CPlayer()		// コンストラクタ
+CPlayer::CPlayer()	// コンストラクタ
 {
 	Init();
 }
 
-CPlayer::~CPlayer()		// デストラクタ
+CPlayer::~CPlayer()	// デストラクタ
 {
 
 }
+
+
 
 //=============================================================================
 // 初期化処理
@@ -74,7 +76,7 @@ CPlayer::~CPlayer()		// デストラクタ
 void CPlayer::Init()
 {
 	// プレイヤークラスの初期化
-	m_nTexNo = 2;		// ２番目のテクスチャ番号を使う
+	m_nTexNo = 1;		// ２番目のテクスチャ番号を使う
 	m_bUse = true;		// 使用
 	m_bDush = false;	// ダッシュフラグはfalseで初期化
 	m_bIsJump = false;	// ジャンプフラグはfalseで初期化
@@ -85,7 +87,7 @@ void CPlayer::Init()
 	SetPlayerUseFlag(true);
 	SetTextureInf(SCREEN_CENTER, TEXTURE_SIZE, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 0.0f, ZERO_VECTOR2);
 	SetAnimInf(6, 1, ANIM_WAIT_DEFAULT);	// デフォルトでセット
-//	SetTexRotation(D3DXToRadian(90));	// 左側重力の時
+//	SetTexRotation(D3DXToRadian(90));		// 左側重力の時
 
 	CGravity::Init();	// 重力処理
 	SetPlayerPos(SCREEN_CENTER);	// 後々マップチップデータで設定できるようにする
@@ -117,7 +119,7 @@ void CPlayer::Update()
 
 		// プレイヤーの移動処理（入力処理）
 		ControllPlayerInput(GetPlayerPos());
-		CollisionMapchip(Mapchip, OldPosPlayer);	// マップチップとの当たり判定をとって、最終的な座標をセット
+	//	CollisionMapchip(Mapchip, OldPosPlayer);	// マップチップとの当たり判定をとって、最終的な座標をセット
 
 		// 重力処理
 		OldPosPlayer = GetPlayerPos();				//移動前座標のセット
@@ -165,7 +167,7 @@ void CPlayer::Draw()
 	if (m_bUse == true)
 	{
 		// プレイヤーの表示座標を算出
-		SetTexPos( GetPlayerPos() - GetGame()->GetScrollPosition() );	// 表示座標系をセット
+		SetTexPos( GetPlayerPos() - GetGame()->GetScrollPosition() );		// 表示座標系をセット
 	//1	D3DXVECTOR2 worldPos = GetPlayerPos();	// 現在の座標を退避
 	//1	SetPlayerPos( GetPlayerPos() - GetGame()->GetScrollPosition() );	// 表示座標系にセット
 
@@ -210,6 +212,8 @@ void CPlayer::KillPlayer()
 
 }
 
+
+
 //=============================================================================
 // ゲッター関数
 //=============================================================================
@@ -246,13 +250,16 @@ void CPlayer::ControllPlayerInput(D3DXVECTOR2 NowPosition)
 
 	m_bDush = false;		// ダッシュしていない
 	if(KEY_MOVE_PLAYER_DUSH || PAD_MOVE_PLAYER_DUSH)	// ダッシュボタンが押されているか
-	{	
-		fMagnification = fMagnification * RATE_DUSH;	// ダッシュ時の倍率を適用
-		m_bDush = true;		// ダッシュしてた！
+	{
+		if (!m_bIsJump)		// ジャンプ中でなければ実行
+		{
+			fMagnification = fMagnification * RATE_DUSH;	// ダッシュ時の倍率を適用
+			m_bDush = true;		// ダッシュしてた！
+		}
 	}
 
 	// キー入力で移動
-	m_bIsMove = false;			// 動いてない
+	m_bIsMove = false;		// 動いてない
 	if (GetGravityObjectDirection() == GRAVITY_DEFAULT)		// デフォルトの重力方向（y軸方向）の時
 	{
 		if (KEY_MOVE_PLAYER_RIGHT || PAD_MOVE_PLAYER_RIGHT)	// 右方向移動
@@ -316,13 +323,14 @@ void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 	//============ プレイヤーの左側の判定
 	CurrentPosPlayer.x -= HalfPlayer.x;	// 座標情報をプレイヤーテクスチャの左側へずらす
 	// 当たり判定実行 ＆ 下側の座標調整
-	if (HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos) == -1)	// 当たっていない時
+//	if (HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos) == -1)	// 当たっていない時
+	if (HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos, true, false) == -1)	// 当たっていない時
 	{
-		// 左側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
+		// （重力方向が左のとき）左側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
 		if (GetGame()->GetGravityDirection() == GRAVITY_LEFT) SetGravityFlag(true);	// 重力方向が左向きなら実行
 	}
 	else
-	{	// 左側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
+	{	// （重力方向が左のとき）左側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
 		if (GetGame()->GetGravityDirection() == GRAVITY_LEFT) SetGravityFlag(false);// 重力方向が右向きなら実行
 		m_bIsJump = false;	// ジャンプフラグもfalseにする
 	}
@@ -330,24 +338,24 @@ void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 
 	//============ プレイヤーの右側の判定
 	CurrentPosPlayer.x += HalfPlayer.x;	// 座標情報をプレイヤーテクスチャの右側へずらす
-	HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos);	// 当たり判定実行 ＆ 右側の座標調整
+	HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos, true, false);	// 当たり判定実行 ＆ 右側の座標調整
 	CurrentPosPlayer.x -= HalfPlayer.x;	// ずらした分を元に戻す
 
 	//============ プレイヤーの上側の判定
 	CurrentPosPlayer.y -= HalfPlayer.y;	// 座標情報をプレイヤーテクスチャの上側へずらす
-	HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos);	// 当たり判定実行 ＆ 上側の座標調整
+	HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos, false, true);	// 当たり判定実行 ＆ 上側の座標調整
 	CurrentPosPlayer.y += HalfPlayer.y;	// ずらした分を元に戻す
 
 	//============ プレイヤーの下側の判定
 	CurrentPosPlayer.y += HalfPlayer.y;	// 座標情報をプレイヤーテクスチャの下側へずらす
 	// 当たり判定実行 ＆ 下側の座標調整
-	if (HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos) == -1)	// 当たっていない時
-	{	// 下側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
+	if (HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos, false, true) == -1)	// 当たっていない時
+	{	// （重力方向が下のとき）下側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
 		if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT) SetGravityFlag(true);
 	}
 	else
 	{
-		// 下側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
+		// （重力方向が下のとき）下側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
 		if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT) SetGravityFlag(false);
 		m_bIsJump = false;	// ジャンプフラグもfalseにする
 	}
