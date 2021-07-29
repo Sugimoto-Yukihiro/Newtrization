@@ -127,9 +127,9 @@ void CMapchip::Draw()
 	nDrawChipNumY = SCREEN_HEIGHT / (int)GetMapchipSize().y + numy;	// 縦方向(y軸)のチップ数
 
 	// マップ描画
-	for (int y = numy; y < nDrawChipNumY + 2; y++)	// 2は中途半端に出てるやつ
+	for (int y = numy; y < nDrawChipNumY + 3; y++)	// 2は中途半端に出てるやつ
 	{
-		for (int x = numx; x < nDrawChipNumX + 2; x++)
+		for (int x = numx; x < nDrawChipNumX + 3; x++)
 		{
 			// マップの番号を取得
 		//	int nChipId = m_MapChipData[(y + numy) * GetMapchipNumX() + (x + numx)];	// 
@@ -152,7 +152,7 @@ void CMapchip::Draw()
 
 }
 
-// チップの描画
+// チップ１枚の描画
 void CMapchip::DrawChip(D3DXVECTOR2 Pos, int Num)
 {
 	// テクスチャ設定
@@ -336,6 +336,12 @@ void CMapchip::SetMapchipNumX(int Num)
 void CMapchip::SetMapchipNumY(int Num)
 {
 	m_nChipNumY = Num;
+}
+
+// 指定した箇所のマップチップ番号を変更する
+void CMapchip::SetMapchipNo(int No, int X, int Y)
+{
+	m_MapChipData[(Y * m_nChipNumX) +X];	// 番号を格納
 }
 
 // 回転フラグのセット

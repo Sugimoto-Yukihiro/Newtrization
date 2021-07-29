@@ -187,7 +187,7 @@ void CModeGame::Update(void)
 	UpdateBg();
 
 #ifdef _DEBUG
-	PrintDebugProc("\nスクロール座標 X: %f  Y: %a\n", GetScrollPosition().x, GetScrollPosition().y);
+	PrintDebugProc("\nスクロール座標 X: %f  Y: %f\n", GetScrollPosition().x, GetScrollPosition().y);
 
 	PrintDebugProc("　重力の方向 :");
 	if (GetGravityDirection() == GRAVITY_DEFAULT) 	PrintDebugProc("　下方向");
@@ -287,11 +287,10 @@ void CModeGame::CollisionCheck()
 
 //****************************************************
 // 説明		： マップチップとの当たり判定をとり、座標の調整も行う
-// 引数		： マップチップ情報, 現在の座標, 移動前の座標, 座標調整を行うかどうかのフラグ
+// 引数		： マップチップ情報, 現在の座標, 移動前の座標, 座標調整を行うかどうかのフラグ(X軸), 座標調整を行うかどうかのフラグ(Y軸)
 // 戻り値	： 【当たり】当たったチップの番号　　【外れ】「-1」
 //****************************************************
-//int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPos, D3DXVECTOR2 HalfObjectSize)
-int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPos, bool Flag)
+int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPos, bool FlagX, bool FlagY)
 {
 	int nCurX, nCurY, nCurNo;
 	int nOldX, nOldY, nOldNo;
@@ -305,10 +304,10 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 	if (MAPCHIP_HIT_min <= nCurNo && nCurNo <= MAPCHIP_HIT_MAX)	// 移動後の座標にあるマップチップ番号が、「MAPCHIP_HIT_min」と「MAPCHIP_HIT_MAX」の間のとき
 	{	// マップチップと当たっている時の処理
 		//========= 1.座標を調整
-		if(Flag)	// 座標調整を行うフラグが立っていたら、座標調整を行う
+	//	if(Flag)	// 座標調整を行うフラグが立っていたら、座標調整を行う
 		{
 			// x軸
-			if ( (nCurX - nOldX) != 0)	// 差がないときは調整する必要がない
+			if ( (nCurX - nOldX) != 0 && FlagX)	// 差がないときは調整する必要がない
 			{
 				// まずは、チップ と 移動前座標(プレイヤー) の位置関係を調べる
 				int isLeft = (nOldX < nCurX);	// 移動前座標が左側にあるときは「1」になる
@@ -325,13 +324,11 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 				{
 				//	CurrentPos->x = (Mapchip.GetMapchipSize().x * (nCurX + 1)) + HalfObjectSize.x;
 					CurrentPos->x = (Mapchip.GetMapchipSize().x * (nCurX + 1) );	// 座標調整（押し出し処理）
-
-					CurrentPos->x += 0.5f;
 				}
 			}
 
 			// y軸
-			if ( (nCurY - nOldY) != 0)	// 差がないときは調整する必要がない
+			if ( (nCurY - nOldY) != 0 && FlagY)	// 差がないときは調整する必要がない
 			{
 				// まずは、チップ と 移動前座標(プレイヤー) の位置関係を調べる
 				int isTop = (nOldY < nCurY);	// 移動前座標が上側にあるときは「1」になる
@@ -348,8 +345,6 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 				{
 				//	CurrentPos->y = (Mapchip.GetMapchipSize().y * (nCurY + 1)) + HalfObjectSize.y;
 					CurrentPos->y = (Mapchip.GetMapchipSize().y * (nCurY + 1));	// 座標調整（押し出し処理）
-
-					CurrentPos->x += 0.5f;
 				}
 			}
 		}

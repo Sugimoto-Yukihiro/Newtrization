@@ -11,8 +11,8 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define MAPCHIP_STATIC			// マップチップ情報を静的管理
-//#define MAPCHIP_DYNAMIC		// マップチップ情報を動的管理
+#define MAPCHIP_STATIC				// マップチップ配列を静的管理
+//#define MAPCHIP_DYNAMIC			// マップチップ配列を動的管理
 
 #define MAPCHIP_SIZE_DEFAULT	D3DXVECTOR2(64.0f, 64.0f)		// マップチップのデフォルトサイズ
 
@@ -66,6 +66,7 @@ public:
 	void SetMapchipSize(D3DXVECTOR2 Size);		// １つのチップの大きさをセット
 	void SetMapchipNumX(int Num);				// マップチップの列数をセット
 	void SetMapchipNumY(int Num);				// マップチップの列数をセット
+	void SetMapchipNo(int No, int X, int Y);	// 指定した箇所のマップチップ番号を変更する
 //	void SetRotationFlag(bool Flag);			// 回転フラグのセット
 
 
