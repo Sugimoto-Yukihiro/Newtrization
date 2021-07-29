@@ -117,7 +117,6 @@ void UninitFade(void)
 //=============================================================================
 void UpdateFade(void)
 {
-
 	if (g_Fade != FADE_NONE)
 	{// フェード処理中
 		if (g_Fade == FADE_OUT)

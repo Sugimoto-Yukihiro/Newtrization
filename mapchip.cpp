@@ -14,7 +14,7 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define MAPCHIP_SIZE_DEFAULT	D3DXVECTOR2(64.0f, 64.0f)		// マップチップのデフォルトサイズ
+
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -24,7 +24,7 @@ void PresetDrawMapchip();	// 描画する前準備
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer				*g_VertexBuffer = NULL;						// 頂点情報
+static ID3D11Buffer				*g_VertexBuffer = NULL;	// 頂点情報
 static ID3D11ShaderResourceView	*g_Texture = { NULL };	// テクスチャ情報
 
 // テクスチャのファイル名
@@ -39,10 +39,10 @@ static char *g_TextureName[] = {
 CMapchip::CMapchip()	// コンストラクタ
 {
 	//------------------- メンバ変数の初期化
-	SetMapchipBasePos(ZERO_VECTOR2);
+//	SetMapchipBasePos(ZERO_VECTOR2);
 	SetMapchipSize(MAPCHIP_SIZE_DEFAULT);	// １つのチップの大きさをセット
-	SetMapchipNumX(-1);				// マップチップの列数をセット
-	SetMapchipNumY(-1);				// マップチップの列数をセット
+	SetMapchipNumX(-1);						// マップチップの列数をセット
+	SetMapchipNumY(-1);						// マップチップの列数をセット
 
 }
 
@@ -56,7 +56,7 @@ CMapchip::~CMapchip()	// デストラクタ
 //=============================================================================
 // 初期化処理
 //=============================================================================
-void CMapchip::Init()
+void CMapchip::Init(char* pMapFileName)
 {
 	//------------------- メンバ変数の初期化
 	m_nChipNumX = 1;	// マップチップの列数
@@ -66,11 +66,12 @@ void CMapchip::Init()
 	SetTexDivideX(4);
 	SetTexDivideY(4);
 
-
 	// マップチップ配列のセット
-//	SetMapChipData(pTestMapChipData);
-	LoadMapchipData("data/MAPCHIP/mapdata1.01.csv");
-//	LoadMapchipData("data/MAPCHIP/mapdata1.02.csv");
+	if (pMapFileName == NULL)	// NULLならゼロで初期化
+	{
+		for (int i = 0; i < MAPCHIP_NUM_MAX; i++) m_MapChipData[i] = 0;
+	}
+	else LoadMapchipData(pMapFileName);
 }
 
 
@@ -126,9 +127,9 @@ void CMapchip::Draw()
 	nDrawChipNumY = SCREEN_HEIGHT / (int)GetMapchipSize().y + numy;	// 縦方向(y軸)のチップ数
 
 	// マップ描画
-	for (int y = numy; y < nDrawChipNumY + 2; y++)	// 2は中途半端に出てるやつ
+	for (int y = numy; y < nDrawChipNumY + 3; y++)	// 2は中途半端に出てるやつ
 	{
-		for (int x = numx; x < nDrawChipNumX + 2; x++)
+		for (int x = numx; x < nDrawChipNumX + 3; x++)
 		{
 			// マップの番号を取得
 		//	int nChipId = m_MapChipData[(y + numy) * GetMapchipNumX() + (x + numx)];	// 
@@ -149,66 +150,9 @@ void CMapchip::Draw()
 		}
 	}
 
-
-
-
-
-
-
-
-	////------------------- 描画するマップチップの最左のインデックス番号の算出
-	//numx = (int)(ScrollPos.x / GetMapchipSize().x);		// スクロール座標より左側（画面外）にあるマップチップ数
-	//numy = (int)(ScrollPos.y / GetMapchipSize().y);		// スクロール座標より上側（画面外）にあるマップチップ数
-
-	//// 描画するマップチップの最左の表示座標の算出
-	//offset_x = (numx * GetMapchipSize().x) - ScrollPos.x;	// 横位置
-	//offset_y = (numy * GetMapchipSize().y) - ScrollPos.y;	// 縦位置
-
-	//// 描画するチップ数を算出
-	//nDrawChipNumX = SCREEN_WIDTH / (int)GetMapchipSize().x;		// 横方向(x軸)のチップ数
-	//nDrawChipNumY = SCREEN_HEIGHT / (int)GetMapchipSize().y;	// 縦方向(y軸)のチップ数
-
-	//// マップチップを一枚ずつ必要分だけ描画
-	//for (iy = numy; iy < (numy + nDrawChipNumY); iy++)
-	//{
-	//	for (ix = numx; ix < (numx + nDrawChipNumX); ix++)
-	//	{
-	//		// マップの番号を取得
-	//		int nChipId = m_MapChipData[ (iy * m_nChipNumX) + ix];
-
-	//		// チップ番号が０なら描画しない
-	//		if(nChipId == 0) continue;
-
-	//		// チップの描画位置を算出
-	//		D3DXVECTOR2 ChipPos;
-	//		ChipPos.y = (float)(offset_y + (GetMapchipSize().y * iy));	// 背景の表示座標Y
-	//		ChipPos.x = (float)(offset_x + (GetMapchipSize().x  * ix));	// 背景の表示座標X
-
-	//		ChipPos.y += GetMapchipSize().y * 0.5f;	// 中心座標にする
-	//		ChipPos.x += GetMapchipSize().x * 0.5f;	// 中心座標にする
-
-	//		// 描画
-	//		DrawChip(ChipPos, nChipId);	// 描画座標が中心指定のとき
-
-	//	//	// 当たり判定処理のチップの場合 → 当たり判定のマップチップ変数を用意
-	//	//	for (int i = 0; i < WALL_NUM_PATTARN; i++)
-	//	//	{
-	//	//		if (chip_id == WallNum[i])
-	//	//		{
-	//	//			// 座標を表示座標からワールド座標に変換
-	//	//			VECTOR worldPos = ChipPos;
-	//	//			worldPos.ix += ScrollPos->ix;
-	//	//			worldPos.y += ScrollPos->y;
-	//	//			SetMapChipData(worldPos, chip_id, y, ix);	// マップチップ変数に情報を代入
-	//	//		}
-	//	//	}
-
-	//	}
-	//}
-
 }
 
-// チップの描画
+// チップ１枚の描画
 void CMapchip::DrawChip(D3DXVECTOR2 Pos, int Num)
 {
 	// テクスチャ設定
@@ -227,11 +171,39 @@ void CMapchip::DrawChip(D3DXVECTOR2 Pos, int Num)
 }
 
 
+
+//=============================================================================
+// メンバ関数
+//=============================================================================
+//****************************************************
+// 説明		： マップチップ配列を、ファイルから読み込んでセット
+// 引数		： マップチップのファイル名（char型）
+// 戻り値	： 成功(1), 失敗(0)
+//****************************************************
+int CMapchip::LoadMapchipData(char* pFileName)
+{
+	// エラーチェック
+	if (pFileName == NULL) 0;	// NULLなら失敗を返す
+ 
+	char* pLoad = NULL;
+	// Csvファイルの、コメント部分を削除した状態のものを読み込み（カンマで区切られた数値データを抽出）
+	LoadCsvFile(pFileName, pLoad, 8, ",");
+
+	// カンマ区切りの数値を読み取って代入する
+	SetMapChipData(pLoad);
+
+	delete[] pLoad;
+	return 1;	// 成功
+}
+
+
+
+
 //=============================================================================
 // セッター関数
 //=============================================================================
-// マップチップ配列のセット
 //****************************************************
+// 説明		： マップチップ配列のセット
 // 引数		： マップチップの情報（char型）
 // 戻り値	： 成功(1), 失敗(0)
 //****************************************************
@@ -253,21 +225,31 @@ int CMapchip::SetMapChipData(const char* pCsvString)
 	pToken = pCopyStr;
 	while (pToken = strtok(pToken, ","))
 	{
-		if (strrchr(pToken, '\n') != NULL)	// 改行コードがあったとき
-		{
-			// 先頭の１文字のみを抽出
-			char singleWord[2] = { "\0" };
-			strncat(singleWord, pToken, 1);
+	//	if (strrchr(pToken, '\n') != NULL)	// 改行コードがあったとき
+	//	{
+	//		// 先頭の１文字のみを抽出
+	//	//	char singleWord[2] = { "\0" };
+	//	//	strncat(singleWord, pToken, 1);
+	//
+	//	//	m_MapChipData[nTokenCnt] = atoi(singleWord);	// 数値代入
+	//		m_MapChipData[nTokenCnt] = atoi(pToken);		// 数値代入
+	//		nTokenCnt++;	// マップチップの列数を加算
+	//		nLinesCnt++;	// マップチップの行数も加算
+	//	}
+	//	else
+	//	{
+	//		m_MapChipData[nTokenCnt] = atoi(pToken);		// 数値代入
+	//		nTokenCnt++;	// マップチップの列数を加算
+	//	}
 
-			m_MapChipData[nTokenCnt] = atoi(singleWord);	// 数値代入
-			nTokenCnt++;	// マップチップの列数を加算
+		// 改行コードがあったとき
+		if (strrchr(pToken, '\n') != NULL)
+		{
 			nLinesCnt++;	// マップチップの行数も加算
 		}
-		else
-		{
-			m_MapChipData[nTokenCnt] = atoi(pToken);		// 数値代入
-			nTokenCnt++;	// マップチップの列数を加算
-		}
+
+		m_MapChipData[nTokenCnt] = atoi(pToken);		// 数値代入
+		nTokenCnt++;	// マップチップの列数を加算
 
 		pToken = NULL;		// 次の字句を取得するためNULLをセット
 	}
@@ -326,35 +308,17 @@ int CMapchip::SetMapChipData(const char* pCsvString)
 //	SetMapchipNumY(nLinesCnt);
 
 
-
-
 	// コピーした文字列の解放
 	delete[] pCopyStr;
 
 	return 0;	// 成功
 }
 
-// マップチップ配列を、ファイルから読み込んでセット
-//****************************************************
-// 引数		： マップチップのファイル名（char型）
-// 戻り値	： 成功(1), 失敗(0)
-//****************************************************
-int CMapchip::LoadMapchipData(char* pFileName)
-{
-	char* pLoad = NULL;
-	LoadCsvFile(pFileName, pLoad, 8, ",");	// 読み込み
-
-	SetMapChipData(pLoad);
-
-	delete[] pLoad;
-	return 0;	// 成功
-}
-
 // 描画の基準座標をセット
-void CMapchip::SetMapchipBasePos(D3DXVECTOR2 Pos)
-{
-	m_vChipBasePos = Pos;
-}
+//void CMapchip::SetMapchipBasePos(D3DXVECTOR2 Pos)
+//{
+//	m_vChipBasePos = Pos;
+//}
 
 // １つのチップの大きさをセット
 void CMapchip::SetMapchipSize(D3DXVECTOR2 Size)
@@ -372,6 +336,12 @@ void CMapchip::SetMapchipNumX(int Num)
 void CMapchip::SetMapchipNumY(int Num)
 {
 	m_nChipNumY = Num;
+}
+
+// 指定した箇所のマップチップ番号を変更する
+void CMapchip::SetMapchipNo(int No, int X, int Y)
+{
+	m_MapChipData[(Y * m_nChipNumX) +X];	// 番号を格納
 }
 
 // 回転フラグのセット
@@ -417,13 +387,30 @@ int CMapchip::GetMapchipNumY()
 	return m_nChipNumY;
 }
 
-// 指定された座標にあるチップ番号を取得
-int CMapchip::GetMapchipNo(D3DXVECTOR2 Pos)
+// 配列の要素数を指定して、マップチップ番号を取得
+int CMapchip::GetMapchipNo(int nIdxNo)
 {
-	int cx = (int)(Pos.x / m_vChipSize.x);
-	int cy = (int)(Pos.y / m_vChipSize.y);
+	return m_MapChipData[nIdxNo];
+}
 
-	return m_MapChipData[cx + (cy * m_nChipNumX)];
+//****************************************************
+// 説明		： 指定された座標にあるチップ番号を取得。第2,3引数に帰ってくる最小値は０
+// 引数		： 任意の座標, マップチップの要素数(横)を返すポインタ, マップチップの要素数(縦)を返すポインタ
+// 戻り値	： 第一引数に指定された箇所のマップチップの番号
+//****************************************************
+int CMapchip::GetMapchipNo(D3DXVECTOR2 Pos, int* retIdxNumX, int* retIdxNumY)
+{
+	int nIdxX = (int)(Pos.x / m_vChipSize.x);	// マップチップ座標のxを求める
+	int nIdxY = (int)(Pos.y / m_vChipSize.y);	// マップチップ座標のyを求める
+
+	// マップチップ座標の X, y それぞれの値を返す
+	if (retIdxNumX != NULL) *retIdxNumX = nIdxX;
+	if (retIdxNumY != NULL) *retIdxNumY = nIdxY;
+
+	return m_MapChipData[nIdxX + (nIdxY * m_nChipNumX)];	// 求めた座標値から、要素数を求めて、その数値を返す
+
+//	return m_MapChipData[ (int)(Pos.x / m_vChipSize.x) + (int)(Pos.y / m_vChipSize.y) * m_nChipNumX ];	// 高速化
+
 }
 
 // 回転フラグの取得

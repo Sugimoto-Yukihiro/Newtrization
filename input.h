@@ -64,3 +64,36 @@ BOOL IsButtonPressed(int padNo,DWORD button);
 BOOL IsButtonTriggered(int padNo,DWORD button);
 
 
+
+//*****************************************************************************
+// コントローラー設定
+//*****************************************************************************
+//-------- キー操作
+//#define KEY_MOVE_PLAYER_UP			GetKeyboardPress(DIK_W)
+//#define KEY_MOVE_PLAYER_DOWN		GetKeyboardPress(DIK_S)
+#define KEY_MOVE_PLAYER_LEFT		GetKeyboardPress(DIK_A)			// プレイヤーを左方向に移動するキー
+#define KEY_MOVE_PLAYER_RIGHT		GetKeyboardPress(DIK_D)			// プレイヤーを右方向に移動するキー
+#define KEY_MOVE_PLAYER_JUMP		GetKeyboardTrigger(DIK_SPACE)	// プレイヤーをジャンプさせるキー
+#define KEY_MOVE_PLAYER_DUSH		GetKeyboardPress(DIK_S)			// プレイヤーをダッシュさせるキー
+
+// デバッグ時
+#ifdef _DEBUG
+	#define KEY_MODE_CHANGE			GetKeyboardTrigger(DIK_RETURN)
+	#define KEY_PAUSE				GetKeyboardTrigger(DIK_0)
+	#define KEY_RESTART_GAMEMODE	GetKeyboardTrigger(DIK_1)		// ゲームモードのリセット
+	#define KEY_CHANGE_GRAVITY		GetKeyboardTrigger(DIK_2)
+#endif // _DEBUG
+
+
+//-------- ゲームパッド操作
+#define PAD_MOVE_PLAYER_LEFT		IsButtonPressed(0,BUTTON_LEFT)	// プレイヤーを左方向に移動するキー
+#define PAD_MOVE_PLAYER_RIGHT		IsButtonPressed(0,BUTTON_RIGHT)	// プレイヤーを右方向に移動するキー
+#define PAD_MOVE_PLAYER_JUMP		IsButtonTriggered(0,BUTTON_X)	// プレイヤーをジャンプさせるキー
+#define PAD_MOVE_PLAYER_DUSH		IsButtonPressed(0,BUTTON_B)		// プレイヤーをダッシュさせるキー
+
+
+#ifdef _DEBUG
+	#define PAD_MODE_CHANGE			IsButtonTriggered(0, BUTTON_START) || IsButtonTriggered(0, BUTTON_B)
+#endif // _DEBUG
+
+

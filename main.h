@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // Mainヘッダー [main.h]
-// Author : 
+// Author : 杉本幸宏
 //
 //=============================================================================
 #pragma once
@@ -118,3 +118,7 @@ void RequestSetMode(MODE mode);					// セットモード
 int LoadCsvFile(const char* pCsvFileName, char* &pFirst, int MaxCharCell, char* DivMark);
 int DivideString(const char* String, int* retCol, int* retRow, char* DivMark);
 int SerchWordOffset(const char* String, const char SingleWord);
+
+//------------------- その他関数
+
+
