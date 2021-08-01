@@ -7,7 +7,6 @@
 #include "main.h"
 #include "renderer.h"
 #include "camera.h"
-#include "polygon.h"
 
 
 D3DXMATRIX				g_CameraViewMatrix;
