@@ -93,7 +93,15 @@ void SetSpriteColorRotation(ID3D11Buffer *buf, float X, float Y, float Width, fl
 	float U, float V, float UW, float VH,
 	D3DXCOLOR Color, float Rot);
 
+
+// テクスチャ情報の生成
 void CreateTexture(const char* TextureName, ID3D11ShaderResourceView** TexrureData);
+
+// 頂点バッファ生成
 void CreateVertexBuffer(ID3D11Buffer** VertexBuffer);
+
+// テクスチャ情報と頂点バッファの解放
 void ReleaseTexture(ID3D11ShaderResourceView** TexrureData, ID3D11Buffer** VertexBuffer);
+
+// 描画処理( DrawTexture() ) の前に1回だけ呼び出すおまじない（何回でも呼び出していいけど、処理めっちゃ重くなる）
 void PresetDraw2D(ID3D11Buffer** g_VertexBuffer);

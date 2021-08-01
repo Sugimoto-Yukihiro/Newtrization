@@ -30,7 +30,9 @@
 #endif // !_DEBUG
 
 #ifdef _DEBUG
-#define START_MODE			(MODE_GAME)			// 起動時のモード
+//#define START_MODE			(MODE_GAME)			// 起動時のモード
+#define START_MODE			(MODE_OPENING)			// 起動時のモード
+
 #endif // _DEBUG
 
 //*****************************************************************************
@@ -303,7 +305,7 @@ void CMode::Uninit(void)
 {
 	//------------------- モードに応じたメモリ解放
 	if (g_aMode.GetMode() == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
-	if (g_aMode.GetMode() == MODE_OPENING) UninitOpening();			// オープニング画面の終了処理
+	if (g_aMode.GetMode() == MODE_OPENING) m_OpeningMode.Uninit();			// オープニング画面の終了処理
 	else if(g_aMode.GetMode() == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
 	else if (g_aMode.GetMode() == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
 	else if (g_aMode.GetMode() == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
@@ -345,7 +347,7 @@ void CMode::Update(void)
 	switch (g_aMode.GetMode())
 	{
 	case MODE_OPENING:
-		UpdateOpening();
+		m_OpeningMode.Update();
 		break;
 
 	case MODE_TITLE:
@@ -390,7 +392,7 @@ void CMode::Draw(void)
 	switch (g_aMode.GetMode())
 	{
 	case MODE_OPENING:
-		DrawOpening();
+		m_OpeningMode.Draw();
 		break;
 
 	case MODE_TITLE:
@@ -436,7 +438,7 @@ void CMode::SetMode(MODE mode)
 {
 	//------------------- モードを変える前にメモリを解放
 	if(g_aMode.GetMode() == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
-	if (g_aMode.GetMode() == MODE_OPENING) UninitOpening();			// オープニング画面の終了処理
+	if (g_aMode.GetMode() == MODE_OPENING) m_OpeningMode.Uninit();			// オープニング画面の終了処理
 	else if(g_aMode.GetMode() == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
 	else if(g_aMode.GetMode() == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
 	else if(g_aMode.GetMode() == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
@@ -449,7 +451,7 @@ void CMode::SetMode(MODE mode)
 	{
 	case MODE_OPENING:
 		// オープニング画面の初期化
-		InitOpening();
+		m_OpeningMode.Init();
 		break;
 
 	case MODE_TITLE:

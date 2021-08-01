@@ -37,8 +37,10 @@
 #pragma comment (lib, "dxguid.lib")
 #pragma comment (lib, "dinput8.lib")
 
+// 各モードのインクルード
+#include "opening.h"	// オープニング
+#include "game.h"		// ゲーム
 
-#include "game.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -61,12 +63,14 @@
 //*****************************************************************************
 typedef enum
 {
-	MODE_NONE = -1,
+	MODE_NONE = -1,		// モード無し
+
 	MODE_OPENING = 0,	// オープニング画面
 	MODE_TITLE,			// タイトル画面
 	MODE_TUTORIAL,		// ゲーム説明画面
 	MODE_GAME,			// ゲーム画面
 	MODE_RESULT,		// リザルト画面
+
 	MODE_MAX
 } MODE;
 
@@ -92,7 +96,8 @@ public:
 	void SetMode(MODE mode);
 
 	//------------------- 各モードのインスタンス
-	CModeGame m_GameMode;	// ゲーム画面
+	CModeGame m_GameMode;		// ゲーム画面
+	CModeOpening m_OpeningMode; // オープニング画面
 
 private:
 	MODE m_Mode;	// モードの状態を格納する変数
