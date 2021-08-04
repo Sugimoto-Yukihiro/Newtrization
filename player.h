@@ -24,31 +24,35 @@
 class CPlayer : public CTexture, public CGravity
 {
 public:
-	CPlayer();							// コンストラクタ
-	~CPlayer();							// デストラクタ
+	CPlayer();	// コンストラクタ
+	~CPlayer();	// デストラクタ
 
 	//------------------- メンバ関数
-	void Init();						// 初期化
-//	void Uninit();						// 終了処理
-	void Update();						// 更新処理
-	void Draw();						// 描画処理
+	void Init();	// 初期化
+//	void Uninit();	// 終了処理
+	void Update();	// 更新処理
+	void Draw();	// 描画処理
 
 	//------------------- セッター関数
+	void SetPlayer(D3DXVECTOR2 Pos);		// プレイヤーを出現させる
 	void SetPlayerPos(D3DXVECTOR2 Pos);		// プレイヤーの座標をセット
 	void SetPlayerSize(D3DXVECTOR2 Size);	// プレイヤーのサイズをセット
 	void SetPlayerUseFlag(bool Use);		// プレイヤーのuseフラグのセット
 	void KillPlayer();						// プレイヤーを殺す処理
 
 	//------------------- ゲッター関数
-	D3DXVECTOR2 GetPlayerPos();			// プレイヤーの座標を取得
-	D3DXVECTOR2 GetPlayerSize();		// プレイヤーの大きさを取得
-	bool GetPlayerUseFlag();			// プレイヤーのuseフラグの取得
+	D3DXVECTOR2 GetPlayerPos();	// プレイヤーの座標を取得
+	D3DXVECTOR2 GetPlayerSize();// プレイヤーの大きさを取得
+	bool GetPlayerUseFlag();	// プレイヤーのuseフラグの取得
 
 	//------------------- マクロ定義
 	#define PLAYER_ALIVE	SetPlayerUseFlag(true)	// プレイヤーを生き返らせる
+	#define PLAYER_KILL		KillPlayer()			// プレイヤーを殺す
+
 
 private:
 	//------------------- メンバ関数(private)
+	/* ↓ジャンプ処理はこの関数内で行ってるよ（ジャンプ処理専用の関数作る予定） */
 	void ControllPlayerInput(D3DXVECTOR2 NowPosition);					// プレイヤーを キーまたはゲームパッド入力 で動かす
 	void CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos);	// マップチップとの当たり判定を取って押し出し処理を行う
 

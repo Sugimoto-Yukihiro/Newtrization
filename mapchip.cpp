@@ -56,15 +56,15 @@ CMapchip::~CMapchip()	// デストラクタ
 //=============================================================================
 // 初期化処理
 //=============================================================================
-void CMapchip::Init(char* pMapFileName)
+void CMapchip::Init(int TexDivX, int TexDivY, char* pMapFileName)
 {
 	//------------------- メンバ変数の初期化
-	m_nChipNumX = 1;	// マップチップの列数
-	m_nChipNumY = 1;	// マップチップの行数
+	m_nChipNumX = 0;	// マップチップの列数
+	m_nChipNumY = 0;	// マップチップの行数
 
 	//------------------- テクスチャ関連の初期化
-	SetTexDivideX(4);
-	SetTexDivideY(4);
+	SetTexDivideX(TexDivX);
+	SetTexDivideY(TexDivY);
 
 	// マップチップ配列のセット
 	if (pMapFileName == NULL)	// NULLならゼロで初期化
@@ -209,11 +209,10 @@ int CMapchip::LoadMapchipData(char* pFileName)
 //****************************************************
 int CMapchip::SetMapChipData(const char* pCsvString)
 {
-	int nTokenCnt = 0;
-	int nLinesCnt = 0;
-	char* pCopyStr;
-//	char* pLinesStr;
-	char* pToken;
+	int nTokenCnt = 0;	// 数値代入したトークンのカウント ＝ マップチップの列数
+	int nLinesCnt = 0;	// 行数のカウント
+	char* pCopyStr;		// 引数の文字列をコピーしたメモリを示すポインタ
+	char* pToken;		// strtok で切り抜いたトークンを示すポインタ
 
 	// 引数の文字列をコピー
 	pCopyStr = new char [ strlen(pCsvString) + NULL_SIZE ];	// メモリ確保
@@ -221,27 +220,9 @@ int CMapchip::SetMapChipData(const char* pCsvString)
 	memcpy(pCopyStr, pCsvString, strlen(pCsvString));		// 文字列コピー
 
 	// 先頭から、順に字句を取得する
-//	strtok(pCopyStr, ",");	// 先頭の字句
 	pToken = pCopyStr;
 	while (pToken = strtok(pToken, ","))
 	{
-	//	if (strrchr(pToken, '\n') != NULL)	// 改行コードがあったとき
-	//	{
-	//		// 先頭の１文字のみを抽出
-	//	//	char singleWord[2] = { "\0" };
-	//	//	strncat(singleWord, pToken, 1);
-	//
-	//	//	m_MapChipData[nTokenCnt] = atoi(singleWord);	// 数値代入
-	//		m_MapChipData[nTokenCnt] = atoi(pToken);		// 数値代入
-	//		nTokenCnt++;	// マップチップの列数を加算
-	//		nLinesCnt++;	// マップチップの行数も加算
-	//	}
-	//	else
-	//	{
-	//		m_MapChipData[nTokenCnt] = atoi(pToken);		// 数値代入
-	//		nTokenCnt++;	// マップチップの列数を加算
-	//	}
-
 		// 改行コードがあったとき
 		if (strrchr(pToken, '\n') != NULL)
 		{
@@ -249,7 +230,7 @@ int CMapchip::SetMapChipData(const char* pCsvString)
 		}
 
 		m_MapChipData[nTokenCnt] = atoi(pToken);		// 数値代入
-		nTokenCnt++;	// マップチップの列数を加算
+		nTokenCnt++;		// マップチップの列数を加算
 
 		pToken = NULL;		// 次の字句を取得するためNULLをセット
 	}
@@ -259,54 +240,6 @@ int CMapchip::SetMapChipData(const char* pCsvString)
 
 	// マップチップの行数をセット
 	SetMapchipNumY(nLinesCnt);
-
-
-	// マップチップの列数を算出
-//	SetMapchipNumX( (SerchWordOffset(pCsvString, '\n') + 1) / 2 );	// カンマの文字数分を引く
-//
-//	// 一行目の文字列を取得
-////	pLinesStr = strtok(pCopyStr, "\n");
-//	pLinesStr = pCopyStr;
-//	do
-//	{
-//		char* pBuf = new char [ strlen(pLinesStr) + NULL_SIZE ];
-//		strcpy(pBuf, pLinesStr);	// 文字列コピー
-//
-//		// カンマに区切られた先頭の文字を取得
-//		pToken = strtok(pBuf, ",");		/* これが２行目以降読み取れない原因…!?　→　strtokはstatic変数を使用しているから！ */
-//		nTokenCnt = 0;	// カウントリセット
-//		do
-//		{
-//			// トークンが数値であるか判断
-//		//	if (isdigit(pToken))
-//			{
-//				m_MapChipData[nTokenCnt] = atoi(pToken);	// 数値代入
-//
-//				// トークン数のカウント
-//			//	nTokenCnt++;
-//			}
-//
-//			// 次の字句を取得
-//			pToken = strtok(NULL, ",");
-//		} while (pToken != NULL);	// 字句が見つからなくなるまで繰り返し
-//
-//		// カウントしたトークン数を、列数を保存するメンバ変数へ代入
-//	//	if (nTokenCnt > GetMapchipNumX()) SetMapchipNumX(nTokenCnt);
-//
-//		// 確保したヒープ領域のメモリを解放
-//		delete[] pBuf;
-//
-//		// 行数のカウント
-//		nLinesCnt++;
-//
-//		// 次の行の文字列を取得
-//	//	pLinesStr = strtok(NULL, "\n");
-//		pLinesStr += nTokenCnt;
-//	} while (pLinesStr != NULL);
-//
-//	// カウントした行数を、マップチップの行数を保存するメンバ変数へ代入
-//	SetMapchipNumY(nLinesCnt);
-
 
 	// コピーした文字列の解放
 	delete[] pCopyStr;
@@ -353,6 +286,12 @@ void CMapchip::SetMapchipNo(int No, int X, int Y)
 //=============================================================================
 // ゲッター関数
 //=============================================================================
+// マップチップ配列を取得
+int* CMapchip::GetMapChipData()
+{
+	return m_MapChipData;
+}
+
 // マップ全体の大きさを取得
 D3DXVECTOR2 CMapchip::GetStageSize()
 {
@@ -369,10 +308,28 @@ D3DXVECTOR2 CMapchip::GetMapchipSize()
 	return m_vChipSize;
 }
 
-// マップチップ配列を取得
-int* CMapchip::GetMapChipData()
+// マップチップ配列の要素数(一次元)を、座標に変換
+D3DXVECTOR2 CMapchip::GetMapchipPosition(int nIdxNo)
 {
-	return m_MapChipData;
+	// 使用する変数の宣言
+//	D3DXVECTOR2 ans;
+//	int X, Y;
+//
+//	X = nIdxNo % m_nChipNumX;	// 列数を算出
+//	Y = nIdxNo / m_nChipNumX;	// 列数を算出
+//
+//	ans.x = m_vChipSize.x * X;	// X座標をセット
+//	ans.y = m_vChipSize.y * Y;	// Y座標をセット
+//
+//	ans.x += m_vChipSize.x * 0.5f;	// チップの半分の長さを足してチップの中心座標にする
+//	ans.y += m_vChipSize.y * 0.5f;	// チップの半分の長さを足してチップの中心座標にする
+//
+//	// チップの中心座標を返す
+//	return ans;
+
+	// 最適化版
+	return D3DXVECTOR2(	m_vChipSize.x * (nIdxNo % m_nChipNumX) + m_vChipSize.x * 0.5f,
+						m_vChipSize.y * (nIdxNo / m_nChipNumX) + m_vChipSize.y * 0.5f );	// チップの中心座標を返す
 }
 
 // マップチップの列数を取得

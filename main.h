@@ -125,5 +125,5 @@ int DivideString(const char* String, int* retCol, int* retRow, char* DivMark);
 int SerchWordOffset(const char* String, const char SingleWord);
 
 //------------------- その他関数
-
+//int GetIndexFromCsv(char* CsvStr, char Character, int* retX = NULL, int* retY = NULL);	// CSVファイルから、指定された文字がある箇所の、行・列数を取得する
 

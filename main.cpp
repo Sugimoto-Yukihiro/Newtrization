@@ -25,14 +25,13 @@
 #define CLASS_NAME			"AppClass"				// ウインドウのクラス名
 #define WINDOW_NAME			"GP23 DirectX11"		// ウインドウのキャプション名
 
-#ifndef _DEBUG
+#ifndef _DEBUG	// こっちは製品版
 	#define START_MODE			(MODE_OPENING)			// 起動時のモード
 #endif // !_DEBUG
 
-#ifdef _DEBUG
-//#define START_MODE			(MODE_GAME)			// 起動時のモード
-#define START_MODE			(MODE_OPENING)			// 起動時のモード
-
+#ifdef _DEBUG	// デバック時
+#define START_MODE			(MODE_GAME)			// 起動時のモード
+//#define START_MODE			(MODE_OPENING)			// 起動時のモード
 #endif // _DEBUG
 
 //*****************************************************************************

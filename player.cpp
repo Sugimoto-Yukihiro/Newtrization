@@ -33,7 +33,7 @@
 #define ANIM_WAIT_DUSH				(2)			// ダッシュ時
 
 //------------------- 移動関連
-#define MOVE_VALUE					(10.0f)		// 基準移動値
+#define MOVE_VALUE					(7.0f)		// 基準移動値
 #define RATE_DUSH					(2.0f)		// プレイヤーダッシュ時の移動値の倍率
 #define JUMP_VALUE					(14.0f)		// プレイヤーのジャンプ力
 
@@ -76,7 +76,7 @@ CPlayer::~CPlayer()	// デストラクタ
 void CPlayer::Init()
 {
 	// プレイヤークラスの初期化
-	m_nTexNo = 1;		// ２番目のテクスチャ番号を使う
+	m_nTexNo = 1;		// 使うテクスチャ番号を指定
 	m_bUse = true;		// 使用
 	m_bDush = false;	// ダッシュフラグはfalseで初期化
 	m_bIsJump = false;	// ジャンプフラグはfalseで初期化
@@ -183,8 +183,16 @@ void CPlayer::Draw()
 //=============================================================================
 // セッター関数
 //=============================================================================
+// プレイヤーを指定の座標に出現させる
+void CPlayer::SetPlayer(D3DXVECTOR2 Pos)
+{
+	m_bUse = true;		// 使用フラグを true にする
+	SetPlayerPos(Pos);	// プレイヤーの座標をセット
+}
+
+
 // プレイヤーの座標をセット
-void CPlayer:: SetPlayerPos(D3DXVECTOR2 Pos)
+void CPlayer::SetPlayerPos(D3DXVECTOR2 Pos)
 {
 //	SetTexPos(Pos);	// プレイヤーテクスチャの座標 ＝ プレイヤーの座標
 	SetGravityObjectPos(Pos);	// ワールド座標系
@@ -248,64 +256,76 @@ void CPlayer::ControllPlayerInput(D3DXVECTOR2 NowPosition)
 	// 移動値の倍率
 	float fMagnification = 1.0f;
 
-	m_bDush = false;		// ダッシュしていない
-	if(KEY_MOVE_PLAYER_DUSH || PAD_MOVE_PLAYER_DUSH)	// ダッシュボタンが押されているか
+	// ダッシュ処理
 	{
-		if (!m_bIsJump)		// ジャンプ中でなければ実行
+		m_bDush = false;		// ダッシュしていない
+		if(KEY_MOVE_PLAYER_DUSH || PAD_MOVE_PLAYER_DUSH)	// ダッシュボタンが押されているか
 		{
-			fMagnification = fMagnification * RATE_DUSH;	// ダッシュ時の倍率を適用
-			m_bDush = true;		// ダッシュしてた！
+			if (!m_bIsJump)		// ジャンプ中でなければ実行
+			{
+				fMagnification = fMagnification * RATE_DUSH;	// ダッシュ時の倍率を適用
+				m_bDush = true;		// ダッシュしてた！
+			}
 		}
 	}
 
-	// キー入力で移動
-	m_bIsMove = false;		// 動いてない
-	if (GetGravityObjectDirection() == GRAVITY_DEFAULT)		// デフォルトの重力方向（y軸方向）の時
+	// キー入力
 	{
-		if (KEY_MOVE_PLAYER_RIGHT || PAD_MOVE_PLAYER_RIGHT)	// 右方向移動
+		m_bIsMove = false;			// 動いてない
+		if (GetGravityObjectDirection() == GRAVITY_DEFAULT)		// デフォルトの重力方向（y軸方向）の時
 		{
-			NowPosition.x += MOVE_VALUE * fMagnification;	// x軸方向へ移動
-			m_bIsMove = true;	// 動いてた！
-		}
-		else if (KEY_MOVE_PLAYER_LEFT || PAD_MOVE_PLAYER_LEFT)	// 左方向移動
-		{
-			NowPosition.x -= MOVE_VALUE * fMagnification;	// x軸の負の方向へ移動
-			m_bIsMove = true;	// 動いてた！
-		}
+			if (KEY_MOVE_PLAYER_RIGHT || PAD_MOVE_PLAYER_RIGHT)	// 右方向移動
+			{
+				NowPosition.x += MOVE_VALUE * fMagnification;	// x軸方向へ移動
+				m_bIsMove = true;	// 動いてた！
+			}
+			else if (KEY_MOVE_PLAYER_LEFT || PAD_MOVE_PLAYER_LEFT)	// 左方向移動
+			{
+				NowPosition.x -= MOVE_VALUE * fMagnification;	// x軸の負の方向へ移動
+				m_bIsMove = true;	// 動いてた！
+			}
 
-		// ジャンプ処理
-		if (KEY_MOVE_PLAYER_JUMP || PAD_MOVE_PLAYER_JUMP)	// ジャンプ操作のキーまたはボタンが押されたとき
-		{
-			m_bIsJump = true;	// ジャンプのフラグをtrueにする
-		//	NowPosition.y -= JUMP_VALUE;
+			// ジャンプ処理
+			if (KEY_MOVE_PLAYER_JUMP || PAD_MOVE_PLAYER_JUMP)	// ジャンプ操作のキーまたはボタンが押されたとき
+			{
+				m_bIsJump = true;	// ジャンプのフラグをtrueにする
+			}
 		}
+		else if (GetGravityObjectDirection() == GRAVITY_LEFT)	// 左向きの重力方向（x軸の負）の時
+		{
+			if (KEY_MOVE_PLAYER_RIGHT || PAD_MOVE_PLAYER_RIGHT)	// 右方向移動
+			{
+				NowPosition.y += MOVE_VALUE * fMagnification;	// y軸方向へ移動
+				m_bIsMove = true;	// 動いてる
+			}
+			else if (KEY_MOVE_PLAYER_LEFT || PAD_MOVE_PLAYER_LEFT)	// 左方向移動
+			{
+				NowPosition.y -= MOVE_VALUE * fMagnification;	// y軸の負の方向へ移動
+				m_bIsMove = true;	// 動いてる
+			}
 
+			// ジャンプ処理
+			if (KEY_MOVE_PLAYER_JUMP || PAD_MOVE_PLAYER_JUMP)
+			{
+				m_bIsJump = true;	// ジャンプのフラグをtrueにする
+			}
+		}
+	}
+
+	// ジャンプ処理
+	if (m_bIsJump)
+	{
 		// ジャンプ処理実行
-		if (m_bIsJump) NowPosition.y -= JUMP_VALUE;
+		if (GetGravityObjectDirection() == GRAVITY_DEFAULT)		// 左向きの重力方向（x軸の負）の時
+		{
+			NowPosition.y -= JUMP_VALUE;	// y軸の不の向きにプレイヤーを移動
+		}
+		else if (GetGravityObjectDirection() == GRAVITY_LEFT)	// 左向きの重力方向（x軸の負）の時
+		{
+			NowPosition.x += JUMP_VALUE;	// x軸の正の向きにプレイヤーを移動
+		}
 	}
-	else if (GetGravityObjectDirection() == GRAVITY_LEFT)	// 左向きの重力方向（x軸の負）の時
-	{
-		if (KEY_MOVE_PLAYER_RIGHT || PAD_MOVE_PLAYER_RIGHT)	// 右方向移動
-		{
-			NowPosition.y += MOVE_VALUE * fMagnification;	// y軸方向へ移動
-			m_bIsMove = true;	// 動いてる
-		}
-		else if (KEY_MOVE_PLAYER_LEFT || PAD_MOVE_PLAYER_LEFT)	// 左方向移動
-		{
-			NowPosition.y -= MOVE_VALUE * fMagnification;	// y軸の負の方向へ移動
-			m_bIsMove = true;	// 動いてる
-		}
 
-		// ジャンプ処理
-		if (KEY_MOVE_PLAYER_JUMP || PAD_MOVE_PLAYER_JUMP)
-		{
-			m_bIsJump = true;	// ジャンプのフラグをtrueにする
-		//	NowPosition.x += JUMP_VALUE;
-		}
-
-		// ジャンプ処理実行
-		if (m_bIsJump) NowPosition.x += JUMP_VALUE;
-	}
 
 	// プレイヤーのキー移動後の座標をセット
 	SetPlayerPos(NowPosition);

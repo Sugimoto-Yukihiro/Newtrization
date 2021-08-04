@@ -17,6 +17,19 @@
 #ifdef GAMEMODE_CLASS
 
 //*****************************************************************************
+// マクロ定義
+//*****************************************************************************
+#define PLAYER_SYMBOL		'P'		// プレイヤーの記号
+#define ENEMY_SYMBOL		'E'		// エネミーの記号
+
+/* マップチップテクスチャの分割数　→　固定値とする */
+#define MAPCHIP_TEXTURE_DIVIDE_X	4			// 横方向の分割数
+#define MAPCHIP_TEXTURE_DIVIDE_Y	4			// 縦方向の分割数
+
+// マップチップのファイル名
+#define GAME_MAP_DATA_1			"data/MAPCHIP/alpha_MAP.csv"	// マップ情報のファイル名
+
+//*****************************************************************************
 // クラス定義
 //*****************************************************************************
 class CModeGame
@@ -29,6 +42,14 @@ public:
 	void Draw();
 
 	void CollisionCheck();	// 当たり判定
+
+	//【注意】↓ この関数を呼び出す前に、全てのオブジェクトの初期化処理を行うこと！
+	int PutAllObject(const char* pCsvStr);	// 全てのオブジェクトの設置
+//	void PutAllObject(char* MapDataFile, int chipTexDivX, int chipTexDivY);	// 全てのオブジェクトを配置する（マップチップ, プレイヤー, エネミー, ギミック... などなど）
+//	void PutPlayer(const char* csvMapData, char Symbol);	// csvのマップデータから、プレイヤーを配置する
+//	void PutEnemy(const char* csvMapData, char Symbol);		// csvのマップデータから、エネミーを配置する
+//	void PutGimmick(const char* csvMapData, char Symbol);	// csvのマップデータから、ギミックを配置する
+
 
 	//------------------- ゲッター関数
 	D3DXVECTOR2 GetScrollPosition();

@@ -45,7 +45,7 @@ public:
 
 	//------------------- メンバ関数
 //	void Init();	// 初期化
-	void Init(char* pMapFileName = NULL);	// 初期化
+	void Init(int TexDivX, int TexDivY, char* pMapFileName = NULL);	// 初期化
 
 	void Uninit();	// 終了処理
 	void Draw();	// 描画処理
@@ -74,6 +74,7 @@ public:
 	int* GetMapChipData();				// マップチップ配列を取得
 	D3DXVECTOR2 GetStageSize();			// マップ全体の大きさを取得
 	D3DXVECTOR2 GetMapchipSize();		// １つのチップの大きさを取得
+	D3DXVECTOR2 GetMapchipPosition(int nIdxNo);	// マップチップ配列の要素数(一次元)を、D3DXVECTOR2 で取得。返ってくるのはチップの中心座標
 	int GetMapchipNumX();				// マップチップの列数を取得
 	int GetMapchipNumY();				// マップチップの列数を取得
 	int GetMapchipNo(int nIdxNo);		// 配列の要素数を指定して、マップチップ番号を取得

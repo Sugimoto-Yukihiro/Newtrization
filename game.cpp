@@ -27,9 +27,6 @@
 //*****************************************************************************
 #define NEXT_MODE				MODE_RESULT		// 次のモード
 
-// マップチップのファイル名
-#define GAME_MAP_DATA			"data/MAPCHIP/alpha_MAP.csv"	// マップ情報のファイル名
-
 // クラス管理
 #ifdef GAMEMODE_CLASS
 
@@ -38,22 +35,16 @@
 //=============================================================================
 void CModeGame::Init()
 {
+	//------------------- メンバ変数の初期化
+	m_vScrollPos = ZERO_VECTOR2;			// スクロール座標の初期化
+	m_GravityDirection = GRAVITY_DEFAULT;	// 重力方向の初期化
+	m_bIsTouchGrvityChange = false;			// "false"（エンジンに触れていない）で初期化
 #ifdef _DEBUG
 	// ポーズフラグの初期化
 	m_bPauseFlag = false;	// "false"（ボーズ無効）で初期化
 #endif // _DEBUG
 
-	//	g_ViewPortType_Game = TYPE_FULL_SCREEN;	// ビューポート設定
-
-	// スクロール座標の初期化
-	SetScrollPosition(ZERO_VECTOR2);
-
-	// 重力方向の初期化
-	m_GravityDirection = GRAVITY_DEFAULT;
-
-	// 重力変更エンジンに触れていません
-	m_bIsTouchGrvityChange = false;
-
+	//------------------- 以降、ゲームモードクラス内のインスタンスの初期化
 	// 背景の初期化
 	InitBg();
 
@@ -61,12 +52,12 @@ void CModeGame::Init()
 	CreatePlayerTextureAndBuffer();	// テクスチャ・頂点バッファ生成
 	for(int i =0; i < PLAYER_MAX; i++)
 	{
-		m_Player[i].Init();	// 初期化処理
+		m_Player[i].Init();	// 初期化処理実行
 	}
 
 	// マップチップの初期化
 	CreateMapchipTextureAndBuffer(MAPCHIP_STAGE_Sample);	// テクスチャ・頂点バッファ生成
-	m_Mapchip.Init(GAME_MAP_DATA);	// ステージ情報をロード
+	m_Mapchip.Init(MAPCHIP_TEXTURE_DIVIDE_X, MAPCHIP_TEXTURE_DIVIDE_Y);		// 初期化処理実行
 
 	// エネミーの初期化
 	InitEnemy();
@@ -79,6 +70,25 @@ void CModeGame::Init()
 
 	// パーティクルの初期化
 //	InitParticle();
+
+	// オブジェクトの配置 & マップチップのセット
+	PutAllObject(GAME_MAP_DATA_1);
+//	PutAllObject(GAME_MAP_DATA_1, MAPCHIP_TEXTURE_DIVIDE_X, MAPCHIP_TEXTURE_DIVIDE_Y);
+
+	// プレイヤーの位置が決まったから、スクロール座標をセット
+	{
+		D3DXVECTOR2 pos;	// 一時的な変数
+		pos.x = m_Player[0].GetPlayerPos().x - SCROLL_SET_X;	// スクロール座標<x>に値を代入
+		pos.x = (pos.x < 0.0f) ? 0.0f : pos.x;	// スクロール座標<x>が負なら「0」にリセット、正の数ならそのまま
+		pos.x = (pos.x + SCREEN_WIDTH > m_Mapchip.GetStageSize().x) ? m_Mapchip.GetStageSize().x - SCREEN_WIDTH : pos.x;	// 画面右上の点がワールドの端に来たら"STAGE_W"の値にリセット
+
+		pos.y = m_Player[0].GetPlayerPos().y - SCROLL_SET_Y;	// スクロール座標<y>に値を代入
+		pos.y = (pos.y < 0.0f) ? 0.0f : pos.y;	// スクロール座標<y>負なら「0」にリセット、正の数ならそのまま
+		pos.y = (pos.y + SCREEN_HEIGHT > m_Mapchip.GetStageSize().y) ? m_Mapchip.GetStageSize().y - SCREEN_HEIGHT : pos.y;	// 画面右上の点がワールドの端に来たら"STAGE_H"の値にリセット
+
+		// 座標をセット
+		m_vScrollPos = pos;
+	}
 
 	// BGM再生
 //	PlaySound(SOUND_LABEL_BGM_sample001);
@@ -150,14 +160,12 @@ void CModeGame::Update(void)
 	}
 #endif // _DEBUG
 
-
 	// 重力方向の変更
 	if (KEY_CHANGE_GRAVITY)
 	{
 		m_GravityDirection = (m_GravityDirection + 1) % GRAVITY_DIRECTION_MAX;
 		SetGravityDirection(m_GravityDirection);
 	}
-
 
 	// マップチップの更新処理
 	m_Mapchip.Update();
@@ -359,6 +367,90 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 
 
 //=============================================================================
+// オブジェクトの配置処理
+//=============================================================================
+/*******************************************************************************
+関数名	:	int PutAllObject(const char* pCsvStr)
+引数		:	マップ配列の先頭アドレス
+戻り値	:	成功→1		失敗→0
+説明		:	全てのオブジェクトのセット
+			【注意】この関数を呼び出す前に、全てのオブジェクトの初期化処理を行うこと！
+*******************************************************************************/
+int CModeGame::PutAllObject(const char* pCsvMapFile)
+{
+	// この関数内で使用する変数の宣言
+	char* pLoadedMapData = NULL;	// マップ情報のCsvファイルの読み込み先
+	char* p = NULL;					// strtok_s用のポインタ
+	char* pToken = NULL;			// strtok_sで抽出したトークンを示すポインタ
+	int nTokenCnt = 0;				// 格納したトークンの数をカウントする変数（＝ マップチップ配列の要素数）
+
+	// Csvファイルの、コメント部分を削除した状態のものを読み込み（カンマで区切られた数値データを抽出）
+	if ( LoadCsvFile(pCsvMapFile, pLoadedMapData, 8, ",") < 0)	// 負数が返されたら、読み込み失敗
+	{	// csvファイルのロード失敗時（エラーチェック）
+		return 0;	// 失敗を返す
+	}
+
+	// マップチップデータをセット
+	{
+		m_Mapchip.SetMapChipData(pLoadedMapData);
+	}
+
+	// 全てのオブジェクトをセット
+	{
+		pToken = strtok_s(pLoadedMapData, ",", &p);			// カンマに挟まれた文字列を抽出
+		do
+		{
+			// オブジェクトの設置記号が見つかったときの処理
+			if (strrchr(pToken, PLAYER_SYMBOL) != NULL)		// プレイヤーの設置記号が存在するか調べる
+			{
+				// プレイヤーを設置
+				m_Player[0].SetPlayer( m_Mapchip.GetMapchipPosition(nTokenCnt) );	// 'P'の存在するチップの中心にプレイヤーをセット
+			}
+			else if (strrchr(pToken, ENEMY_SYMBOL) != NULL)	// エネミーの設置記号が存在するか調べる
+			{
+				// エネミーを設置
+
+			}
+			else {	// 何もない時
+
+			}
+
+			// トークン数（現在のマップチップ配列の要素数）のカウント
+			nTokenCnt++;
+
+			// 次の文字列のブロックを格納
+			pToken = strtok_s(NULL, ",", &p);
+		} while (pToken != NULL);	// 見つからなくなるまで繰り返し
+	}
+
+	return 1;	// 成功を返す
+}
+
+// 全てのオブジェクトのセット
+//void CModeGame::PutAllObject(char* MapDataFile, int chipTexDivX, int chipTexDivY)
+//{
+//	char* pLoad = NULL;	// 読み込み先
+//	// Csvファイルの、コメント部分を削除した状態のものを読み込み（カンマで区切られた数値データを抽出）
+//	LoadCsvFile(MapDataFile, pLoad, 8, ",");	// csvファイルのロード
+//	m_Mapchip.SetMapChipData(pLoad);			// マップチップデータをセット
+//
+//	// プレイヤーやエネミー等も配置
+//	PutPlayer(pLoad);	// プレイヤーを配置
+////	PutEnemy(pLoad);	// エネミーを配置
+//
+//}
+
+// csvのマップデータから、プレイヤーを配置する
+//void CModeGame::PutPlayer(const char* csvMapData, char Symbol)
+//{
+//	int X, Y;	// マップチップ座標系での,　プレイヤーの位置
+//	const char* SymbolPlace = NULL;
+//	SymbolPlace = strrchr(csvMapData, Symbol);	// プレイヤーのシンボルがあるか調査
+//}
+
+
+
+//=============================================================================
 // ゲッター関数
 //=============================================================================
 // スクロール座標のセット
@@ -391,11 +483,12 @@ void CModeGame::SetScrollPosition(D3DXVECTOR2 Pos)
 // ゲーム全体の重力の方向をセット
 void CModeGame::SetGravityDirection(int Direction)
 {
-	// 重力処理クラスを継承している全てのオブジェクトの、重力方向の向きを変更
-	for (int i = 0; i < PLAYER_MAX; i++)
+	/* 重力処理クラスを継承している全てのオブジェクトの、重力方向の向きを変更 */
+	// プレイヤー
+//	for (int i = 0; i < PLAYER_MAX; i++)	// 複数いるとき → このfor文のコメントを外して [0]を[i]に変える
 	{
-		if (!m_Player->GetPlayerUseFlag()) return;	// プレイヤーが未使用なら行わない
-		m_Player[i].SetGravityObjectDirection(Direction);	// プレイヤーの重力方向をセット
+		if (!m_Player[0].GetPlayerUseFlag()) return;		// プレイヤーが未使用なら行わない
+		m_Player[0].SetGravityObjectDirection(Direction);	// プレイヤーの重力方向をセット
 	}
 	
 }

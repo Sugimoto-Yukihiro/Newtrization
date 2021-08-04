@@ -35,8 +35,6 @@ static char* g_TextureName[] = {
 //=============================================================================
 HRESULT InitBg(void)
 {
-	ID3D11Device *pDevice = GetDevice();
-
 	//テクスチャ生成
 	for (int i = 0; i < TEXTURE_NUM; i++)
 	{
