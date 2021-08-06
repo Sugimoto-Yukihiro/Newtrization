@@ -6,12 +6,9 @@
 //=============================================================================
 #pragma once
 
-//#include "mapchip.h"	// マップチップ処理
-
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-
 
 
 //*****************************************************************************
@@ -19,10 +16,10 @@
 //*****************************************************************************
 enum
 {
-	GRAVITY_DEFAULT, 
-	GRAVITY_LEFT,
+	GRAVITY_DEFAULT,		// 重力下向き
+	GRAVITY_LEFT,			// 重力左向き
 
-	GRAVITY_DIRECTION_MAX
+	GRAVITY_DIRECTION_MAX	// 総パターン数
 };
 
 
@@ -36,36 +33,35 @@ public:
 	~CGravity();	// デストラクタ
 
 	void Init();	// 初期化
+	void Uninit();	// 終了処理
 	void Update();	// 更新
 
 	//------------------- セッター関数
 	void SetGravityObjectPos(D3DXVECTOR2 Pos);		// 座標のセット
 	void SetGravityObjectSize(D3DXVECTOR2 Size);	// 大きさのセット
-	void SetGravityObjectDirection(int Direction);	// このオブジェクトの重力の向きをセット
 	void SetGravityWait(float GravityWait);			// このオブジェクトにかかる重力の大きさをセット
+	void SetGravitySpeed(float Speed);				// このオブジェクトの速さをセット
+	void SetGravityObjectDirection(int Direction);	// このオブジェクトの重力の方向をセット
 	void SetGravityFlag(bool Flag);					// 重力処理を行うフラグのセット
 
-//	void SetAnotherForce(float Force);
-
 	//------------------- ゲッター関数
-	D3DXVECTOR2 GetGravityObjectPos();	// 座標の取得
-	D3DXVECTOR2 GetGravityObjectSize();	// 大きさの取得
-	int GetGravityFlameCnt();			// 経過フレーム数の取得
-	int GetGravityObjectDirection();	// このオブジェクトの重力の向きをセット
-	float GetGravityWait();				// このオブジェクトにかかる重力の大きさをセット
-	bool GetGravityFlag();				// 重力処理を行うフラグのセット
-
-//	float GetAnotherForce();
+	D3DXVECTOR2	GetGravityObjectPos();			// 座標の取得
+	D3DXVECTOR2	GetGravityObjectSize();			// 大きさの取得
+	float		GetGravityWait();				// このオブジェクトにかかる重力の大きさを取得
+	float		GetGravitySpeed();				// このオブジェクトの速さを取得
+	int			GetGravityObjectDirection();	// このオブジェクトの重力の向きを取得
+	int			GetGravityFlameCnt();			// 経過時間（フレーム）数の取得
+	bool		GetGravityFlag();				// 重力処理を行うフラグの取得
 
 private:
 	//------------------- メンバ変数
-	D3DXVECTOR2 m_Position;		// 物体の中心座標
-	D3DXVECTOR2 m_ObjectSize;	// 物体のサイズ
-	int m_nDirection;			// 重力の向き
-	float m_GravityWait;		// 重力加速度
-//	float m_fForce;				// 重力以外に加わっている力
-	int m_nFlameCount;			// 経過時間
-	bool m_bFall;				// 重力処理のフラグ
+	D3DXVECTOR2	m_Position;		// 物体の中心座標
+	D3DXVECTOR2	m_ObjectSize;	// 物体のサイズ
+	float		m_GravityWait;	// 重力の大きさ
+	float		m_fVerocity;	// 【重力大きさ * 経過時間】 によって得られる、この物体の速度
+	int			m_nDirection;	// 重力の向き
+	int			m_nFlameCount;	// 経過時間（単位はフレーム）
+	bool		m_bFall;		// 重力処理のフラグ
 };
 
 

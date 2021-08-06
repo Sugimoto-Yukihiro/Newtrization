@@ -34,36 +34,46 @@ public:
 	void Draw();	// 描画処理
 
 	//------------------- セッター関数
-	void SetPlayer(D3DXVECTOR2 Pos);		// プレイヤーを出現させる
-	void SetPlayerPos(D3DXVECTOR2 Pos);		// プレイヤーの座標をセット
-	void SetPlayerSize(D3DXVECTOR2 Size);	// プレイヤーのサイズをセット
-	void SetPlayerUseFlag(bool Use);		// プレイヤーのuseフラグのセット
-	void KillPlayer();						// プレイヤーを殺す処理
+	void SetPlayer(D3DXVECTOR2 Pos);	// プレイヤーを出現させる
+	void SetPosition(D3DXVECTOR2 Pos);	// プレイヤーの座標をセット
+	void SetSize(D3DXVECTOR2 Size);		// プレイヤーのサイズをセット
+	void SetJumpForce(float Force);		// プレイヤーのジャンプベクトルを取得
+	void SetUseFlag(bool Use);			// プレイヤーのuseフラグのセット
+	void KillPlayer();					// プレイヤーを殺す処理
 
 	//------------------- ゲッター関数
-	D3DXVECTOR2 GetPlayerPos();	// プレイヤーの座標を取得
-	D3DXVECTOR2 GetPlayerSize();// プレイヤーの大きさを取得
-	bool GetPlayerUseFlag();	// プレイヤーのuseフラグの取得
+	D3DXVECTOR2 GetPosition();	// プレイヤーの座標を取得
+	D3DXVECTOR2 GetSize();		// プレイヤーの大きさを取得
+	float GetJumpForce();		// プレイヤーのジャンプ力を取得
+
+	bool GetUseFlag() { return m_bUse; };		// プレイヤーのuseフラグの取得
+	bool GetIsDush() { return m_bDush; };		// プレイヤーのダッシュフラグを取得
+	bool GetIsGround() { return m_bOnGround; };	// プレイヤーの接地フラグを取得
+	bool GetIsJump() { return m_bIsJump; };		// プレイヤーのジャンプフラグを取得
+	bool GetIsMove() { return m_bIsMove; };		// プレイヤーのジャンプフラグを取得
+
 
 	//------------------- マクロ定義
-	#define PLAYER_ALIVE	SetPlayerUseFlag(true)	// プレイヤーを生き返らせる
-	#define PLAYER_KILL		KillPlayer()			// プレイヤーを殺す
+	#define PLAYER_ALIVE	SetUseFlag(true)	// プレイヤーを生き返らせる
+	#define PLAYER_KILL		KillPlayer()		// プレイヤーを殺す
 
 
 private:
 	//------------------- メンバ関数(private)
 	/* ↓ジャンプ処理はこの関数内で行ってるよ（ジャンプ処理専用の関数作る予定） */
-	void ControllPlayerInput(D3DXVECTOR2 NowPosition);					// プレイヤーを キーまたはゲームパッド入力 で動かす
+	void InputControllPlayer(D3DXVECTOR2 NowPosition);					// プレイヤーを キーまたはゲームパッド入力 で動かす
 	void CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos);	// マップチップとの当たり判定を取って押し出し処理を行う
 
 	//------------------- メンバ変数
-//	int		m_nCurrentMapChipNo;		// プレイヤーの現在いるマップチップ番号
-//-	int		m_nMapchipX, m_nMapchipY;	// マップチップ座標系での、プレイヤーの現在位置
-	int		m_nTexNo;					// テクスチャ番号
-	bool	m_bUse;						// true:使っている(生存)  false:未使用(死亡)
-	bool	m_bDush;					// プレイヤーがダッシュ中かどうか
-	bool	m_bIsJump;					// プレイヤーがジャンプ中かどうか
-	bool	m_bIsMove;					// プレイヤーの動作フラグ   true:動いてる false:停止中
+	float		m_fJumpForce;				// プレイヤーのジャンプベクトル
+//	int			m_nCurrentMapChipNo;		// プレイヤーの現在いるマップチップ番号
+//	int			m_nMapchipX, m_nMapchipY;	// マップチップ座標系での、プレイヤーの現在位置
+	int			m_nTexNo;					// テクスチャ番号
+	bool		m_bUse;						// true:使っている(生存)  false:未使用(死亡)
+	bool		m_bDush;					// プレイヤーがダッシュ中かどうか
+	bool		m_bOnGround;				// プレイヤーが接地しているかどうか  true:足が地面についている  false:空中にいる
+	bool		m_bIsJump;					// プレイヤーがジャンプ中かどうか
+	bool		m_bIsMove;					// プレイヤーの動作フラグ   true:動いてる false:停止中
 };
 
 //*****************************************************************************

@@ -37,6 +37,8 @@
 #define RATE_DUSH					(2.0f)		// プレイヤーダッシュ時の移動値の倍率
 #define JUMP_VALUE					(14.0f)		// プレイヤーのジャンプ力
 
+#define TEMP_1		(5.0f)		// 後々修正して削除したい。
+
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
@@ -75,23 +77,24 @@ CPlayer::~CPlayer()	// デストラクタ
 //=============================================================================
 void CPlayer::Init()
 {
-	// プレイヤークラスの初期化
-	m_nTexNo = 1;		// 使うテクスチャ番号を指定
-	m_bUse = true;		// 使用
-	m_bDush = false;	// ダッシュフラグはfalseで初期化
-	m_bIsJump = false;	// ジャンプフラグはfalseで初期化
-	m_bIsMove = false;	// 動作フラグはfalseで初期化
+	//------------------- プレイヤークラスのメンバ変数の初期化
+	m_fJumpForce = 0.0f;			// ジャンプ力を初期化
+	m_nTexNo = 1;					// 使うテクスチャ番号を指定
+	m_bUse = true;					// 使用
+	m_bDush = false;				// ダッシュフラグはfalseで初期化
+	m_bIsJump = false;				// ジャンプフラグはfalseで初期化
+	m_bIsMove = false;				// 動作フラグはfalseで初期化
 
 	//------------------- ベースクラスの初期化
 	CTexture::Init();	// テクスチャ
-	SetPlayerUseFlag(true);
+	SetUseFlag(true);
 	SetTextureInf(SCREEN_CENTER, TEXTURE_SIZE, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 0.0f, ZERO_VECTOR2);
 	SetAnimInf(6, 1, ANIM_WAIT_DEFAULT);	// デフォルトでセット
 //	SetTexRotation(D3DXToRadian(90));		// 左側重力の時
 
 	CGravity::Init();	// 重力処理
-	SetPlayerPos(SCREEN_CENTER);	// 後々マップチップデータで設定できるようにする
-	SetPlayerSize(TEXTURE_SIZE);	// テクスチャのサイズをセット
+	SetPosition(SCREEN_CENTER);	// 後々マップチップデータで設定できるようにする
+	SetSize(TEXTURE_SIZE);	// テクスチャのサイズをセット
 }
 
 
@@ -105,7 +108,7 @@ void CPlayer::Update()
 	if (m_bUse == true)
 	{
 		CMapchip Mapchip = *GetGame()->GetMapchip();	// マップチップ情報の取得
-		D3DXVECTOR2 OldPosPlayer = GetPlayerPos();		// 移動処理前のプレイヤー座標を保存
+		D3DXVECTOR2 OldPosPlayer = GetPosition();		// 移動処理前のプレイヤー座標を保存
 
 		// アニメーション
 		if (m_bIsMove)	// 動作フラグが立っていたなら実行
@@ -118,22 +121,24 @@ void CPlayer::Update()
 
 
 		// プレイヤーの移動処理（入力処理）
-		ControllPlayerInput(GetPlayerPos());
-	//	CollisionMapchip(Mapchip, OldPosPlayer);	// マップチップとの当たり判定をとって、最終的な座標をセット
+		InputControllPlayer(GetPosition());
+		CollisionMapchip(Mapchip, OldPosPlayer);	// マップチップとの当たり判定をとって、入力処理移動後の座標をセット
 
 		// 重力処理
-		OldPosPlayer = GetPlayerPos();				//移動前座標のセット
-		CGravity::Update();							// プレイヤー座標の更新も自動的に行ってる
-		CollisionMapchip(Mapchip, OldPosPlayer);	// マップチップと当たり判定を取って座標調整
+		OldPosPlayer = GetPosition();	//移動前座標のセット
+		CGravity::Update();				// プレイヤー座標の更新も自動的に行ってる
+
+		// マップチップと当たり判定を取って、最終的な座標をセット
+		CollisionMapchip(Mapchip, OldPosPlayer);
 
 		//=================== スクロール座標の更新
 		{
 			D3DXVECTOR2 pos;	// 一時的な変数
-			pos.x = GetPlayerPos().x - SCROLL_SET_X;	// スクロール座標<x>に値を代入
+			pos.x = GetPosition().x - SCROLL_SET_X;	// スクロール座標<x>に値を代入
 			pos.x = (pos.x < 0.0f) ? 0.0f : pos.x;		// スクロール座標<x>が負なら「0」にリセット、正の数ならそのまま
 			pos.x = (pos.x + SCREEN_WIDTH > Mapchip.GetStageSize().x) ? Mapchip.GetStageSize().x - SCREEN_WIDTH : pos.x;		// 画面右上の点がワールドの端に来たら"STAGE_W"の値にリセット
 	
-			pos.y = GetPlayerPos().y - SCROLL_SET_Y;	// スクロール座標<y>に値を代入
+			pos.y = GetPosition().y - SCROLL_SET_Y;	// スクロール座標<y>に値を代入
 			pos.y = (pos.y < 0.0f) ? 0.0f : pos.y;		// スクロール座標<y>負なら「0」にリセット、正の数ならそのまま
 			pos.y = (pos.y + SCREEN_HEIGHT > Mapchip.GetStageSize().y) ? Mapchip.GetStageSize().y - SCREEN_HEIGHT : pos.y;	// 画面右上の点がワールドの端に来たら"STAGE_H"の値にリセット
 
@@ -144,14 +149,8 @@ void CPlayer::Update()
 	}
 
 #ifdef _DEBUG	// デバッグ情報を表示する
-	PrintDebugProc("playerAnimIdx : %d\n", GetCurrentAnim());
-	PrintDebugProc("Player座標　X:%f Y:%f\n", GetPlayerPos().x, GetPlayerPos().y);
-	PrintDebugProc("プレイヤー座標のマップチップ : %d\n", GetGame()->GetMapchip()->GetMapchipNo(GetPlayerPos()));
-
 	char *str = GetDebugStr();
-	sprintf(&str[strlen(str)], " PX:%f PY:%f", GetPlayerPos().x, GetPlayerPos().y);
-
-	//PrintDebugProc("Player X:%f Y:%f \n", pos.x, pos.y );
+	sprintf(&str[strlen(str)], " PX:%f PY:%f", GetPosition().x, GetPosition().y);
 #endif
 }
 
@@ -162,19 +161,21 @@ void CPlayer::Update()
 //=============================================================================
 void CPlayer::Draw()
 {
+	// 描画処理の前準備
 	PresetDrawPlayer();
 
+	// このプレイヤーが生きていたら描画
 	if (m_bUse == true)
 	{
 		// プレイヤーの表示座標を算出
-		SetTexPos( GetPlayerPos() - GetGame()->GetScrollPosition() );		// 表示座標系をセット
-	//1	D3DXVECTOR2 worldPos = GetPlayerPos();	// 現在の座標を退避
-	//1	SetPlayerPos( GetPlayerPos() - GetGame()->GetScrollPosition() );	// 表示座標系にセット
+		SetTexPos( GetPosition() - GetGame()->GetScrollPosition() );		// 表示座標系をセット
+	//1	D3DXVECTOR2 worldPos = GetPosition();	// 現在の座標を退避
+	//1	SetPosition( GetPosition() - GetGame()->GetScrollPosition() );	// 表示座標系にセット
 
 		// 描画
 		DrawTexture(g_VertexBuffer, g_Texture[m_nTexNo]);
 
-	//1	SetPlayerPos(worldPos);	// ワールド座標系に戻す
+	//1	SetPosition(worldPos);	// ワールド座標系に戻す
 	}
 }
 
@@ -187,25 +188,31 @@ void CPlayer::Draw()
 void CPlayer::SetPlayer(D3DXVECTOR2 Pos)
 {
 	m_bUse = true;		// 使用フラグを true にする
-	SetPlayerPos(Pos);	// プレイヤーの座標をセット
+	SetPosition(Pos);	// プレイヤーの座標をセット
 }
 
 
 // プレイヤーの座標をセット
-void CPlayer::SetPlayerPos(D3DXVECTOR2 Pos)
+void CPlayer::SetPosition(D3DXVECTOR2 Pos)
 {
 //	SetTexPos(Pos);	// プレイヤーテクスチャの座標 ＝ プレイヤーの座標
 	SetGravityObjectPos(Pos);	// ワールド座標系
 }
 
 // プレイヤーのサイズを取得
-void CPlayer::SetPlayerSize(D3DXVECTOR2 Size)
+void CPlayer::SetSize(D3DXVECTOR2 Size)
 {
-	return SetGravityObjectSize(Size);	// プレイヤーのサイズを返す
+	SetGravityObjectSize(Size);	// プレイヤーのサイズをセット
+}
+
+// プレイヤーのジャンプ力をセット
+void CPlayer::SetJumpForce(float Force)
+{
+	m_fJumpForce = Force;		// ジャンプ力をセット
 }
 
 // プレイヤーのuseフラグのセット
-void CPlayer::SetPlayerUseFlag(bool Use)
+void CPlayer::SetUseFlag(bool Use)
 {
 	m_bUse = Use;
 }
@@ -214,7 +221,7 @@ void CPlayer::SetPlayerUseFlag(bool Use)
 void CPlayer::KillPlayer()
 {
 	// プレイヤーのuseフラグを折る
-	SetPlayerUseFlag(false);
+	SetUseFlag(false);
 
 	/* プレイヤーが死んだ後に何か処理を行う場合はここに記入 */
 
@@ -226,23 +233,23 @@ void CPlayer::KillPlayer()
 // ゲッター関数
 //=============================================================================
 // プレイヤーの座標を取得
-D3DXVECTOR2 CPlayer::GetPlayerPos()
+D3DXVECTOR2 CPlayer::GetPosition()
 {
 //	return GetTexPos();				// プレイヤーテクスチャの座標 ＝ プレイヤーの座標 ってこと
 	return GetGravityObjectPos();	// ワールド座標系
 }
 
 // プレイヤーのサイズを取得
-D3DXVECTOR2 CPlayer::GetPlayerSize()
+D3DXVECTOR2 CPlayer::GetSize()
 {
 //	return GetTexSize();			// プレイヤーテクスチャのサイズを返す
 	return GetGravityObjectSize();	// プレイヤーのサイズを返す
 }
 
-// プレイヤーのuseフラグの取得
-bool CPlayer::GetPlayerUseFlag()
+// プレイヤーのジャンプベクトルを取得
+float CPlayer::GetJumpForce()
 {
-	return m_bUse;
+	return m_fJumpForce;	// ジャンプ力値を返す
 }
 
 
@@ -251,7 +258,7 @@ bool CPlayer::GetPlayerUseFlag()
 // メンバ関数(private)
 //=============================================================================
 // プレイヤーを キーまたはゲームパッド入力 で動かす
-void CPlayer::ControllPlayerInput(D3DXVECTOR2 NowPosition)
+void CPlayer::InputControllPlayer(D3DXVECTOR2 NowPosition)
 {
 	// 移動値の倍率
 	float fMagnification = 1.0f;
@@ -271,7 +278,8 @@ void CPlayer::ControllPlayerInput(D3DXVECTOR2 NowPosition)
 
 	// キー入力
 	{
-		m_bIsMove = false;			// 動いてない
+		// プレイヤーを操作
+		m_bIsMove = false;		// 動いてない
 		if (GetGravityObjectDirection() == GRAVITY_DEFAULT)		// デフォルトの重力方向（y軸方向）の時
 		{
 			if (KEY_MOVE_PLAYER_RIGHT || PAD_MOVE_PLAYER_RIGHT)	// 右方向移動
@@ -285,11 +293,6 @@ void CPlayer::ControllPlayerInput(D3DXVECTOR2 NowPosition)
 				m_bIsMove = true;	// 動いてた！
 			}
 
-			// ジャンプ処理
-			if (KEY_MOVE_PLAYER_JUMP || PAD_MOVE_PLAYER_JUMP)	// ジャンプ操作のキーまたはボタンが押されたとき
-			{
-				m_bIsJump = true;	// ジャンプのフラグをtrueにする
-			}
 		}
 		else if (GetGravityObjectDirection() == GRAVITY_LEFT)	// 左向きの重力方向（x軸の負）の時
 		{
@@ -304,55 +307,69 @@ void CPlayer::ControllPlayerInput(D3DXVECTOR2 NowPosition)
 				m_bIsMove = true;	// 動いてる
 			}
 
-			// ジャンプ処理
-			if (KEY_MOVE_PLAYER_JUMP || PAD_MOVE_PLAYER_JUMP)
+		}
+
+		// ジャンプ処理
+		if (KEY_MOVE_PLAYER_JUMP || PAD_MOVE_PLAYER_JUMP)	// ジャンプ操作のキーまたはボタンが押されたとき
+		{
+			if (m_bOnGround)	// 接地しているときのみ、ジャンプ処理実行
 			{
-				m_bIsJump = true;	// ジャンプのフラグをtrueにする
+				m_bIsJump = true;			// ジャンプのフラグをtrueにする
+				m_fJumpForce = JUMP_VALUE;	// ジャンプ力のセット
 			}
 		}
 	}
 
-	// ジャンプ処理
+	// ジャンプ処理実行
 	if (m_bIsJump)
 	{
 		// ジャンプ処理実行
 		if (GetGravityObjectDirection() == GRAVITY_DEFAULT)		// 左向きの重力方向（x軸の負）の時
 		{
-			NowPosition.y -= JUMP_VALUE;	// y軸の不の向きにプレイヤーを移動
+			NowPosition.y -= m_fJumpForce;	// y軸の不の向きにプレイヤーを移動
 		}
 		else if (GetGravityObjectDirection() == GRAVITY_LEFT)	// 左向きの重力方向（x軸の負）の時
 		{
-			NowPosition.x += JUMP_VALUE;	// x軸の正の向きにプレイヤーを移動
+			NowPosition.x += m_fJumpForce;	// x軸の正の向きにプレイヤーを移動
 		}
 	}
 
 
 	// プレイヤーのキー移動後の座標をセット
-	SetPlayerPos(NowPosition);
+	SetPosition(NowPosition);
 }
 
 // マップチップとの当たり判定を取って押し出し処理を行う
 void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 {
 	// 移動処理後のプレイヤーの座標を保存
-	D3DXVECTOR2 CurrentPosPlayer = GetPlayerPos();
+	D3DXVECTOR2 CurrentPosPlayer = GetPosition();
 
 	// プレイヤーの半分のサイズを保存
-	D3DXVECTOR2 HalfPlayer = GetPlayerSize() * 0.5f;
+	D3DXVECTOR2 HalfPlayer = GetSize() * 0.5f;
 
 	//============ プレイヤーの左側の判定
 	CurrentPosPlayer.x -= HalfPlayer.x;	// 座標情報をプレイヤーテクスチャの左側へずらす
 	// 当たり判定実行 ＆ 下側の座標調整
-//	if (HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos) == -1)	// 当たっていない時
 	if (HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos, true, false) == -1)	// 当たっていない時
 	{
 		// （重力方向が左のとき）左側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
-		if (GetGame()->GetGravityDirection() == GRAVITY_LEFT) SetGravityFlag(true);	// 重力方向が左向きなら実行
+		if (GetGame()->GetGravityDirection() == GRAVITY_LEFT) 
+		{
+			m_bOnGround = false;	// 空中にいる
+			SetGravityFlag(true);	// 重力処理フラグ "true" にセット
+		}
 	}
 	else
 	{	// （重力方向が左のとき）左側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
-		if (GetGame()->GetGravityDirection() == GRAVITY_LEFT) SetGravityFlag(false);// 重力方向が右向きなら実行
-		m_bIsJump = false;	// ジャンプフラグもfalseにする
+		if (GetGame()->GetGravityDirection() == GRAVITY_LEFT)
+		{	// 着地時の処理
+			m_bOnGround = true;		// 接地してる
+			SetGravityFlag(false);	// 重力方向が下向きなら実行
+			m_bIsJump = false;		// ジャンプフラグもfalseにする
+			m_fJumpForce = 0.0f;	// ジャンプ力を初期化
+		}
+
 	}
 	CurrentPosPlayer.x += HalfPlayer.x;	// ずらした分を元に戻す
 
@@ -368,21 +385,31 @@ void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 
 	//============ プレイヤーの下側の判定
 	CurrentPosPlayer.y += HalfPlayer.y;	// 座標情報をプレイヤーテクスチャの下側へずらす
-	// 当たり判定実行 ＆ 下側の座標調整
-	if (HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos, false, true) == -1)	// 当たっていない時
+	// 当たり判定実行 ＆ 下側の座標調整										ジャンプ力 < 重力値　　のとき、Y方向の座標調整を行う
+	if (HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos, false, true ) == -1)	// 当たっていない時
 	{	// （重力方向が下のとき）下側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
-		if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT) SetGravityFlag(true);
+		if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT)
+		{
+			m_bOnGround = false;	// 空中にいる
+			SetGravityFlag(true);	// 重力処理フラグ "true" にセット
+		}
 	}
 	else
 	{
 		// （重力方向が下のとき）下側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
-		if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT) SetGravityFlag(false);
-		m_bIsJump = false;	// ジャンプフラグもfalseにする
+		if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT)
+		{	// 着地時の処理
+			m_bOnGround = true;		// 接地してる
+			SetGravityFlag(false);	// 重力方向が下向きなら実行
+			m_bIsJump = false;		// ジャンプフラグもfalseにする
+			m_fJumpForce = 0.0f;	// ジャンプ力を初期化
+		}
+
 	}
 	CurrentPosPlayer.y -= HalfPlayer.y;	// ずらした分を元に戻す
 
 	// 最終的な座標をセット
-	SetPlayerPos(CurrentPosPlayer);
+	SetPosition(CurrentPosPlayer);
 }
 
 

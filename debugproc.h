@@ -15,3 +15,4 @@
 void DrawDebugProc(void);
 
 void PrintDebugProc(char *fmt,...);
+void SetDebugString(void);

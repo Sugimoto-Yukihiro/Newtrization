@@ -54,6 +54,7 @@ public:
 	//------------------- ゲッター関数
 	D3DXVECTOR2 GetScrollPosition();
 	CMapchip* GetMapchip();			// マップチップのインスタンスへのアクセス
+	CPlayer* GetPlayer();			// プレイヤーのインスタンスへのアクセス
 	int GetGravityDirection();		// 重力の方向を取得
 
 	//------------------- セッター関数

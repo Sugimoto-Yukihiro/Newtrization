@@ -369,6 +369,11 @@ void CMode::Update(void)
 		break;
 	}
 
+
+#ifdef _DEBUG
+	SetDebugString();	// デバッグ表示のセット
+#endif // _DEBUG
+
 }
 
 

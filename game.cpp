@@ -78,11 +78,11 @@ void CModeGame::Init()
 	// プレイヤーの位置が決まったから、スクロール座標をセット
 	{
 		D3DXVECTOR2 pos;	// 一時的な変数
-		pos.x = m_Player[0].GetPlayerPos().x - SCROLL_SET_X;	// スクロール座標<x>に値を代入
+		pos.x = m_Player[0].GetPosition().x - SCROLL_SET_X;	// スクロール座標<x>に値を代入
 		pos.x = (pos.x < 0.0f) ? 0.0f : pos.x;	// スクロール座標<x>が負なら「0」にリセット、正の数ならそのまま
 		pos.x = (pos.x + SCREEN_WIDTH > m_Mapchip.GetStageSize().x) ? m_Mapchip.GetStageSize().x - SCREEN_WIDTH : pos.x;	// 画面右上の点がワールドの端に来たら"STAGE_W"の値にリセット
 
-		pos.y = m_Player[0].GetPlayerPos().y - SCROLL_SET_Y;	// スクロール座標<y>に値を代入
+		pos.y = m_Player[0].GetPosition().y - SCROLL_SET_Y;	// スクロール座標<y>に値を代入
 		pos.y = (pos.y < 0.0f) ? 0.0f : pos.y;	// スクロール座標<y>負なら「0」にリセット、正の数ならそのまま
 		pos.y = (pos.y + SCREEN_HEIGHT > m_Mapchip.GetStageSize().y) ? m_Mapchip.GetStageSize().y - SCREEN_HEIGHT : pos.y;	// 画面右上の点がワールドの端に来たら"STAGE_H"の値にリセット
 
@@ -194,16 +194,6 @@ void CModeGame::Update(void)
 	// 背景の更新処理
 	UpdateBg();
 
-#ifdef _DEBUG
-	PrintDebugProc("スクロール座標 X: %f  Y: %f\n", GetScrollPosition().x, GetScrollPosition().y);
-
-	PrintDebugProc("　重力の方向 :");
-	if (GetGravityDirection() == GRAVITY_DEFAULT) 	PrintDebugProc("　下方向");
-	if (GetGravityDirection() == GRAVITY_LEFT)		PrintDebugProc("　左方向");
-
-	//char *str = GetDebugStr();
-	//sprintf(&str[strlen(str)], "　　重力の方向:%d ", GetGravityDirection());
-#endif // _DEBUG
 }
 
 //=============================================================================
@@ -250,10 +240,10 @@ void CModeGame::CollisionCheck()
 	// プレイヤーとマップチップの当たり判定
 	{
 		// プレイヤー座標のマップチップを取得して、その値によって処理を変える
-		switch ( m_Mapchip.GetMapchipNo(m_Player->GetPlayerPos()) )	// プレイヤー座標のマップチップを取得
+		switch ( m_Mapchip.GetMapchipNo(m_Player->GetPosition()) )	// プレイヤー座標のマップチップを取得
 		{
 			// 重力変更エンジンに触れたとき
-		case 10:
+		case 10: case 12:
 			// 重力方向の変更
 			if (!m_bIsTouchGrvityChange)	// 初めて重力装置に触れた時の一回だけ行う
 			{
@@ -266,13 +256,13 @@ void CModeGame::CollisionCheck()
 				{
 					m_Player->SetTexRotation(D3DXToRadian(0));	// 回転値をいったんリセット
 					m_Player->SetTexRotation(D3DXToRadian(90));	// プレイヤーテクスチャを90°回転
-				//	m_Player->SetPlayerSize(D3DXVECTOR2(m_Player->GetPlayerSize().y, m_Player->GetPlayerSize().x));	// サイズも入れ替え
+				//	m_Player->SetSize(D3DXVECTOR2(m_Player->GetSize().y, m_Player->GetSize().x));	// サイズも入れ替え
 				}
 				else if (m_GravityDirection == GRAVITY_DEFAULT)	// デフォルトへ変わったのなら
 				{
 					m_Player->SetTexRotation(D3DXToRadian(0));	// 回転値をリセット
 				}
-				m_Player->SetPlayerSize(D3DXVECTOR2(m_Player->GetPlayerSize().y, m_Player->GetPlayerSize().x));	// サイズ値を入れ替え
+				m_Player->SetSize(D3DXVECTOR2(m_Player->GetSize().y, m_Player->GetSize().x));	// サイズ値を入れ替え
 				m_bIsTouchGrvityChange = true;	// 重力装置に触れていますよ
 			}
 			break;
@@ -465,6 +455,12 @@ CMapchip* CModeGame::GetMapchip()
 	return &m_Mapchip;	// マップチップの情報を返す
 }
 
+// マップチップへのアクセス
+CPlayer* CModeGame::GetPlayer()
+{
+	return &m_Player[0];	// マップチップの情報を返す
+}
+
 // 重力方向の取得
 int CModeGame::GetGravityDirection()
 {
@@ -487,7 +483,7 @@ void CModeGame::SetGravityDirection(int Direction)
 	// プレイヤー
 //	for (int i = 0; i < PLAYER_MAX; i++)	// 複数いるとき → このfor文のコメントを外して [0]を[i]に変える
 	{
-		if (!m_Player[0].GetPlayerUseFlag()) return;		// プレイヤーが未使用なら行わない
+		if (!m_Player[0].GetUseFlag()) return;				// プレイヤーが未使用なら行わない
 		m_Player[0].SetGravityObjectDirection(Direction);	// プレイヤーの重力方向をセット
 	}
 	

@@ -8,6 +8,8 @@
 #include "debugproc.h"
 #include "renderer.h"
 
+#include "game.h"
+
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
@@ -107,5 +109,35 @@ void PrintDebugProc(char *fmt,...)
 		strcat_s(g_aStrDebug, aBuf);
 	}
 #endif
+}
+
+
+// デバックの文章のセット
+void SetDebugString(void)
+{
+	// ゲームモードの情報を取得
+	CModeGame GameInf = *GetGame();				// ゲームモードクラスの情報を取得
+	CPlayer PlayerInf = *GameInf.GetPlayer();	// プレイヤーの情報を取得
+
+	{
+		PrintDebugProc("スクロール座標 X: %f  Y: %f\n", GameInf.GetScrollPosition().x, GameInf.GetScrollPosition().y);
+
+		PrintDebugProc("　重力の方向 :");
+		if (GameInf.GetGravityDirection() == GRAVITY_DEFAULT) 	PrintDebugProc("　下方向\n");
+		if (GameInf.GetGravityDirection() == GRAVITY_LEFT)		PrintDebugProc("　左方向\n");
+
+		PrintDebugProc("playerAnimIdx : %d\n", PlayerInf.GetCurrentAnim());
+		PrintDebugProc("Player座標　X:%f Y:%f\n", PlayerInf.GetPosition().x, PlayerInf.GetPosition().y);
+		PrintDebugProc("プレイヤー座標のマップチップ : %d\n", GameInf.GetMapchip()->GetMapchipNo(PlayerInf.GetPosition()) );
+
+		PrintDebugProc("プレイヤーのジャンプ値： %f　　重力値： %f\n", PlayerInf.GetJumpForce(), PlayerInf.GetGravitySpeed());
+		PrintDebugProc("【プレイヤーの各真偽値】動作： %d　ダッシュ： %d　ジャンプ： %d　接地： %d　\n",
+						PlayerInf.GetIsMove(), PlayerInf.GetIsDush(), PlayerInf.GetIsJump(), PlayerInf.GetIsGround()  );
+	}
+
+
+//	char *str = GetDebugStr();
+//	sprintf(&str[strlen(str)], " PX:%f PY:%f", GameInf.GetPlayer()->GetPosition().x, GameInf.GetPlayer()->GetPosition().y);
+
 }
 
