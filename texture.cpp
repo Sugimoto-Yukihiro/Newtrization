@@ -22,8 +22,16 @@
 //*****************************************************************************
 // ƒOƒ[ƒoƒ‹•Ï”
 //*****************************************************************************
+static ID3D11Buffer		*g_VertexBuffer2D = NULL;	// ’¸“_î•ñ
 
 
+//=============================================================================
+// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+//=============================================================================
+CTexture::CTexture()	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+{
+	Init();		// ‰Šú‰»ˆ—‚ğs‚¤
+}
 
 //=============================================================================
 // ƒƒ“ƒo•Ï”‚Ì‰Šú‰»iCTexturej
@@ -47,7 +55,7 @@ void CTexture::Init()	// ‘S‚Ä‚Ìƒƒ“ƒo•Ï”‚ğ‚O‚Å‰Šú‰»
 // ˆø” :	ƒeƒNƒXƒ`ƒƒ‚Ìƒtƒ@ƒCƒ‹–¼, •`‰æÀ•W, ’¸“_F, ‰ñ“]Šp
 // à–¾ :	ƒeƒNƒXƒ`ƒƒ‚ğAˆø”‚Éw’è‚³‚ê‚½’l‚É•`‰æ‚·‚éˆ—
 //=============================================================================
-void CTexture::DrawTexture(ID3D11Buffer* pVertexBuffer, ID3D11ShaderResourceView* pTextureData)
+void CTexture::DrawTexture(ID3D11ShaderResourceView* pTextureData, ID3D11Buffer* pVertexBuffer)
 {
 	float tw = 0.0f, th = 0.0f, tU = 0.0f, tV = 0.0f;
 
@@ -68,7 +76,27 @@ void CTexture::DrawTexture(ID3D11Buffer* pVertexBuffer, ID3D11ShaderResourceView
 	// ƒ|ƒŠƒSƒ“•`‰æ
 	GetDeviceContext()->Draw(4, 0);
 }
+void CTexture::DrawTexture(ID3D11ShaderResourceView* pTextureData)
+{
+	float tw = 0.0f, th = 0.0f, tU = 0.0f, tV = 0.0f;
 
+	// ƒeƒNƒXƒ`ƒƒİ’è
+	GetDeviceContext()->PSSetShaderResources(0, 1, &pTextureData);
+
+	//------------------- ƒAƒjƒ[ƒVƒ‡ƒ“‚àl—¶‚µ‚ÄAUVÀ•W‚Ì’l‚ğŒˆ’è‚·‚é
+	// 1‚Â‚ÌƒAƒjƒ[ƒVƒ‡ƒ“ƒpƒ^[ƒ“‚ ‚½‚è‚Ì•‚Æ‚‚³‚ğ‹‚ß‚é
+	tw = 1.0f / (float)GetTexDivideX();							// •
+	th = 1.0f / (float)GetTexDivideY();							// ‚‚³
+	if (GetCurrentAnim() != 0) tU = (float)(GetCurrentAnim() % GetTexDivideX()) * tw;	// ƒeƒNƒXƒ`ƒƒ‚Ì¶ãXÀ•W
+	if (GetCurrentAnim() != 0) tV = (float)(GetCurrentAnim() / GetTexDivideX()) * th;	// ƒeƒNƒXƒ`ƒƒ‚Ì¶ãYÀ•W
+
+	// ‚P–‡‚Ìƒ|ƒŠƒSƒ“‚Ì’¸“_‚ÆƒeƒNƒXƒ`ƒƒÀ•W‚ğİ’è
+	SetSpriteColorRotation(g_VertexBuffer2D, m_vTexPos.x, m_vTexPos.y, m_vTexSize.x, m_vTexSize.y, tU, tV, tw, th,
+		m_TexColor, m_fTexRotation);
+
+	// ƒ|ƒŠƒSƒ“•`‰æ
+	GetDeviceContext()->Draw(4, 0);
+}
 
 
 //=============================================================================
@@ -237,10 +265,10 @@ int CAnimation::GetTexDivideY()			// c•ûŒü‚ÌƒAƒjƒ[ƒVƒ‡ƒ“ƒpƒ^[ƒ“”‚ğæ“¾‚·‚éŠ
 //=============================================================================
 // ’¸“_ƒf[ƒ^İ’è(2D)
 //=============================================================================
-void SetVertex(ID3D11Buffer *buf, float X, float Y, float Width, float Height, float U, float V, float UW, float VH)
+void SetVertex(float X, float Y, float Width, float Height, float U, float V, float UW, float VH)
 {
 	D3D11_MAPPED_SUBRESOURCE msr;
-	GetDeviceContext()->Map(buf, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
+	GetDeviceContext()->Map(g_VertexBuffer2D, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
 
 	VERTEX_3D *vertex = (VERTEX_3D*)msr.pData;
 
@@ -261,7 +289,7 @@ void SetVertex(ID3D11Buffer *buf, float X, float Y, float Width, float Height, f
 	vertex[3].Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	vertex[3].TexCoord = D3DXVECTOR2(U + UW, V + VH);
 
-	GetDeviceContext()->Unmap(buf, 0);
+	GetDeviceContext()->Unmap(g_VertexBuffer2D, 0);
 }
 
 // ƒeƒNƒXƒ`ƒƒ‚Ì”z’u
@@ -417,16 +445,20 @@ void CreateVertexBuffer(ID3D11Buffer** VertexBuffer)
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, VertexBuffer);
 }
-
-
-void ReleaseTexture(ID3D11ShaderResourceView** TextureData, ID3D11Buffer** VertexBuffer)
+void CreateVertexBuffer(void)
 {
-	if (*VertexBuffer)
-	{
-		VertexBuffer[0]->Release();
-		*VertexBuffer = NULL;
-	}
+	// ’¸“_ƒoƒbƒtƒ@¶¬
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DYNAMIC;
+	bd.ByteWidth = sizeof(VERTEX_3D) * 4;	// 2D‚Í4’¸“_
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer2D);
+}
 
+void ReleaseTexture(ID3D11ShaderResourceView** TextureData)
+{
 	if (*TextureData)
 	{
 		TextureData[0]->Release();
@@ -435,6 +467,24 @@ void ReleaseTexture(ID3D11ShaderResourceView** TextureData, ID3D11Buffer** Verte
 
 }
 
+void ReleaseVertexBuffer(ID3D11Buffer** VertexBuffer)	// ”CˆÓ‚Ì’¸“_ƒoƒbƒtƒ@
+{
+	if (*VertexBuffer)
+	{
+		VertexBuffer[0]->Release();
+		*VertexBuffer = NULL;
+	}
+
+}
+void ReleaseVertexBuffer(void)	// ƒfƒtƒHƒ‹ƒg‚Ì’¸“_ƒoƒbƒtƒ@ver
+{
+	if (g_VertexBuffer2D)
+	{
+		g_VertexBuffer2D->Release();
+		g_VertexBuffer2D = NULL;
+	}
+
+}
 
 void PresetDraw2D(ID3D11Buffer** VertexBuffer)
 {
@@ -442,6 +492,25 @@ void PresetDraw2D(ID3D11Buffer** VertexBuffer)
 	UINT stride = sizeof(VERTEX_3D);
 	UINT offset = 0;
 	GetDeviceContext()->IASetVertexBuffers(0, 1, VertexBuffer, &stride, &offset);
+
+	// ƒ}ƒgƒŠƒNƒXİ’è
+	SetWorldViewProjection2D();
+
+	// ƒvƒŠƒ~ƒeƒBƒuƒgƒ|ƒƒWİ’è
+	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+	// ƒ}ƒeƒŠƒAƒ‹İ’è
+	MATERIAL material;
+	ZeroMemory(&material, sizeof(material));
+	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	SetMaterial(material);
+}
+void PresetDraw2D(void)
+{
+	// ’¸“_ƒoƒbƒtƒ@İ’è
+	UINT stride = sizeof(VERTEX_3D);
+	UINT offset = 0;
+	GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer2D, &stride, &offset);
 
 	// ƒ}ƒgƒŠƒNƒXİ’è
 	SetWorldViewProjection2D();

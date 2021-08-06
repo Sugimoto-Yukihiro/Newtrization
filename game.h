@@ -9,25 +9,24 @@
 #include "player.h"		// プレイヤー
 #include "mapchip.h"	// マップチップ
 
-// ゲーム画面処理の管理方法の選択
-//#define GAMEMODE_STRUCT
-#define GAMEMODE_CLASS
-
-// クラス管理
-#ifdef GAMEMODE_CLASS
-
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define PLAYER_SYMBOL		'P'		// プレイヤーの記号
-#define ENEMY_SYMBOL		'E'		// エネミーの記号
-
+//------------------- ファイルに関する定義
+#define GAME_MAP_DATA_1				"data/MAPCHIP/alpha_MAP.csv"	// マップ情報のファイル名
+#define PLAYER_SYMBOL				'P'		// プレイヤーの記号
+#define ENEMY_SYMBOL				'E'		// エネミーの記号
 /* マップチップテクスチャの分割数　→　固定値とする */
-#define MAPCHIP_TEXTURE_DIVIDE_X	4			// 横方向の分割数
-#define MAPCHIP_TEXTURE_DIVIDE_Y	4			// 縦方向の分割数
+#define MAPCHIP_TEXTURE_DIVIDE_X	(4)		// 横方向の分割数
+#define MAPCHIP_TEXTURE_DIVIDE_Y	(4)		// 縦方向の分割数
 
-// マップチップのファイル名
-#define GAME_MAP_DATA_1			"data/MAPCHIP/alpha_MAP.csv"	// マップ情報のファイル名
+//------------------- スクロール座標に関する定義
+#define SCROLL_SET_X	(SCREEN_CENTER_X)	// スクロール座標のセット位置
+#define SCROLL_SET_Y	(SCREEN_CENTER_Y)	// スクロール座標のセット位置
+
+//------------------- ゲーム内オブジェクトに関する定義
+#define PLAYER_MAX		(1)			// プレイヤーのMax人数
+
 
 //*****************************************************************************
 // クラス定義
@@ -42,6 +41,7 @@ public:
 	void Draw();
 
 	void CollisionCheck();	// 当たり判定
+	void ChangeGravityDirection(int Direction);	// ゲーム全体の重力の方向を変える
 
 	//【注意】↓ この関数を呼び出す前に、全てのオブジェクトの初期化処理を行うこと！
 	int PutAllObject(const char* pCsvStr);	// 全てのオブジェクトの設置
@@ -59,47 +59,29 @@ public:
 
 	//------------------- セッター関数
 	void SetScrollPosition(D3DXVECTOR2 Pos);	// スクロール座標のセット
-	void SetGravityDirection(int Direction);	// ゲーム全体の重力の方向をセット
 
 private:
+	//------------------- メンバ関数(private)
+
+
 	//------------------- 各インスタンス
-	CPlayer m_Player[PLAYER_MAX];		// プレイヤーのインスタンス
-	CMapchip m_Mapchip;					// マップチップのサンプル
+	CPlayer	m_Player;				// プレイヤーのインスタンス
+	CMapchip m_Mapchip;				// マップチップのサンプル
 
 	//------------------- メンバ変数
-	D3DXVECTOR2 m_vScrollPos;			// スクロール座標
-	int m_GravityDirection;				// 重力の方向
-	bool m_bIsTouchGrvityChange;		// 重力変更エンジンに触れているかどうか
+	D3DXVECTOR2 m_vScrollPos;		// スクロール座標
+	int m_GravityDirection;			// 重力の方向
+	bool m_bIsTouchGrvityChange;	// 重力変更エンジンに触れているかどうか
 
 
 #ifdef _DEBUG
-	bool	m_bPauseFlag;				// ポーズON/OFF
+	bool	m_bPauseFlag;			// ポーズON/OFF
 #endif // _DEBUG
 };
 
-#endif // GAMEMODE_CLASS
+
 
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-//int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPos, D3DXVECTOR2 HalfObjectSize);
-//int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPos, bool Flag = true);
 int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPos, bool FlagX = true, bool FlagY = true);
-
-
-
-
-// 構造体管理
-#ifdef GAMEMODE_STRUCT
-
-//*****************************************************************************
-// プロトタイプ宣言
-//*****************************************************************************
-HRESULT InitGame(void);
-void UninitGame(void);
-void UpdateGame(void);
-void DrawGame(void);
-
-void SetScrollPosition(D3DXVECTOR2 Pos);
-D3DXVECTOR2* GetScrollPosition();
-#endif // GAMEMODE_STRUCT

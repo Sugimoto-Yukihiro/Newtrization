@@ -47,7 +47,7 @@
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer				*g_VertexBuffer = NULL;				// 頂点情報
+//static ID3D11Buffer				*g_VertexBuffer = NULL;				// 頂点情報
 static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
 // テクスチャのファイル名
@@ -161,22 +161,16 @@ void CPlayer::Update()
 //=============================================================================
 void CPlayer::Draw()
 {
-	// 描画処理の前準備
-	PresetDrawPlayer();
-
 	// このプレイヤーが生きていたら描画
 	if (m_bUse == true)
 	{
 		// プレイヤーの表示座標を算出
 		SetTexPos( GetPosition() - GetGame()->GetScrollPosition() );		// 表示座標系をセット
-	//1	D3DXVECTOR2 worldPos = GetPosition();	// 現在の座標を退避
-	//1	SetPosition( GetPosition() - GetGame()->GetScrollPosition() );	// 表示座標系にセット
 
 		// 描画
-		DrawTexture(g_VertexBuffer, g_Texture[m_nTexNo]);
-
-	//1	SetPosition(worldPos);	// ワールド座標系に戻す
+		DrawTexture(g_Texture[m_nTexNo]);
 	}
+
 }
 
 
@@ -415,32 +409,21 @@ void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 
 
 
-void CreatePlayerTextureAndBuffer()
+void CreatePlayerTexture(void)
 {
 	// テクスチャ生成
 	for (int i = 0; i < TEXTURE_MAX; i++)
 	{
 		CreateTexture(g_TextureName[i], &g_Texture[i]);
 	}
-
-	// 頂点バッファ生成
-	CreateVertexBuffer(&g_VertexBuffer);
-
 }
 
-void ReleasePlayerTextureAndBuffer()
+void ReleasePlayerTexture(void)
 {
 	// テクスチャ解放
 	for (int i = 0; i < TEXTURE_MAX; i++)
 	{
-		ReleaseTexture(&g_Texture[i], &g_VertexBuffer);
+		ReleaseTexture(&g_Texture[i]);
 	}
 
 }
-
-void PresetDrawPlayer(void)
-{
-	// 描画前の処理
-	PresetDraw2D(&g_VertexBuffer);
-}
-

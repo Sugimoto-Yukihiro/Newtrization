@@ -40,7 +40,7 @@
 // 各モードのインクルード
 #include "opening.h"	// オープニング
 #include "game.h"		// ゲーム
-
+#include "result.h"		// リザルト
 
 //*****************************************************************************
 // マクロ定義
@@ -97,7 +97,8 @@ public:
 
 	//------------------- 各モードのインスタンス
 	CModeGame m_GameMode;		// ゲーム画面
-	CModeOpening m_OpeningMode; // オープニング画面
+	CModeOpening m_OpeningMode;	// オープニング画面
+	CModeResult m_Result;		// リザルト画面
 
 private:
 	MODE m_Mode;	// モードの状態を格納する変数

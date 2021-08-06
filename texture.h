@@ -49,8 +49,12 @@ private:
 class CTexture : public CAnimation
 {
 public:
+	CTexture();		// コンストラクタ
+//	~CTexture();		// デストラクタ
+
 	//------------------- メンバ関数
-	void DrawTexture(ID3D11Buffer* VertexBuffer, ID3D11ShaderResourceView* TextureData);
+	void DrawTexture(ID3D11ShaderResourceView* TextureData, ID3D11Buffer* VertexBuffer);
+	void DrawTexture(ID3D11ShaderResourceView* TextureData);
 	void Init();							// メンバ変数の初期化
 //	void AddTexPos(D3DXVECTOR2 Pos);		// テクスチャ表示座標をずらす
 
@@ -86,7 +90,7 @@ private:
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-void SetVertex(ID3D11Buffer *buf, float X, float Y, float Width, float Height, float U, float V, float UW, float VH);
+void SetVertex(float X, float Y, float Width, float Height, float U, float V, float UW, float VH);
 void SetSprite(ID3D11Buffer *buf, float X, float Y, float Width, float Height, float U, float V, float UW, float VH);
 void SetSpriteColor(ID3D11Buffer *buf, float X, float Y, float Width, float Height, float U, float V, float UW, float VH, D3DXCOLOR color);
 void SetSpriteColorRotation(ID3D11Buffer *buf, float X, float Y, float Width, float Height,
@@ -96,12 +100,17 @@ void SetSpriteColorRotation(ID3D11Buffer *buf, float X, float Y, float Width, fl
 
 // テクスチャ情報の生成
 void CreateTexture(const char* TextureName, ID3D11ShaderResourceView** TexrureData);
+// テクスチャ情報の解放
+void ReleaseTexture(ID3D11ShaderResourceView** TexrureData);
 
 // 頂点バッファ生成
-void CreateVertexBuffer(ID3D11Buffer** VertexBuffer);
+void CreateVertexBuffer(ID3D11Buffer** VertexBuffer);	// 任意の頂点バッファを生成
+void CreateVertexBuffer(void);							// テクスチャ関数のグローバルの頂点バッファver
+// 頂点バッファの解放
+void ReleaseVertexBuffer(ID3D11Buffer** VertexBuffer);	// 任意の頂点バッファを解放
+void ReleaseVertexBuffer(void);							// テクスチャ関数のグローバルの頂点バッファver
 
-// テクスチャ情報と頂点バッファの解放
-void ReleaseTexture(ID3D11ShaderResourceView** TexrureData, ID3D11Buffer** VertexBuffer);
 
 // 描画処理( DrawTexture() ) の前に1回だけ呼び出すおまじない（何回でも呼び出していいけど、処理めっちゃ重くなる）
-void PresetDraw2D(ID3D11Buffer** g_VertexBuffer);
+void PresetDraw2D(ID3D11Buffer** g_VertexBuffer);		// 任意の頂点バッファを使用
+void PresetDraw2D(void);								// グローバルの頂点バッファを使用

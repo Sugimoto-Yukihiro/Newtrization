@@ -282,16 +282,12 @@ HRESULT CMode::Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 	// サウンドの初期化
 	InitSound(hWnd);
 
+	// 2Dの頂点バッファ生成
+	CreateVertexBuffer();
+
 	// 最初のモードをセット
 	g_aMode.SetMode(START_MODE);
 
-	//------------------- モードに応じた初期化
-//	if (g_aMode.GetMode() == MODE_TITLE) InitTitle();			 	// タイトル画面の初期化処理
-//	else if (g_aMode.GetMode() == MODE_TUTORIAL) InitTutorial();	// オープニング画面の初期化処理
-//	else if(g_aMode.GetMode() == MODE_TUTORIAL) InitTutorial();		// チュートリアル画面の初期化処理
-//	else if (g_aMode.GetMode() == MODE_GAME) m_GameMode.Init();		// ゲーム画面の初期化処理
-//	else if (g_aMode.GetMode() == MODE_RESULT) InitResult();		// リザルト画面の初期化処理
-  
 	return S_OK;
 }
 
@@ -307,7 +303,10 @@ void CMode::Uninit(void)
 	if (g_aMode.GetMode() == MODE_OPENING) m_OpeningMode.Uninit();			// オープニング画面の終了処理
 	else if(g_aMode.GetMode() == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
 	else if (g_aMode.GetMode() == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
-	else if (g_aMode.GetMode() == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
+	else if (g_aMode.GetMode() == MODE_RESULT) m_Result.Uninit();		// リザルト画面の終了処理
+
+	// 2Dの頂点バッファ解放
+	ReleaseVertexBuffer();
 
 	// サウンドの終了処理
 	UninitSound();
@@ -362,7 +361,7 @@ void CMode::Update(void)
 		break;
 
 	case MODE_RESULT:
-		UpdateResult();
+		m_Result.Update();
 		break;
 
 	default:
@@ -412,7 +411,7 @@ void CMode::Draw(void)
 		break;
 
 	case MODE_RESULT:
-		DrawResult();
+		m_Result.Draw();
 		break;
 
 	default:
@@ -445,7 +444,7 @@ void CMode::SetMode(MODE mode)
 	if (g_aMode.GetMode() == MODE_OPENING) m_OpeningMode.Uninit();			// オープニング画面の終了処理
 	else if(g_aMode.GetMode() == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
 	else if(g_aMode.GetMode() == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
-	else if(g_aMode.GetMode() == MODE_RESULT) UninitResult();		// リザルト画面の終了処理
+	else if(g_aMode.GetMode() == MODE_RESULT) m_Result.Uninit();		// リザルト画面の終了処理
 
 	//------------------- 次のモードのセット
 	m_Mode = mode;
@@ -475,7 +474,7 @@ void CMode::SetMode(MODE mode)
 
 	case MODE_RESULT:
 		// リザルト画面の初期化
-		InitResult();
+		m_Result.Init();
 		break;
 
 	case MODE_MAX:

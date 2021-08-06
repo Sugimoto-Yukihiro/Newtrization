@@ -6,14 +6,21 @@
 //=============================================================================
 #pragma once
 
-#include "texture.h"
+#include "texture.h"	// テクスチャ描画処理
 
-// オープニング画面処理の管理方法の選択
-//#define GAMEMODE_STRUCT
-#define OPENINGMODE_CLASS
+//*****************************************************************************
+// 列挙型(enum)定義
+//*****************************************************************************
+enum
+{
+	OPENING_TEX_Bg,			// 背景テクスチャ(TexNo：0)
+	OPENING_TEX_Logo,		// ロゴテクスチャ(TexNo：1)
+	OPENING_TEX_Score,		// スコア表示テクスチャ(TexNo：2)
 
-// クラス管理
-#ifdef OPENINGMODE_CLASS
+	OPENING_TEX_PATTARN_MAX	// リザルト画面で使用されているテクスチャの総数
+
+};
+
 
 //*****************************************************************************
 // クラス定義
@@ -22,29 +29,19 @@ class CModeOpening
 {
 public:
 	//------------------- メンバ関数
-	void Init();
-	void Uninit();
-	void Update();
-	void Draw();
+	void Init();		// 初期化処理
+	void Uninit();		// 終了処理
+	void Update();		// 更新処理
+	void Draw();		// 描画処理
 
 private:
-	//------------------- メンバ変数
-	int			m_nTexNo;					// テクスチャ番号
-	float		m_fbeta;
-	bool		m_bUse;						// true:使っている  false:未使用
-	bool		m_bflag_beta;
+	//------------------- メンバ変数（インスタンス）
+	CTexture	m_OpeningTex[OPENING_TEX_PATTARN_MAX];		// ロゴ
+							// ↑ 使用する画像の種類の数、配列を用意
 
-	CTexture	m_Logo;						// ロゴ
+
+	/*
+	Tex →　"Texture"の略 
+	*/
 };
-#endif // OPENINGMODE_CLASS
 
-//*****************************************************************************
-// プロトタイプ宣言
-//*****************************************************************************
-void CreateOpeningTextureAndBuffer(void);
-void ReleaseOpeningTextureAndBuffer(void);
-void PresetDrawOpening(void);
-// 構造体管理
-#ifdef OPENINGMODE_STRUCT
-
-#endif // OPENINGMODE_STRUCT

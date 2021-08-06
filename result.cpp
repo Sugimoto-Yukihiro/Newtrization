@@ -17,17 +17,12 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define TEXTURE_WIDTH				(SCREEN_WIDTH)	// 背景サイズ
-#define TEXTURE_HEIGHT				(SCREEN_HEIGHT)	// 
-#define TEXTURE_MAX					(1)				// テクスチャの数
+#define NEXT_MODE					MODE_TITLE		// 次のモード
+
+#define TEXTURE_SIZE_BG				D3DXVECTOR2(SCREEN_WIDTH, SCREEN_HEIGHT)	// 背景サイズ
 
 #define TEXTURE_WIDTH_LOGO			(480)			// ロゴサイズ
 #define TEXTURE_HEIGHT_LOGO			(80)			// 
-
-#define NEXT_MODE					MODE_TITLE		// 次のモード
-#define KEY_MODE_CHANGE				GetKeyboardTrigger(DIK_RETURN)
-#define PAD_MODE_CHANGE				IsButtonTriggered(0, BUTTON_START) || IsButtonTriggered(0, BUTTON_B)
-
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -37,81 +32,46 @@
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer				*g_VertexBuffer = NULL;		// 頂点情報
-static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
+static ID3D11ShaderResourceView	*g_Texture[RESULT_TEX_PATTARN_MAX] = { NULL };	// テクスチャ情報
 
-static char *g_TexturName[] = {
-	"data/TEXTURE/bg_result.png",
-	//"data/TEXTURE/result_logo.png",
-	//"data/TEXTURE/number16x32.png",
+static char *g_TexturName[] = {	// 使用テクスチャのファイル名
+	/* 【重要】ここの順番は、ヘッダーに記載されてるenumの順番と揃えること！！！！！ */
+	"data/TEXTURE/bg_result.png",	// TexNo：0
+	"data/TEXTURE/logo_result.png",	// TexNo：1
 };
 
-static bool						g_Use;						// true:使っている  false:未使用
-static float					g_w, g_h;					// 幅と高さ
-static D3DXVECTOR3				g_Pos;						// ポリゴンの座標
-static int						g_TexNo;					// テクスチャ番号
+
 
 //=============================================================================
 // 初期化処理
 //=============================================================================
-HRESULT InitResult(void)
+void CModeResult::Init()
 {
-	ID3D11Device *pDevice = GetDevice();
-
-	//テクスチャ生成
-	for (int i = 0; i < TEXTURE_MAX; i++)
+	//------------------- テクスチャ生成
+	for (int i = 0; i < RESULT_TEX_PATTARN_MAX; i++)
 	{
-		g_Texture[i] = NULL;
-		D3DX11CreateShaderResourceViewFromFile(GetDevice(),
-			g_TexturName[i],
-			NULL,
-			NULL,
-			&g_Texture[i],
-			NULL);
+		CreateTexture(g_TexturName[i], &g_Texture[i]);	// 生成
 	}
 
-
-	// 頂点バッファ生成
-	D3D11_BUFFER_DESC bd;
-	ZeroMemory(&bd, sizeof(bd));
-	bd.Usage = D3D11_USAGE_DYNAMIC;
-	bd.ByteWidth = sizeof(VERTEX_3D) * 4;
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer);
-
-
-	// 変数の初期化
-	g_Use   = true;
-	g_w     = TEXTURE_WIDTH;
-	g_h     = TEXTURE_HEIGHT;
-	g_Pos   = D3DXVECTOR3(g_w/2, 50.0f, 0.0f);
-	g_TexNo = 0;
+	//------------------- メンバ変数の初期化
+	m_Tex[RESULT_TEX_Bg].SetTexSize( TEXTURE_SIZE_BG );	// 背景のサイズをセット
+	m_Tex[RESULT_TEX_Bg].SetTexPos( SCREEN_CENTER );	// 背景のサイズをセット
 
 	// BGM再生
 //	PlaySound(SOUND_LABEL_BGM_sample002);
-
-	return S_OK;
 }
+
+
 
 //=============================================================================
 // 終了処理
 //=============================================================================
-void UninitResult(void)
+void CModeResult::Uninit()
 {
-	if (g_VertexBuffer)
+	//------------------- Init()で生成したテクスチャを解放
+	for (int i = 0; i < RESULT_TEX_PATTARN_MAX; i++)
 	{
-		g_VertexBuffer->Release();
-		g_VertexBuffer = NULL;
-	}
-
-	for (int i = 0; i < TEXTURE_MAX; i++)
-	{
-		if (g_Texture[i])
-		{
-			g_Texture[i]->Release();
-			g_Texture[i] = NULL;
-		}
+		ReleaseTexture(&g_Texture[i]);	// 解放
 	}
 
 }
@@ -119,9 +79,10 @@ void UninitResult(void)
 //=============================================================================
 // 更新処理
 //=============================================================================
-void UpdateResult(void)
+void CModeResult::Update()
 {
 	//------------------- キー・ゲームパットでの入力で次のモードへ
+#ifdef _DEBUG
 	if (KEY_MODE_CHANGE)
 	{// Enter押したら、ステージを切り替える
 		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
@@ -133,102 +94,29 @@ void UpdateResult(void)
 		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
 	//	SetMode(NEXT_MODE);				// 次のモードにシーン遷移
 	}
+#endif // _DEBUG
 
-#ifdef _DEBUG	// デバッグ情報を表示する
-	//char *str = GetDebugStr();
-	//sprintf(&str[strlen(str)], " PX:%.2f PY:%.2f", g_Pos.x, g_Pos.y);
-#endif
+
+
+	/* 以下、各テクスチャごとに更新処理があれば記入 */
+
+
+
 }
 
 //=============================================================================
 // 描画処理
 //=============================================================================
-void DrawResult(void)
+void CModeResult::Draw()
 {
-	// 頂点バッファ設定
-	UINT stride = sizeof(VERTEX_3D);
-	UINT offset = 0;
-	GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
+	// 描画の前準備
+	PresetDraw2D();
 
-	// マトリクス設定
-	SetWorldViewProjection2D();
-
-	// プリミティブトポロジ設定
-	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-
-	// マテリアル設定
-	MATERIAL material;
-	ZeroMemory(&material, sizeof(material));
-	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-	SetMaterial(material);
-
-	// リザルトの背景を描画
+	// 全てのテクスチャの描画
+	for (int i = 0; i < RESULT_TEX_PATTARN_MAX; i++)
 	{
-		// テクスチャ設定
-		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[0]);
-
-		// １枚のポリゴンの頂点とテクスチャ座標を設定
-	//	SetSprite(g_VertexBuffer, 0.0f, 0.0f, g_w, g_h, 0.0f, 0.0f, 1.0f, 1.0f);
-
-		// １枚のポリゴンの頂点とテクスチャ座標を設定
-		SetVertex(g_VertexBuffer, 0.0f, 0.0f, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT, 0.0f, 0.0f, 1.0f, 1.0f);
-
-
-		// ポリゴン描画
-		GetDeviceContext()->Draw(4, 0);
+		m_Tex[i].DrawTexture(g_Texture[i]);	// 描画実行
 	}
 
-	//// リザルトのロゴを描画
-	//{
-	//	// テクスチャ設定
-	//	GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[1]);
-
-	//	// １枚のポリゴンの頂点とテクスチャ座標を設定
-	//	SetSprite(g_VertexBuffer, g_Pos.x, g_Pos.y, TEXTURE_WIDTH_LOGO, TEXTURE_HEIGHT_LOGO, 0.0f, 0.0f, 1.0f, 1.0f);
-
-	//	// ポリゴン描画
-	//	GetDeviceContext()->Draw(4, 0);
-	//}
-
-
-	// スコア表示
-	//{
-	//	// テクスチャ設定
-	//	GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[2]);
-
-	//	// 桁数分処理する
-	//	int number = GetScore();
-	//	for (int i = 0; i < SCORE_DIGIT; i++)
-	//	{
-	//		// 今回表示する桁の数字
-	//		float x = (float)(number % 10);
-
-	//		// スコアの位置やテクスチャー座標を反映
-	//		float pw = 16*4;			// スコアの表示幅
-	//		float ph = 32*4;			// スコアの表示高さ
-	//		float px = 600.0f - i*pw;	// スコアの表示位置X
-	//		float py = 300.0f;			// スコアの表示位置Y
-
-	//		float tw = 1.0f / 10;		// テクスチャの幅
-	//		float th = 1.0f / 1;		// テクスチャの高さ
-	//		float tx = x * tw;			// テクスチャの左上X座標
-	//		float ty = 0.0f;			// テクスチャの左上Y座標
-
-	//		// １枚のポリゴンの頂点とテクスチャ座標を設定
-	//		SetSpriteColor(g_VertexBuffer, px, py, pw, ph, tx, ty, tw, th,
-	//			D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f));
-
-	//		// ポリゴン描画
-	//		GetDeviceContext()->Draw(4, 0);
-
-	//		// 次の桁へ
-	//		number /= 10;
-	//	}
-
-	//}
-
 }
-
-
-
 

@@ -17,14 +17,9 @@
 
 
 //*****************************************************************************
-// プロトタイプ宣言
-//*****************************************************************************
-void PresetDrawMapchip();	// 描画する前準備
-
-//*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer				*g_VertexBuffer = NULL;	// 頂点情報
+//static ID3D11Buffer				*g_VertexBuffer = NULL;	// 頂点情報
 static ID3D11ShaderResourceView	*g_Texture = { NULL };	// テクスチャ情報
 
 // テクスチャのファイル名
@@ -102,9 +97,7 @@ void CMapchip::Update()
 //=============================================================================
 void CMapchip::Draw()
 {
-	// 描画する前に呼び出す
-	PresetDrawMapchip();
-
+	// 使用する変数の宣言
 	D3DXVECTOR2 ScrollPos;
 	float offset_x, offset_y;
 	int numx, numy;
@@ -117,9 +110,7 @@ void CMapchip::Draw()
 	numy = (int)(ScrollPos.y / GetMapchipSize().y) - 1;	// スクロール座標より上側（画面外）にあるマップチップ数
 
 	// マップチップ表示座標の算出
-//	offset_x = GetMapchipSize().x - ScrollPos.x;
 	offset_x = -ScrollPos.x;
-//	offset_y = GetMapchipSize().y - ScrollPos.y;
 	offset_y = -ScrollPos.y;
 
 	// 描画するチップ数を算出
@@ -164,7 +155,7 @@ void CMapchip::DrawChip(D3DXVECTOR2 Pos, int Num)
 	float ty = (float)(Num / GetTexDivideX()) * th;	// テクスチャの左上Y座標
 
 	// １枚のポリゴンの頂点とテクスチャ座標を設定
-	SetVertex(g_VertexBuffer, Pos.x, Pos.y, GetMapchipSize().x, GetMapchipSize().y, tx, ty, tw, th);
+	SetVertex(Pos.x, Pos.y, GetMapchipSize().x, GetMapchipSize().y, tx, ty, tw, th);
 
 	// ポリゴン描画
 	GetDeviceContext()->Draw(4, 0);
@@ -274,7 +265,7 @@ void CMapchip::SetMapchipNumY(int Num)
 // 指定した箇所のマップチップ番号を変更する
 void CMapchip::SetMapchipNo(int No, int X, int Y)
 {
-	m_MapChipData[(Y * m_nChipNumX) +X];	// 番号を格納
+	m_MapChipData[(Y * m_nChipNumX) + X];	// 番号を格納
 }
 
 // 回転フラグのセット
@@ -365,7 +356,6 @@ int CMapchip::GetMapchipNo(D3DXVECTOR2 Pos, int* retIdxNumX, int* retIdxNumY)
 	if (retIdxNumY != NULL) *retIdxNumY = nIdxY;
 
 	return m_MapChipData[nIdxX + (nIdxY * m_nChipNumX)];	// 求めた座標値から、要素数を求めて、その数値を返す
-
 //	return m_MapChipData[ (int)(Pos.x / m_vChipSize.x) + (int)(Pos.y / m_vChipSize.y) * m_nChipNumX ];	// 高速化
 
 }
@@ -377,27 +367,13 @@ int CMapchip::GetMapchipNo(D3DXVECTOR2 Pos, int* retIdxNumX, int* retIdxNumY)
 //}
 
 
-
-
-
-
-
-void CreateMapchipTextureAndBuffer(int MapchipPattarn)
+void CreateMapchipTexture(int MapchipPattarn)
 {
 	// テクスチャ生成
 	CreateTexture(g_TextureName[MapchipPattarn], &g_Texture);
-
-	// 頂点バッファ生成
-	CreateVertexBuffer(&g_VertexBuffer);
-
 }
 
-void ReleaseMapchipTextureAndBuffer()
+void ReleaseMapchipTexture(void)
 {
-	ReleaseTexture(&g_Texture, &g_VertexBuffer);
-}
-
-void PresetDrawMapchip()
-{
-	PresetDraw2D(&g_VertexBuffer);
+	ReleaseTexture(&g_Texture);
 }

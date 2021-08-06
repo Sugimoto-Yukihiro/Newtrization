@@ -25,10 +25,13 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define NEXT_MODE				MODE_RESULT		// 次のモード
+#define NEXT_MODE		MODE_RESULT		// 次のモード
 
-// クラス管理
-#ifdef GAMEMODE_CLASS
+//*****************************************************************************
+// グローバル変数
+//*****************************************************************************
+
+
 
 //=============================================================================
 // 初期化処理
@@ -49,14 +52,14 @@ void CModeGame::Init()
 	InitBg();
 
 	// プレイヤーの初期化
-	CreatePlayerTextureAndBuffer();	// テクスチャ・頂点バッファ生成
-	for(int i =0; i < PLAYER_MAX; i++)
+	CreatePlayerTexture();	// テクスチャ・頂点バッファ生成
+//	for(int i =0; i < PLAYER_MAX; i++)
 	{
-		m_Player[i].Init();	// 初期化処理実行
+		m_Player.Init();	// 初期化処理実行
 	}
 
 	// マップチップの初期化
-	CreateMapchipTextureAndBuffer(MAPCHIP_STAGE_Sample);	// テクスチャ・頂点バッファ生成
+	CreateMapchipTexture(MAPCHIP_STAGE_Sample);	// テクスチャ・頂点バッファ生成
 	m_Mapchip.Init(MAPCHIP_TEXTURE_DIVIDE_X, MAPCHIP_TEXTURE_DIVIDE_Y);		// 初期化処理実行
 
 	// エネミーの初期化
@@ -78,11 +81,11 @@ void CModeGame::Init()
 	// プレイヤーの位置が決まったから、スクロール座標をセット
 	{
 		D3DXVECTOR2 pos;	// 一時的な変数
-		pos.x = m_Player[0].GetPosition().x - SCROLL_SET_X;	// スクロール座標<x>に値を代入
+		pos.x = m_Player.GetPosition().x - SCROLL_SET_X;	// スクロール座標<x>に値を代入
 		pos.x = (pos.x < 0.0f) ? 0.0f : pos.x;	// スクロール座標<x>が負なら「0」にリセット、正の数ならそのまま
 		pos.x = (pos.x + SCREEN_WIDTH > m_Mapchip.GetStageSize().x) ? m_Mapchip.GetStageSize().x - SCREEN_WIDTH : pos.x;	// 画面右上の点がワールドの端に来たら"STAGE_W"の値にリセット
 
-		pos.y = m_Player[0].GetPosition().y - SCROLL_SET_Y;	// スクロール座標<y>に値を代入
+		pos.y = m_Player.GetPosition().y - SCROLL_SET_Y;	// スクロール座標<y>に値を代入
 		pos.y = (pos.y < 0.0f) ? 0.0f : pos.y;	// スクロール座標<y>負なら「0」にリセット、正の数ならそのまま
 		pos.y = (pos.y + SCREEN_HEIGHT > m_Mapchip.GetStageSize().y) ? m_Mapchip.GetStageSize().y - SCREEN_HEIGHT : pos.y;	// 画面右上の点がワールドの端に来たら"STAGE_H"の値にリセット
 
@@ -92,13 +95,22 @@ void CModeGame::Init()
 
 	// BGM再生
 //	PlaySound(SOUND_LABEL_BGM_sample001);
+
+	// 2Dの頂点バッファ生成
+//	CreateVertexBuffer();
+
 }
+
+
 
 //=============================================================================
 // 終了処理
 //=============================================================================
 void CModeGame::Uninit(void)
 {
+	// 頂点バッファ解放
+//	ReleaseVertexBuffer();
+
 	// パーティクルの終了処理
 //	UninitParticle();
 
@@ -109,13 +121,13 @@ void CModeGame::Uninit(void)
 //	UninitBullet();
 
 	// マップチップの終了処理
-	ReleaseMapchipTextureAndBuffer();	// テクスチャ・頂点バッファ解放
+	ReleaseMapchipTexture();	// テクスチャ解放
 
 	// エネミーの終了処理
 	UninitEnemy();
 
 	// プレイヤーの終了処理
-	ReleasePlayerTextureAndBuffer();	// テクスチャ・頂点バッファ解放
+	ReleasePlayerTexture();	// テクスチャ解放
 //	for (int i = 0; i < PLAYER_MAX; i++)
 //	{
 //		(m_Player + i)->Uninit();
@@ -126,6 +138,8 @@ void CModeGame::Uninit(void)
 
 }
 
+
+
 //=============================================================================
 // 更新処理
 //=============================================================================
@@ -133,9 +147,8 @@ void CModeGame::Update(void)
 {
 #ifdef _DEBUG
 	// ポーズキーが押されたらフラグを操作する
-	if( KEY_PAUSE ) m_bPauseFlag ? false : true;
-					// m_bPauseFlagは？  "true"なら"false" に  :  "false"なら"true" に  セットする
-
+	if( KEY_PAUSE ) m_bPauseFlag = (m_bPauseFlag) ? false : true;
+								//  m_bPauseFlagは？  "true"なら"false" に  :  "false"なら"true" に  セットする
 	// ポーズフラグがtrueなら処理を行わない。
 	if (m_bPauseFlag) return;
 
@@ -158,22 +171,24 @@ void CModeGame::Update(void)
 		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
 	//	SetMode(NEXT_MODE);				// 次のモードにシーン遷移
 	}
-#endif // _DEBUG
 
 	// 重力方向の変更
 	if (KEY_CHANGE_GRAVITY)
 	{
 		m_GravityDirection = (m_GravityDirection + 1) % GRAVITY_DIRECTION_MAX;
-		SetGravityDirection(m_GravityDirection);
+		ChangeGravityDirection(m_GravityDirection);
 	}
+
+#endif // _DEBUG
+
 
 	// マップチップの更新処理
 	m_Mapchip.Update();
 
 	// プレイヤーの更新処理
-	for (int i = 0; i < PLAYER_MAX; i++)
+//	for (int i = 0; i < PLAYER_MAX; i++)
 	{
-		m_Player[i].Update();
+		m_Player.Update();	// プレイヤーの更新処理実行
 	}
 
 	// エネミーの更新処理
@@ -201,24 +216,23 @@ void CModeGame::Update(void)
 //=============================================================================
 void CModeGame::Draw()
 {
+	// 描画前の準備処理実行
+	PresetDraw2D();
+
 	// 背景の描画処理
 	DrawBg();
 
 	// マップチップの描画
 	m_Mapchip.Draw();
 
-	// テスト画像表示
-//	DrawPolygon();
-
 	// エネミーの描画処理
 //	DrawEnemy();
 
 	// プレイヤーの描画処理
-	for(int i = 0; i < PLAYER_MAX; i++)
+//	for (int i = 0; i < PLAYER_MAX; i++)
 	{
-		(m_Player + i)->Draw();
+		m_Player.Draw();	// プレイヤー描画
 	}
-
 
 	// 弾の描画処理
 //	DrawBullet();
@@ -240,29 +254,16 @@ void CModeGame::CollisionCheck()
 	// プレイヤーとマップチップの当たり判定
 	{
 		// プレイヤー座標のマップチップを取得して、その値によって処理を変える
-		switch ( m_Mapchip.GetMapchipNo(m_Player->GetPosition()) )	// プレイヤー座標のマップチップを取得
+		switch ( m_Mapchip.GetMapchipNo(m_Player.GetPosition()) )	// プレイヤー座標のマップチップを取得
 		{
 			// 重力変更エンジンに触れたとき
 		case 10: case 12:
 			// 重力方向の変更
 			if (!m_bIsTouchGrvityChange)	// 初めて重力装置に触れた時の一回だけ行う
 			{
-				/*これ関数化できるな*/
 				m_GravityDirection = (m_GravityDirection + 1) % GRAVITY_DIRECTION_MAX;	// 重力の方向を変更
-				SetGravityDirection(m_GravityDirection);	// 重力方向セット
+				ChangeGravityDirection(m_GravityDirection);	// 重力方向セット
 
-				// 変わった方向によって処理変える
-				if (m_GravityDirection == GRAVITY_LEFT)	// 左向きへ変わったのなら
-				{
-					m_Player->SetTexRotation(D3DXToRadian(0));	// 回転値をいったんリセット
-					m_Player->SetTexRotation(D3DXToRadian(90));	// プレイヤーテクスチャを90°回転
-				//	m_Player->SetSize(D3DXVECTOR2(m_Player->GetSize().y, m_Player->GetSize().x));	// サイズも入れ替え
-				}
-				else if (m_GravityDirection == GRAVITY_DEFAULT)	// デフォルトへ変わったのなら
-				{
-					m_Player->SetTexRotation(D3DXToRadian(0));	// 回転値をリセット
-				}
-				m_Player->SetSize(D3DXVECTOR2(m_Player->GetSize().y, m_Player->GetSize().x));	// サイズ値を入れ替え
 				m_bIsTouchGrvityChange = true;	// 重力装置に触れていますよ
 			}
 			break;
@@ -394,7 +395,7 @@ int CModeGame::PutAllObject(const char* pCsvMapFile)
 			if (strrchr(pToken, PLAYER_SYMBOL) != NULL)		// プレイヤーの設置記号が存在するか調べる
 			{
 				// プレイヤーを設置
-				m_Player[0].SetPlayer( m_Mapchip.GetMapchipPosition(nTokenCnt) );	// 'P'の存在するチップの中心にプレイヤーをセット
+				m_Player.SetPlayer( m_Mapchip.GetMapchipPosition(nTokenCnt) );	// 'P'の存在するチップの中心にプレイヤーをセット
 			}
 			else if (strrchr(pToken, ENEMY_SYMBOL) != NULL)	// エネミーの設置記号が存在するか調べる
 			{
@@ -458,13 +459,13 @@ CMapchip* CModeGame::GetMapchip()
 // マップチップへのアクセス
 CPlayer* CModeGame::GetPlayer()
 {
-	return &m_Player[0];	// マップチップの情報を返す
+	return &m_Player;	// プレイヤーの情報を返す
 }
 
 // 重力方向の取得
 int CModeGame::GetGravityDirection()
 {
-	return m_GravityDirection;
+	return m_GravityDirection;	// ゲーム全体の重力方向の情報を返す
 }
 
 //=============================================================================
@@ -477,264 +478,29 @@ void CModeGame::SetScrollPosition(D3DXVECTOR2 Pos)
 }
 
 // ゲーム全体の重力の方向をセット
-void CModeGame::SetGravityDirection(int Direction)
+void CModeGame::ChangeGravityDirection(int Direction)
 {
 	/* 重力処理クラスを継承している全てのオブジェクトの、重力方向の向きを変更 */
 	// プレイヤー
-//	for (int i = 0; i < PLAYER_MAX; i++)	// 複数いるとき → このfor文のコメントを外して [0]を[i]に変える
+//	for (int i = 0; i < PLAYER_MAX; i++)	// 複数いるとき → このfor文のコメントを外して m_Player[i]に変える
 	{
-		if (!m_Player[0].GetUseFlag()) return;				// プレイヤーが未使用なら行わない
-		m_Player[0].SetGravityObjectDirection(Direction);	// プレイヤーの重力方向をセット
+		//if (!m_Player.GetUseFlag()) return;			// プレイヤーが未使用なら行わない
+		m_Player.SetGravityObjectDirection(Direction);	// プレイヤーの重力方向をセット
+		m_Player.SetSize(D3DXVECTOR2(m_Player.GetSize().y, m_Player.GetSize().x));	// サイズ値を入れ替え
 	}
 	
-}
-
-#endif // GAMEMODE_CLASS
-
-
-
-
-
-// 構造体管理
-#ifdef GAMEMODE_STRUCT
-
-//*****************************************************************************
-// プロトタイプ宣言
-//*****************************************************************************
-void CheckHit(void);
-
-//*****************************************************************************
-// グローバル変数
-//*****************************************************************************
-//static int	g_ViewPortType_Game = TYPE_FULL_SCREEN;
-
-static bool	g_bPauseFlag = false;				// ポーズON/OFF
-static D3DXVECTOR2 g_vScrollPos = ZERO_VECTOR2;	// スクロール座標
-
-//=============================================================================
-// 初期化処理
-//=============================================================================
-HRESULT InitGame(void)
-{
-//	g_ViewPortType_Game = TYPE_FULL_SCREEN;
-
-	// スクロール座標の初期化
-	g_vScrollPos = ZERO_VECTOR2;
-
-	// 背景の初期化処理
-	InitBg();
-
-	// プレイヤーの初期化
-	InitPlayer();
-
-	// エネミーの初期化
-	InitEnemy();
-
-	// 弾の初期化
-//	InitBullet();
-
-	// スコアの初期化
-//	InitScore();
-
-	// パーティクルの初期化
-//	InitParticle();
-
-	// BGM再生
-//	PlaySound(SOUND_LABEL_BGM_sample001);
-
-	return S_OK;
-}
-
-//=============================================================================
-// 終了処理
-//=============================================================================
-void UninitGame(void)
-{
-	// パーティクルの終了処理
-//	UninitParticle();
-
-	// スコアの終了処理
-//	UninitScore();
-
-	// 弾の終了処理
-//	UninitBullet();
-
-	// エネミーの終了処理
-	UninitEnemy();
-
-	// プレイヤーの終了処理
-	UninitPlayer();
-
-	// 背景の終了処理
-	UninitBg();
-}
-
-//=============================================================================
-// 更新処理
-//=============================================================================
-void UpdateGame(void)
-{
-	//------------------- キー・ゲームパットでの入力で次のモードへ
-	if (KEY_MODE_CHANGE)
-	{// Enter押したら、ステージを切り替える
-		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
-	//	SetMode(NEXT_MODE);				// 次のモードにシーン遷移
-	}
-	// ゲームパッドで入力処理
-	else if (PAD_MODE_CHANGE)
+	// 変わった方向によって処理変える
+	if (m_GravityDirection == GRAVITY_LEFT)			// 左向きへ変わった時の処理
 	{
-		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
-	//	SetMode(NEXT_MODE);				// 次のモードにシーン遷移
+		m_Player.SetTexRotation(D3DXToRadian(0));	// 回転値をいったんリセット
+		m_Player.SetTexRotation(D3DXToRadian(90));	// プレイヤーテクスチャを90°回転
+	//	m_Player.SetSize(D3DXVECTOR2(m_Player->GetSize().y, m_Player->GetSize().x));	// サイズも入れ替え
+	}
+	else if (m_GravityDirection == GRAVITY_DEFAULT)	// デフォルトへ変わった時の処理
+	{
+		m_Player.SetTexRotation(D3DXToRadian(0));	// 回転値をリセット
 	}
 
-	// ポーズフラグがtrueなら処理を行わない。
-	if(g_bPauseFlag == true) return;
 
-	// プレイヤーの更新処理
-	UpdatePlayer();
-
-	// エネミーの更新処理
-	UpdateEnemy();
-
-	// 弾の更新処理
-//	UpdateBullet();
-
-	// パーティクルの更新処理
-//	UpdateParticle();
-
-	// 当たり判定処理
-	CheckHit();
-
-	// スコアの更新処理
-//	UpdateScore();
-
-	// 背景の更新処理
-	UpdateBg();
-}
-
-//=============================================================================
-// 描画処理
-//=============================================================================
-void DrawGame(void)
-{
-	// 背景の描画処理
-	DrawBg();
-
-	// テスト画像表示
-//	DrawPolygon();
-
-	// エネミーの描画処理
-	DrawEnemy();
-
-	// プレイヤーの描画処理
-	DrawPlayer();
-
-	// 弾の描画処理
-//	DrawBullet();
-
-	// パーティクルの描画処理
-//	DrawParticle();
-
-	// スコアの描画処理
-//	DrawScore();
-}
-
-//=============================================================================
-// 当たり判定処理
-//=============================================================================
-void CheckHit(void)
-{
-	//ENEMY *enemy = GetEnemy();		// エネミーのポインターを初期化
-	//PLAYER *player = GetPlayer();	// プレイヤーのポインターを初期化
-	//BULLET *bullet = GetBullet();	// 弾のポインターを初期化
-
-	// 敵とプレイヤーキャラ
-	//for (int i = 0; i < MAX_ENEMY; i++)
-	//{
-	//	//敵の有効フラグをチェックする
-	//	if (enemy[i].use == false)
-	//		continue;
-
-	//	//BCの当たり判定
-	//	if (CollisionBC(GetPlayer()->pos, enemy[i].pos,
-	//		player->rsize, enemy[i].rsize))
-	//	{
-	//		// 敵キャラクターは倒される
-	//		enemy[i].use = false;
-	//		ReleaseShadow(enemy[i].shadowIdx);
-	//	}
-	//}
-
-	// プレイヤーの弾と敵
-	//for (int i = 0; i < MAX_BULLET; i++)
-	//{
-	//	//弾の有効フラグをチェックする
-	//	if (bullet[i].use == false)
-	//		continue;
-
-	//	// 敵と当たってるか調べる
-	//	for (int j = 0; j < MAX_ENEMY; j++)
-	//	{
-	//		//敵の有効フラグをチェックする
-	//		if (enemy[j].use == false)
-	//			continue;
-
-	//		//BCの当たり判定
-	//		if (CollisionBC(bullet[i].pos, enemy[j].pos,
-	//			bullet[i].fWidth, enemy[j].rsize))
-	//		{
-	//			// 当たったから未使用に戻す
-	//			bullet[i].use = false;
-	//			ReleaseShadow(bullet[i].shadowIdx);
-
-	//			// 敵キャラクターは倒される
-	//			enemy[j].use = false;
-	//			ReleaseShadow(enemy[j].shadowIdx);
-
-	//			// スコアを足す
-	//			AddScore(10);
-	//		}
-	//	}
-
-	//}
-
-
-	// エネミーが全部死亡したら状態遷移
-	//int enemy_count = 0;
-	//for (int i = 0; i < MAX_ENEMY; i++)
-	//{
-	//	if (enemy[i].use == false) continue;
-	//	enemy_count++;
-	//}
-
-	// エネミーが０匹？
-	//if (enemy_count == 0)
-	//{
-	//	SetFade(FADE_OUT, MODE_RESULT);
-	//}
 
 }
-
-
-
-//=============================================================================
-// ゲッター関数
-//=============================================================================
-// スクロール座標の取得
-void SetScrollPosition(D3DXVECTOR2 Pos)
-{
-	g_vScrollPos = Pos;
-}
-
-
-
-//=============================================================================
-// セッター関数
-//=============================================================================
-// スクロール座標のセット
-D3DXVECTOR2* GetScrollPosition()
-{
-	return &g_vScrollPos;
-}
-
-#endif // GAMEMODE_STRUCT

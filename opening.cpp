@@ -11,37 +11,24 @@
 #include "input.h"		// キー・ゲームパッド入力
 #include "fade.h"		// フェード
 //#include "sound.h"	// サウンド
-#include "texture.h"	// スプライト処理
 
 
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define TEXTURE_WIDTH				(SCREEN_WIDTH)	// 背景サイズ
-#define TEXTURE_HEIGHT				(SCREEN_HEIGHT)	// 
-#define TEXTURE_MAX					(1)				// テクスチャの数
-
-#define TEXTURE_WIDTH_LOGO			(480)			// ロゴサイズ
-#define TEXTURE_HEIGHT_LOGO			(80)			// 
-
-#define NEXT_MODE					MODE_TITLE		// 次のモード
-#define KEY_MODE_CHANGE				GetKeyboardTrigger(DIK_RETURN)
-#define PAD_MODE_CHANGE				IsButtonTriggered(0, BUTTON_START) || IsButtonTriggered(0, BUTTON_B)
-
-//*****************************************************************************
-// プロトタイプ宣言
-//*****************************************************************************
+#define NEXT_MODE		MODE_TITLE		// 次のモードを指定
 
 
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer				*g_VertexBuffer = NULL;				// 頂点情報
-static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
+static ID3D11ShaderResourceView	*g_Texture[RESULT_TEX_PATTARN_MAX] = { NULL };	// テクスチャ情報
+
 
 static char *g_TexturName[] = {
-	"data/TEXTURE/bg_opening.jpg",
+	/* 【重要】ここの順番は、ヘッダーに記載されてるenumの順番と揃えること！！！！！ */
+	"data/TEXTURE/bg_opening.jpg",	// TexNo：0
 };
 
 //=============================================================================
@@ -49,11 +36,19 @@ static char *g_TexturName[] = {
 //=============================================================================
 void CModeOpening::Init()
 {
-	// オープニングで使用するテクスチャとバッファを生成
-	CreateOpeningTextureAndBuffer();
+	//------------------- ①テクスチャ生成
 
-	m_Logo.Init();	// ロゴの初期化
-	
+	//------------------- ②メンバ変数の初期化
+
+	/*
+	テクスチャを描画する際は、
+		１.テクスチャのサイズ
+		２.テクスチャの描画位置
+	の二つの情報を指定してあげる必要があるよ！
+	指定しないと、サイズは０ということで、描画はしてるけど、横0,縦0 のテクスチャを描画しちゃうから画像が見えない！
+
+	「描画できない」って思ったら、初期化の段階でサイズと描画位置を指定してないことをまず疑おう！
+	*/
 }
 
 //=============================================================================
@@ -61,8 +56,11 @@ void CModeOpening::Init()
 //=============================================================================
 void CModeOpening::Uninit(void)
 {
-	// テクスチャとバッファの解放
-	ReleaseOpeningTextureAndBuffer();
+	//------------------- Init()で生成したテクスチャを解放
+
+
+
+
 }
 
 //=============================================================================
@@ -70,6 +68,7 @@ void CModeOpening::Uninit(void)
 //=============================================================================
 void CModeOpening::Update(void)
 {
+#ifdef _DEBUG
 	//------------------- キー・ゲームパットでの入力で次のモードへ
 	if (KEY_MODE_CHANGE)
 	{// Enter押したら、ステージを切り替える
@@ -82,30 +81,12 @@ void CModeOpening::Update(void)
 		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
 	//	SetMode(NEXT_MODE);				// 次のモードにシーン遷移
 	}
+#endif // _DEBUG
 
-	if (m_bflag_beta == true)
-	{
-		m_fbeta -= 0.02f;
-		if (m_fbeta <= 0.0f)
-		{
-			m_fbeta = 0.0f;
-			m_bflag_beta = false;
-		}
-	}
-	else
-	{
-		m_fbeta += 0.02f;
-		if (m_fbeta >= 1.0f)
-		{
-			m_fbeta = 1.0f;
-			m_bflag_beta = true;
-		}
-	}
 
-#ifdef _DEBUG	// デバッグ情報を表示する
-	//char *str = GetDebugStr();
-	//sprintf(&str[strlen(str)], " PX:%.2f PY:%.2f", g_Pos.x, g_Pos.y);
-#endif
+	/* 以下、各テクスチャごとに更新処理があれば記入 */
+
+
 }
 
 //=============================================================================
@@ -113,63 +94,12 @@ void CModeOpening::Update(void)
 //=============================================================================
 void CModeOpening::Draw(void)
 {
-	// 描画の前準備
-	PresetDrawOpening();
+	// 描画の前準備( PresetDraw2D() を呼び出そう！)
 
-	// テクスチャ描画
-	m_Logo.DrawTexture(g_VertexBuffer, g_Texture[0]);
-
-}
-
-
-
-void CreateOpeningTextureAndBuffer()
-{
-	//テクスチャ生成
-	for (int i = 0; i < TEXTURE_MAX; i++)
+	// 全てのテクスチャを描画
+	for (int i = 0; i < RESULT_TEX_PATTARN_MAX; i++)
 	{
-		
+		// 描画( DrawTexture() を呼び出そう！)
+
 	}
-
-	// 頂点バッファ生成
-	CreateVertexBuffer(&g_VertexBuffer);
-}
-
-void ReleaseOpeningTextureAndBuffer()
-{
-	if (g_VertexBuffer)
-	{
-		g_VertexBuffer->Release();
-		g_VertexBuffer = NULL;
-	}
-
-	for (int i = 0; i < TEXTURE_MAX; i++)
-	{
-		if (g_Texture[i])
-		{
-			g_Texture[i]->Release();
-			g_Texture[i] = NULL;
-		}
-	}
-
-}
-
-void PresetDrawOpening(void)
-{
-	// 頂点バッファ設定
-	UINT stride = sizeof(VERTEX_3D);
-	UINT offset = 0;
-	GetDeviceContext()->IASetVertexBuffers(0, 1, &g_VertexBuffer, &stride, &offset);
-
-	// マトリクス設定
-	SetWorldViewProjection2D();
-
-	// プリミティブトポロジ設定
-	GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-
-	// マテリアル設定
-	MATERIAL material;
-	ZeroMemory(&material, sizeof(material));
-	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-	SetMaterial(material);
 }

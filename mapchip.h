@@ -105,8 +105,8 @@ private:
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-void CreateMapchipTextureAndBuffer(int MapchipPattarn);
-void ReleaseMapchipTextureAndBuffer();
+void CreateMapchipTexture(int MapchipPattarn);
+void ReleaseMapchipTexture(void);
 
 
 //*****************************************************************************
