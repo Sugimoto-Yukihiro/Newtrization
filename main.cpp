@@ -22,16 +22,16 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define CLASS_NAME			"AppClass"				// ウインドウのクラス名
-#define WINDOW_NAME			"GP23 DirectX11"		// ウインドウのキャプション名
+#define CLASS_NAME			"AppClass"			// ウインドウのクラス名
+#define WINDOW_NAME			"ガンバ東京ドラゴンズ - NewTrization"		// ウインドウのキャプション名
 
 #ifndef _DEBUG	// こっちは製品版
-	#define START_MODE			(MODE_OPENING)			// 起動時のモード
+	#define START_MODE		(MODE_OPENING)		// 起動時のモード
 #endif // !_DEBUG
 
 #ifdef _DEBUG	// デバック時
 #define START_MODE			(MODE_GAME)			// 起動時のモード
-//#define START_MODE			(MODE_OPENING)			// 起動時のモード
+//#define START_MODE		(MODE_OPENING)		// 起動時のモード
 #endif // _DEBUG
 
 //*****************************************************************************
@@ -254,6 +254,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 CMode::CMode()	// コンストラクタ
 {
 	m_Mode = MODE_NONE;		// モード無しで初期化
+#ifdef _DEBUG
+	m_DebugProcFlg = true;	// true で初期化
+#endif // _DEBUG
 }
 
 CMode::~CMode()	// デストラクタ
@@ -370,7 +373,10 @@ void CMode::Update(void)
 
 
 #ifdef _DEBUG
-	SetDebugString();	// デバッグ表示のセット
+	// デバッグ表示のチェンジキーが押されたとき
+	if (KEY_CHANGE_DRAW_DEBUG) m_DebugProcFlg = (m_DebugProcFlg) ? false : true;	// フラグが"true"なら"false"、"false"なら"true"にセット
+
+	SetDebugString();	// デバッグ表示の文章のセット
 #endif // _DEBUG
 
 }
@@ -423,7 +429,7 @@ void CMode::Draw(void)
 
 #ifdef _DEBUG
 	// デバッグ表示
-	DrawDebugProc();
+	if (m_DebugProcFlg) DrawDebugProc();	// デバッグ表示の描画フラグが "true" なら実行
 #endif
 
 

@@ -101,7 +101,11 @@ public:
 	CModeResult m_Result;		// リザルト画面
 
 private:
-	MODE m_Mode;	// モードの状態を格納する変数
+	MODE	m_Mode;				// モードの状態を格納する変数
+
+#ifdef _DEBUG
+	bool	m_DebugProcFlg;		// デバッグ表示フラグ
+#endif // _DEBUG
 };
 
 //*****************************************************************************

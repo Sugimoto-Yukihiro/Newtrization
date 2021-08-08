@@ -11,9 +11,6 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define DEFAULT_GRAVITY_WAIT		(0.55f)		// 重力の値(デフォルトの時)
-#define LEFT_GRAVITY_WAIT			(0.55f)		// 重力の値(左方向の時)
-
 
 
 //=============================================================================
@@ -34,13 +31,16 @@ CGravity::~CGravity()	// デストラクタ
 //=============================================================================
 // 初期化処理
 //=============================================================================
-void CGravity::Init()
+void CGravity::Init(D3DXVECTOR2 Pos, D3DXVECTOR2 Size, float Wait, int Direction)
 {
 	// 全てのメンバ変数をデフォルトの値にセット
-	m_Position = ZERO_VECTOR2;
-	m_GravityWait = DEFAULT_GRAVITY_WAIT;
+	m_Position = Pos;
+	m_ObjectSize = Size;
+	m_GravityWait = Wait;
+	m_nDirection = Direction;
+
+	// 内部的に処理する変数はそのまま
 	m_fVerocity = 0.0f;	/* ここベクトルにしたい */
-	m_nDirection = GRAVITY_DEFAULT;
 	m_nFlameCount = 0;
 	m_bFall = true;	// 重力処理は"true"をデフォルトにセット
 }

@@ -78,6 +78,7 @@ BOOL IsButtonTriggered(int padNo,DWORD button);
 
 // デバッグ時
 #ifdef _DEBUG
+	#define KEY_CHANGE_DRAW_DEBUG	GetKeyboardTrigger(DIK_3)
 	#define KEY_MODE_CHANGE			GetKeyboardTrigger(DIK_RETURN)
 	#define KEY_PAUSE				GetKeyboardTrigger(DIK_0)
 	#define KEY_RESTART_GAMEMODE	GetKeyboardTrigger(DIK_1)		// ゲームモードのリセット

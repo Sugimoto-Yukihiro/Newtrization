@@ -21,23 +21,23 @@
 #define TEXTURE_WIDTH				(MAPCHIP_SIZE_DEFAULT.x)		// キャラサイズ	X
 #define TEXTURE_HEIGHT				(MAPCHIP_SIZE_DEFAULT.y * 2)	//				Y
 #define TEXTURE_SIZE				D3DXVECTOR2(TEXTURE_WIDTH, TEXTURE_HEIGHT)	// キャラサイズ
-//#define TEXTURE_SIZE				MAPCHIP_SIZE_DEFAULT	// キャラサイズ
-#define TEXTURE_MAX					(3)			// テクスチャの数
+#define TEXTURE_MAX					(2)			// 使用するテクスチャの数
 //------------------- アニメーション
 // アニメーションの分割数
-#define TEXTURE_PATTERN_DIVIDE_X	(3)			// アニメパターンのテクスチャ内分割数（X)
-#define TEXTURE_PATTERN_DIVIDE_Y	(1)			// アニメパターンのテクスチャ内分割数（Y)
+#define TEXTURE_DIVIDE_X			(6)			// アニメパターンのテクスチャ内分割数（X)
+#define TEXTURE_DIVIDE_Y			(1)			// アニメパターンのテクスチャ内分割数（Y)
 #define ANIM_PATTERN_NUM			(TEXTURE_PATTERN_DIVIDE_X*TEXTURE_PATTERN_DIVIDE_Y)	// アニメーションパターン数
 // アニメーションが切り替わるWait値
 #define ANIM_WAIT_DEFAULT			(5)			// デフォルト
 #define ANIM_WAIT_DUSH				(2)			// ダッシュ時
 
+//------------------- ステータス
+#define HP_DEFAULT					(100.0f)	// HPのデフォルト値
+
 //------------------- 移動関連
 #define MOVE_VALUE					(7.0f)		// 基準移動値
 #define RATE_DUSH					(2.0f)		// プレイヤーダッシュ時の移動値の倍率
 #define JUMP_VALUE					(14.0f)		// プレイヤーのジャンプ力
-
-#define TEMP_1		(5.0f)		// 後々修正して削除したい。
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -47,14 +47,12 @@
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-//static ID3D11Buffer				*g_VertexBuffer = NULL;				// 頂点情報
 static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
 // テクスチャのファイル名
 static char *g_TextureName[] = {	// ここに新しいファイル名を追加したり、削除した場合は、上の"TEXTURE_MAX"の値も変える！！！
-	"data/TEXTURE/player.png",				// TexNo : 0
-	"data/TEXTURE/player/player01.png",		// TexNo : 1
-	"data/TEXTURE/player/player01_Back_Not_Invisible.png",	// TexNo : 2
+	"data/TEXTURE/player/player01.png",		// TexNo : 0
+	"data/TEXTURE/player/player01_Back_Not_Invisible.png",	// TexNo : 1
 };
 
 //=============================================================================
@@ -62,7 +60,7 @@ static char *g_TextureName[] = {	// ここに新しいファイル名を追加�
 //=============================================================================
 CPlayer::CPlayer()	// コンストラクタ
 {
-	Init();
+	Init();	// 初期化処理を行う
 }
 
 CPlayer::~CPlayer()	// デストラクタ
@@ -77,24 +75,42 @@ CPlayer::~CPlayer()	// デストラクタ
 //=============================================================================
 void CPlayer::Init()
 {
-	//------------------- プレイヤークラスのメンバ変数の初期化
-	m_fJumpForce = 0.0f;			// ジャンプ力を初期化
-	m_nTexNo = 1;					// 使うテクスチャ番号を指定
-	m_bUse = true;					// 使用
-	m_bDush = false;				// ダッシュフラグはfalseで初期化
-	m_bIsJump = false;				// ジャンプフラグはfalseで初期化
-	m_bIsMove = false;				// 動作フラグはfalseで初期化
+	//------------------- プレイヤークラスのメンバ変数をデフォルトの値でセット
+	m_fJumpForce = 0.0f;	// ジャンプ力を初期化
+	m_fHitPointMAX = m_fCurrentHP = HP_DEFAULT;	// プレイヤーのHPをセット
+	m_nTexNo = 0;			// 使うテクスチャ番号を指定
+	m_bUse = true;			// 使用
+	m_bDush = false;		// ダッシュフラグはfalseで初期化
+	m_bIsJump = false;		// ジャンプフラグはfalseで初期化
+	m_bIsMove = false;		// 動作フラグはfalseで初期化
 
 	//------------------- ベースクラスの初期化
-	CTexture::Init();	// テクスチャ
-	SetUseFlag(true);
-	SetTextureInf(SCREEN_CENTER, TEXTURE_SIZE, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 0.0f, ZERO_VECTOR2);
-	SetAnimInf(6, 1, ANIM_WAIT_DEFAULT);	// デフォルトでセット
-//	SetTexRotation(D3DXToRadian(90));		// 左側重力の時
+	CTexture::Init(SCREEN_CENTER, TEXTURE_SIZE, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 0.0f);	// テクスチャ
+	CAnimation::Init(TEXTURE_DIVIDE_X, TEXTURE_DIVIDE_Y, ANIM_WAIT_DEFAULT);	// アニメーション（デフォルトでセット）
+	CGravity::Init(SCREEN_CENTER, TEXTURE_SIZE, DEFAULT_GRAVITY_WAIT, GRAVITY_DEFAULT);		// 重力処理
+}
 
-	CGravity::Init();	// 重力処理
-	SetPosition(SCREEN_CENTER);	// 後々マップチップデータで設定できるようにする
-	SetSize(TEXTURE_SIZE);	// テクスチャのサイズをセット
+
+
+//=============================================================================
+// 終了処理
+//=============================================================================
+void CPlayer::Uninit()
+{
+	//------------------- プレイヤークラスのメンバ変数をゼロクリア
+	m_fJumpForce = 0.0f;	// ジャンプ力
+	m_fHitPointMAX = 0.0f;	// プレイヤーのHPのMAX値
+	m_fCurrentHP = 0.0f;	// プレイヤーの現在のHP
+	m_nTexNo = 1;			// 使うテクスチャ番号を指定
+	m_bUse = true;			// 使用
+	m_bDush = false;		// ダッシュフラグはfalseで初期化
+	m_bIsJump = false;		// ジャンプフラグはfalseで初期化
+	m_bIsMove = false;		// 動作フラグはfalseで初期化
+
+	//------------------- ベースクラスの初期化
+	CTexture::Uninit();		// テクスチャ
+	CAnimation::Uninit();	// アニメーション
+	CGravity::Uninit();		// 重力処理
 }
 
 
@@ -150,7 +166,21 @@ void CPlayer::Update()
 
 #ifdef _DEBUG	// デバッグ情報を表示する
 	char *str = GetDebugStr();
-	sprintf(&str[strlen(str)], " PX:%f PY:%f", GetPosition().x, GetPosition().y);
+	wsprintf(&str[strlen(str)]," PX:%f PY:%f", GetPosition().x, GetPosition().y);
+
+	// プレイヤーのHPをテストで上げ下げしてみる
+	if (GetKeyboardTrigger(DIK_DOWN))
+	{
+		m_fCurrentHP -= 10.0f;
+		if (m_fCurrentHP < 0) m_fCurrentHP = 0.0f;	// ０以下にしないようにする
+	}
+	if ( GetKeyboardTrigger(DIK_UP) )
+	{
+		m_fCurrentHP += 10.0f;
+		if (m_fCurrentHP > m_fHitPointMAX) m_fCurrentHP = m_fHitPointMAX;	// MAX値以上にしないようにする
+	}
+	wsprintf(&str[strlen(str)],"  現在のHP:%f", m_fCurrentHP);
+	PrintDebugProc("現在のHP: %f\n", m_fCurrentHP);
 #endif
 }
 
@@ -185,7 +215,6 @@ void CPlayer::SetPlayer(D3DXVECTOR2 Pos)
 	SetPosition(Pos);	// プレイヤーの座標をセット
 }
 
-
 // プレイヤーの座標をセット
 void CPlayer::SetPosition(D3DXVECTOR2 Pos)
 {
@@ -203,6 +232,18 @@ void CPlayer::SetSize(D3DXVECTOR2 Size)
 void CPlayer::SetJumpForce(float Force)
 {
 	m_fJumpForce = Force;		// ジャンプ力をセット
+}
+
+// プレイヤーのHPをセット
+void CPlayer::SetHP(float HP)
+{
+	m_fHitPointMAX = HP;
+}
+
+// プレイヤーの現在のHPをセット
+void CPlayer::SetCurrentHP(float CurHP)
+{
+	m_fCurrentHP = CurHP;
 }
 
 // プレイヤーのuseフラグのセット
@@ -238,12 +279,6 @@ D3DXVECTOR2 CPlayer::GetSize()
 {
 //	return GetTexSize();			// プレイヤーテクスチャのサイズを返す
 	return GetGravityObjectSize();	// プレイヤーのサイズを返す
-}
-
-// プレイヤーのジャンプベクトルを取得
-float CPlayer::GetJumpForce()
-{
-	return m_fJumpForce;	// ジャンプ力値を返す
 }
 
 

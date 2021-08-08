@@ -32,7 +32,7 @@ public:
 	CGravity();		// コンストラクタ
 	~CGravity();	// デストラクタ
 
-	void Init();	// 初期化
+	void Init(D3DXVECTOR2 Pos = D3DXVECTOR2(0.0f, 0.0f), D3DXVECTOR2 Size = D3DXVECTOR2(0.0f, 0.0f), float GravWait = 0.0f, int Direction = 0);	// 初期化
 	void Uninit();	// 終了処理
 	void Update();	// 更新
 

@@ -51,6 +51,9 @@ void CModeGame::Init()
 	// 背景の初期化
 	InitBg();
 
+	// UIの初期化
+	m_GameUI.Init();
+
 	// プレイヤーの初期化
 	CreatePlayerTexture();	// テクスチャ・頂点バッファ生成
 //	for(int i =0; i < PLAYER_MAX; i++)
@@ -59,8 +62,8 @@ void CModeGame::Init()
 	}
 
 	// マップチップの初期化
-	CreateMapchipTexture(MAPCHIP_STAGE_Sample);	// テクスチャ・頂点バッファ生成
-	m_Mapchip.Init(MAPCHIP_TEXTURE_DIVIDE_X, MAPCHIP_TEXTURE_DIVIDE_Y);		// 初期化処理実行
+	CreateMapchipTexture(MAPCHIP_STAGE_Game);	// テクスチャ・頂点バッファ生成
+	m_Mapchip.Init(NULL, MAPCHIP_TEXTURE_DIVIDE_X, MAPCHIP_TEXTURE_DIVIDE_Y, MAPCHIP_SIZE_DEFAULT);		// 初期化処理実行
 
 	// エネミーの初期化
 	InitEnemy();
@@ -76,7 +79,6 @@ void CModeGame::Init()
 
 	// オブジェクトの配置 & マップチップのセット
 	PutAllObject(GAME_MAP_DATA_1);
-//	PutAllObject(GAME_MAP_DATA_1, MAPCHIP_TEXTURE_DIVIDE_X, MAPCHIP_TEXTURE_DIVIDE_Y);
 
 	// プレイヤーの位置が決まったから、スクロール座標をセット
 	{
@@ -122,16 +124,17 @@ void CModeGame::Uninit(void)
 
 	// マップチップの終了処理
 	ReleaseMapchipTexture();	// テクスチャ解放
+	m_Mapchip.Uninit();			// 終了処理実行
 
 	// エネミーの終了処理
 	UninitEnemy();
 
 	// プレイヤーの終了処理
 	ReleasePlayerTexture();	// テクスチャ解放
-//	for (int i = 0; i < PLAYER_MAX; i++)
-//	{
-//		(m_Player + i)->Uninit();
-//	}
+	m_Player.Uninit();		// 終了処理実行
+
+	// UIの終了処理
+	m_GameUI.Uninit();
 
 	// 背景の終了処理
 	UninitBg();
@@ -209,6 +212,8 @@ void CModeGame::Update(void)
 	// 背景の更新処理
 	UpdateBg();
 
+	// UIの更新処理
+	m_GameUI.Update();
 }
 
 //=============================================================================
@@ -242,6 +247,9 @@ void CModeGame::Draw()
 
 	// スコアの描画処理
 //	DrawScore();
+
+	// UIの描画処理
+	m_GameUI.Draw();
 }
 
 
@@ -257,7 +265,7 @@ void CModeGame::CollisionCheck()
 		switch ( m_Mapchip.GetMapchipNo(m_Player.GetPosition()) )	// プレイヤー座標のマップチップを取得
 		{
 			// 重力変更エンジンに触れたとき
-		case 10: case 12:
+		CASE_CANGE_GRAVITY_NO
 			// 重力方向の変更
 			if (!m_bIsTouchGrvityChange)	// 初めて重力装置に触れた時の一回だけ行う
 			{
@@ -269,7 +277,7 @@ void CModeGame::CollisionCheck()
 			break;
 
 			// ゴールに着いたとき
-		case 11:
+		CASE_GOAL_NO
 			SetFade(FADE_OUT, NEXT_MODE);		// フェードして次のモード（リザルト画面）へ
 			break;
 
@@ -290,6 +298,8 @@ void CModeGame::CollisionCheck()
 //****************************************************
 int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPos, bool FlagX, bool FlagY)
 {
+	// この関数内で使用する変数の宣言
+
 	int nCurX, nCurY, nCurNo;
 	int nOldX, nOldY, nOldNo;
 
@@ -302,7 +312,6 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 	if (MAPCHIP_HIT_min <= nCurNo && nCurNo <= MAPCHIP_HIT_MAX)	// 移動後の座標にあるマップチップ番号が、「MAPCHIP_HIT_min」と「MAPCHIP_HIT_MAX」の間のとき
 	{	// マップチップと当たっている時の処理
 		//========= 1.座標を調整
-	//	if(Flag)	// 座標調整を行うフラグが立っていたら、座標調整を行う
 		{
 			// x軸
 			if ( (nCurX - nOldX) != 0 && FlagX)	// 差がないときは調整する必要がない
@@ -312,15 +321,13 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 	
 				if (isLeft)
 				{	// 移動前座標が左側の時
-				//	CurrentPos->x = (Mapchip.GetMapchipSize().x * nCurX) - HalfObjectSize.x;
 					CurrentPos->x = (Mapchip.GetMapchipSize().x * nCurX);			// 座標調整（押し出し処理）
 
-					/* 上の命令だけだと、次ループ時に、isLeft=0判定となり、すりぬけちゃう */
+					/* 上の命令だけだと、次ループ時に、isLeft = 0判定となり、すりぬけちゃう */
 					CurrentPos->x -= 0.5f;		// ↑これ対策の、やりたくないけど応急処置
 				}
 				else
 				{
-				//	CurrentPos->x = (Mapchip.GetMapchipSize().x * (nCurX + 1)) + HalfObjectSize.x;
 					CurrentPos->x = (Mapchip.GetMapchipSize().x * (nCurX + 1) );	// 座標調整（押し出し処理）
 				}
 			}
@@ -332,16 +339,14 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 				int isTop = (nOldY < nCurY);	// 移動前座標が上側にあるときは「1」になる
 
 				if (isTop)
-				{	// 移動前座標が左側の時
-				//	CurrentPos->y = (Mapchip.GetMapchipSize().y * nCurY) - HalfObjectSize.y;
+				{	// 移動前座標が上側の時
 					CurrentPos->y = (Mapchip.GetMapchipSize().y * nCurY);		// 座標調整（押し出し処理）
 
-					/* 上の命令だけだと、次ループ時に、isTop =0 判定となり、すりぬけちゃう */
+					/* 上の命令だけだと、次ループ時に、isTop = 0 判定となり、すりぬけちゃう */
 					CurrentPos->y -= 0.5f;		// ↑これ対策の、やりたくないけど応急処置
 				}
 				else
 				{
-				//	CurrentPos->y = (Mapchip.GetMapchipSize().y * (nCurY + 1)) + HalfObjectSize.y;
 					CurrentPos->y = (Mapchip.GetMapchipSize().y * (nCurY + 1));	// 座標調整（押し出し処理）
 				}
 			}

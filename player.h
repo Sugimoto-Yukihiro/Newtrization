@@ -25,7 +25,7 @@ public:
 
 	//------------------- メンバ関数
 	void Init();		// 初期化
-//	void Uninit();		// 終了処理
+	void Uninit();		// 終了処理
 	void Update();		// 更新処理
 	void Draw();		// 描画処理
 
@@ -33,21 +33,27 @@ public:
 
 	//------------------- セッター関数
 	void SetPlayer(D3DXVECTOR2 Pos);	// プレイヤーを出現させる
+
 	void SetPosition(D3DXVECTOR2 Pos);	// プレイヤーの座標をセット
 	void SetSize(D3DXVECTOR2 Size);		// プレイヤーのサイズをセット
+
 	void SetJumpForce(float Force);		// プレイヤーのジャンプベクトルを取得
+	void SetHP(float HP);				// プレイヤーのHPをセット
+	void SetCurrentHP(float CurHP);		// プレイヤーの現在のHPをセット
 	void SetUseFlag(bool Use);			// プレイヤーのuseフラグのセット
 
 	//------------------- ゲッター関数
 	D3DXVECTOR2 GetPosition();	// プレイヤーの座標を取得
 	D3DXVECTOR2 GetSize();		// プレイヤーの大きさを取得
-	float GetJumpForce();		// プレイヤーのジャンプ力を取得
 
-	bool GetUseFlag() { return m_bUse; };		// プレイヤーのuseフラグの取得
-	bool GetIsDush() { return m_bDush; };		// プレイヤーのダッシュフラグを取得
-	bool GetIsGround() { return m_bOnGround; };	// プレイヤーの接地フラグを取得
-	bool GetIsJump() { return m_bIsJump; };		// プレイヤーのジャンプフラグを取得
-	bool GetIsMove() { return m_bIsMove; };		// プレイヤーのジャンプフラグを取得
+	float GetJumpForce() { return m_fJumpForce; };	// プレイヤーのジャンプ力を取得
+	float GetHP() { return m_fHitPointMAX; };		// プレイヤーのHPを取得
+	float GetCurrentHP() { return m_fCurrentHP; };	// プレイヤーの現在のHPを取得
+	bool GetUseFlag() { return m_bUse; };			// プレイヤーのuseフラグの取得
+	bool GetIsDush() { return m_bDush; };			// プレイヤーのダッシュフラグを取得
+	bool GetIsGround() { return m_bOnGround; };		// プレイヤーの接地フラグを取得
+	bool GetIsJump() { return m_bIsJump; };			// プレイヤーのジャンプフラグを取得
+	bool GetIsMove() { return m_bIsMove; };			// プレイヤーのジャンプフラグを取得
 
 
 	//------------------- マクロ定義
@@ -62,7 +68,9 @@ private:
 	void CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos);	// マップチップとの当たり判定を取って押し出し処理を行う
 
 	//------------------- メンバ変数
-	float		m_fJumpForce;				// プレイヤーのジャンプベクトル
+	float		m_fJumpForce;				// プレイヤーのジャンプ力
+	float		m_fHitPointMAX;				// プレイヤーのHPのMAX値
+	float		m_fCurrentHP;				// プレイヤーの現在のHP
 //	int			m_nCurrentMapChipNo;		// プレイヤーの現在いるマップチップ番号
 //	int			m_nMapchipX, m_nMapchipY;	// マップチップ座標系での、プレイヤーの現在位置
 	int			m_nTexNo;					// テクスチャ番号

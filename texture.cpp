@@ -34,9 +34,27 @@ CTexture::CTexture()	// コンストラクタ
 }
 
 //=============================================================================
-// メンバ変数の初期化（CTexture）
+// 初期化処理（CTexture）
 //=============================================================================
-void CTexture::Init()	// 全てのメンバ変数を０で初期化
+void CTexture::Init(D3DXVECTOR2 Pos, D3DXVECTOR2 Size, D3DXCOLOR Color, float Rotaiton,
+					int TexDivX, int TexDivY, int AnimWait, int IndexNo)
+{
+	m_vTexPos = Pos;
+	m_vTexSize = Size;
+	m_TexColor = Color;
+	m_fTexRotation = Rotaiton;
+	m_fTexU = m_fTexV = 0.0f;
+
+	//------------------- ベースクラスの初期化
+	CAnimation::Init(TexDivX, TexDivY, AnimWait, IndexNo);		// CAnimation
+}
+
+
+
+//=============================================================================
+// 終了処理（CTexture）
+//=============================================================================
+void CTexture::Uninit()	// 全てのメンバ変数を０でクリア
 {
 	m_vTexPos = ZERO_VECTOR2;
 	m_vTexSize = ZERO_VECTOR2;
@@ -44,8 +62,8 @@ void CTexture::Init()	// 全てのメンバ変数を０で初期化
 	m_fTexU = m_fTexV = 0.0f;
 	m_fTexRotation = 0.0f;
 
-	//------------------- ベースクラスの初期化
-	CAnimation::Init();		// CAnimation
+	//------------------- ベースクラスの終了処理
+	CAnimation::Uninit();		// CAnimation
 }
 
 
@@ -102,16 +120,16 @@ void CTexture::DrawTexture(ID3D11ShaderResourceView* pTextureData)
 //=============================================================================
 // セッター関数（CTexture）
 //=============================================================================
-// 全てのメンバ変数を一括で変更する関数
-void CTexture::SetTextureInf(D3DXVECTOR2 Pos, D3DXVECTOR2 Size, D3DXCOLOR Color, float Rotation, D3DXVECTOR2 UV)
-{
-	m_vTexPos = Pos;
-	m_vTexSize = Size;
-	m_TexColor = Color;
-	m_fTexRotation = Rotation;
-	m_fTexU = UV.x;
-	m_fTexV = UV.y;
-}
+//// 全てのメンバ変数を一括で変更する関数
+//void CTexture::SetTextureInf(D3DXVECTOR2 Pos, D3DXVECTOR2 Size, D3DXCOLOR Color, float Rotation, D3DXVECTOR2 UV)
+//{
+//	m_vTexPos = Pos;
+//	m_vTexSize = Size;
+//	m_TexColor = Color;
+//	m_fTexRotation = Rotation;
+//	m_fTexU = UV.x;
+//	m_fTexV = UV.y;
+//}
 
 // テクスチャの描画位置を変更する関数
 void CTexture::SetTexPos(D3DXVECTOR2 Pos)
@@ -166,13 +184,28 @@ D3DXVECTOR2 CTexture::GetTexSize()
 }
 
 
+// ************************ アニメーションクラス ************************
 
 //=============================================================================
-// メンバ変数の初期化（CAnimation）
+// 初期化処理（CAnimation）
 //=============================================================================
-void CAnimation::Init()	// 全てのメンバ変数を０で初期化
+void CAnimation::Init(int DivX, int DivY, int Wait, int Index)	// 全てのメンバ変数を０で初期化
 {
-	m_nDivideX = m_nDivideY = 1;
+	m_nDivideX = DivX;				// テクスチャの横の分割数をセット
+	m_nDivideY = DivY;				// テクスチャの縦の分割数をセット
+	m_nAnimWait = Wait;				// 画像が切り替わるタイミングをセット
+	m_nCurrentAnimIndex = Index;	// 画像番号を指定
+	m_nCurrentFlame = 0;			// フレームカウントは0
+}
+
+
+
+//=============================================================================
+// 終了処理（CAnimation）
+//=============================================================================
+void CAnimation::Uninit()	// 全てのメンバ変数を０でクリア
+{
+	m_nDivideX = m_nDivideY = 0;
 	m_nCurrentAnimIndex = 0;
 	m_nCurrentFlame = 0;
 	m_nAnimWait = 0;
@@ -214,14 +247,6 @@ void CAnimation::UpdateAnimIndex(int MotionStartIndex, int MotionEndIndex)
 //=============================================================================
 // セッター関数（CAnimation）
 //=============================================================================
-// 全てのアニメーションに関するメンバ変数の一括変更
-void CAnimation::SetAnimInf(int DivX, int DivY, int Wait)
-{
-	m_nDivideX = DivX;
-	m_nDivideY = DivY;
-	m_nAnimWait = Wait;
-}
-
 // 横のアニメーションパターン数を格納
 void CAnimation::SetTexDivideX(int DivX)
 {
