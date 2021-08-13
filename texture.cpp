@@ -70,7 +70,7 @@ void CTexture::Uninit()	// 全てのメンバ変数を０でクリア
 
 //=============================================================================
 // テクスチャ描画関数（CTexture）
-// 引数 :	テクスチャのファイル名, 描画座標, 頂点色, 回転角
+// 引数 :	テクスチャのファイル名, 頂点座標
 // 説明 :	テクスチャを、引数に指定された値に描画する処理
 //=============================================================================
 void CTexture::DrawTexture(ID3D11ShaderResourceView* pTextureData, ID3D11Buffer* pVertexBuffer)
@@ -94,7 +94,8 @@ void CTexture::DrawTexture(ID3D11ShaderResourceView* pTextureData, ID3D11Buffer*
 	// ポリゴン描画
 	GetDeviceContext()->Draw(4, 0);
 }
-void CTexture::DrawTexture(ID3D11ShaderResourceView* pTextureData)
+
+void CTexture::DrawTexture(ID3D11ShaderResourceView* pTextureData)	// テクスチャ座標のみ
 {
 	float tw = 0.0f, th = 0.0f, tU = 0.0f, tV = 0.0f;
 
@@ -111,6 +112,29 @@ void CTexture::DrawTexture(ID3D11ShaderResourceView* pTextureData)
 	// １枚のポリゴンの頂点とテクスチャ座標を設定
 	SetSpriteColorRotation(g_VertexBuffer2D, m_vTexPos.x, m_vTexPos.y, m_vTexSize.x, m_vTexSize.y, tU, tV, tw, th,
 		m_TexColor, m_fTexRotation);
+
+	// ポリゴン描画
+	GetDeviceContext()->Draw(4, 0);
+}
+
+// 左上を原点とした描画
+void CTexture::DrawTextureTopLeft(ID3D11ShaderResourceView* pTextureData)	// テクスチャ座標のみ
+{
+	float tw = 0.0f, th = 0.0f, tU = 0.0f, tV = 0.0f;
+
+	// テクスチャ設定
+	GetDeviceContext()->PSSetShaderResources(0, 1, &pTextureData);
+
+	//------------------- アニメーションも考慮して、UV座標の値を決定する
+	// 1つのアニメーションパターンあたりの幅と高さを求める
+	tw = 1.0f / (float)GetTexDivideX();							// 幅
+	th = 1.0f / (float)GetTexDivideY();							// 高さ
+	if (GetCurrentAnim() != 0) tU = (float)(GetCurrentAnim() % GetTexDivideX()) * tw;	// テクスチャの左上X座標
+	if (GetCurrentAnim() != 0) tV = (float)(GetCurrentAnim() / GetTexDivideX()) * th;	// テクスチャの左上Y座標
+
+	// １枚のポリゴンの頂点とテクスチャ座標を設定
+	SetSpriteColorTopLeft(g_VertexBuffer2D, m_vTexPos.x, m_vTexPos.y, m_vTexSize.x, m_vTexSize.y, tU, tV, tw, th,
+		m_TexColor);
 
 	// ポリゴン描画
 	GetDeviceContext()->Draw(4, 0);
@@ -444,6 +468,36 @@ void SetSpriteColorRotation(ID3D11Buffer *buf, float X, float Y, float Width, fl
 
 }
 
+// +色・左上原点
+void SetSpriteColorTopLeft(ID3D11Buffer *buf, float X, float Y, float Width, float Height,
+	float U, float V, float UW, float VH,
+	D3DXCOLOR Color)
+{
+	D3D11_MAPPED_SUBRESOURCE msr;
+	GetDeviceContext()->Map(buf, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
+
+	VERTEX_3D *vertex = (VERTEX_3D*)msr.pData;
+
+	// 左上を原点として設定するプログラム
+	vertex[0].Position = D3DXVECTOR3(X, Y, 0.0f);
+	vertex[0].Diffuse = Color;
+	vertex[0].TexCoord = D3DXVECTOR2(U, V);
+
+	vertex[1].Position = D3DXVECTOR3(X + Width, Y, 0.0f);
+	vertex[1].Diffuse = Color;
+	vertex[1].TexCoord = D3DXVECTOR2(U + UW, V);
+
+	vertex[2].Position = D3DXVECTOR3(X, Y + Height, 0.0f);
+	vertex[2].Diffuse = Color;
+	vertex[2].TexCoord = D3DXVECTOR2(U, V + VH);
+
+	vertex[3].Position = D3DXVECTOR3(X + Width, Y + Height, 0.0f);
+	vertex[3].Diffuse = Color;
+	vertex[3].TexCoord = D3DXVECTOR2(U + UW, V + VH);
+
+	GetDeviceContext()->Unmap(buf, 0);
+
+}
 
 
 

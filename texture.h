@@ -57,6 +57,7 @@ public:
 	//------------------- メンバ関数
 	void DrawTexture(ID3D11ShaderResourceView* TextureData, ID3D11Buffer* VertexBuffer);
 	void DrawTexture(ID3D11ShaderResourceView* TextureData);
+	void DrawTextureTopLeft(ID3D11ShaderResourceView* TextureData);	// 回転は反映されない！
 
 	// 初期化処理
 //×	void Init(D3DXVECTOR2 Pos = ZERO_VECTOR2, D3DXVECTOR2 Size = ZERO_VECTOR2, D3DXCOLOR Color = DEFAULT_COLOR, float Rotaiton = 0.0f,	// テクスチャ
@@ -90,7 +91,7 @@ private:
 	D3DXVECTOR2					m_vTexPos;			// テクスチャの描画位置
 	D3DXVECTOR2					m_vTexSize;			// テクスチャの 幅＆高さ
 	D3DXCOLOR					m_TexColor;			// 頂点色
-	float						m_fTexU, m_fTexV;	// UV座標系
+	float						m_fTexU, m_fTexV;	// UV座標系(テクスチャ関数の内部的に処理してる)
 	float						m_fTexRotation;		// テクスチャの回転角
 
 };
@@ -105,6 +106,9 @@ void SetSpriteColor(ID3D11Buffer *buf, float X, float Y, float Width, float Heig
 void SetSpriteColorRotation(ID3D11Buffer *buf, float X, float Y, float Width, float Height,
 	float U, float V, float UW, float VH,
 	D3DXCOLOR Color, float Rot);
+void SetSpriteColorTopLeft(ID3D11Buffer *buf, float X, float Y, float Width, float Height,
+	float U, float V, float UW, float VH,
+	D3DXCOLOR Color);
 
 
 // テクスチャ情報の生成

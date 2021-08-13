@@ -13,19 +13,29 @@
 //*****************************************************************************
 enum
 {
-	UI_TEX_TYPE_HPgage,			// プレイヤーのHPゲージ
-	UI_TEX_TYPE_HPgage_Cover,	// プレイヤーのHPゲージの装飾
+/* 左上原点で描画するテクスチャ */
+	GAMEUI_TEX_TYPE_HPgage,			// プレイヤーのHPゲージ
+	GAMEUI_TEX_TYPE_HPgage_Cover,	// プレイヤーのHPゲージの装飾
+
+/* ここより下は中心原点で描画するテクスチャ */
 //	UI_TEX_TYPE_Player_PoisonIcon,	// プレイヤーの毒状態アイコン
 
-	UI_TEX_TYPE_MAX				// 使用するテクスチャの数
+
+	// 使用するテクスチャの数
+	GAMEUI_TEX_TYPE_MAX,
+
+	// 左上原点で描画するテクスチャの最大番号（つまり、enumで一番下に書いてあるやつ）
+	GAMEUI_TEX_DRAW_TOPLEFT_MAXNO = GAMEUI_TEX_TYPE_HPgage_Cover,
 }; // GAME_UI_TEXTURE_TYPE;	// ゲーム画面のUIで使用するテクスチャの種類
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define HP_GAGE_WIDTH			275.0f		// HPゲージ本体の横幅
-#define HP_GAGE_HEIGHT			23.0f		// HPゲージ本体の縦幅
-#define HP_GAGE_COLOR			D3DXCOLOR(0.0f, 1.0f, 0.0f, 1.0f)		// HPゲージ本体の超転職
+#define HP_GAGE_POS_TOPLEFT		D3DXVECTOR2(0.0f, 0.0f)			// HPゲージの描画位置（左上座標）
+#define HP_GAGE_WIDTH			275.0f								// HPゲージの横幅
+#define HP_GAGE_HEIGHT			23.0f								// HPゲージの縦幅
+#define HP_GAGE_SIZE			D3DXVECTOR2(HP_GAGE_WIDTH, HP_GAGE_HEIGHT)	// HPゲージのサイズ
+#define HP_GAGE_COLOR			D3DXCOLOR(0.0f, 1.0f, 0.0f, 1.0f)	// HPゲージ本体の超転職
 
 #define HP_GAGE_COVER_WIDTH		300.0f		// HPゲージカバーの横幅
 #define HP_GAGE_COVER_HEIGHT	50.0f		// HPゲージカバーの縦幅
@@ -47,7 +57,7 @@ public:
 
 private:
 	//------------------- メンバ変数
-	CTexture m_Texture[UI_TEX_TYPE_MAX];	// 使用テクスチャ
+	CTexture m_GameTexture[GAMEUI_TEX_TYPE_MAX];	// 使用テクスチャ（Game）
 
 };
 

@@ -13,14 +13,17 @@
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11ShaderResourceView	*g_Texture[UI_TEX_TYPE_MAX] = { NULL };	// テクスチャ情報
+#define CASE_DRAW_TOPLEFT	case GAMEUI_TEX_TYPE_HPgage: case GAMEUI_TEX_TYPE_HPgage_Cover:		// 左上原点で描画するテクスチャの種類
+
+//*****************************************************************************
+// グローバル変数
+//*****************************************************************************
+static ID3D11ShaderResourceView	*g_Texture[GAMEUI_TEX_TYPE_MAX] = { NULL };	// テクスチャ情報
 
 // テクスチャのファイル名
 static char* g_TextureName[] = {
-	"data/TEXTURE/UI/HP_gage/gage.png",			// UI_TEX_TYPE_HPgage
-	"data/TEXTURE/UI/HP_gage/gage_cover.png",	// UI_TEX_TYPE_HPgage_Cover
-//	"data/TEXTURE/player/player01_Back_Not_Invisible.png",	// TexNo : 1
-
+	"data/TEXTURE/UI/HP_gage/gage.png",			// GAMEUI_TEX_TYPE_HPgage
+	"data/TEXTURE/UI/HP_gage/gage_cover.png",	// GAMEUI_TEX_TYPE_HPgage_Cover
 };
 
 //=============================================================================
@@ -47,22 +50,19 @@ void CGameUI::Init()
 	CreateGameUITexture();
 
 	// テクスチャクラスの初期化処理
-	for (int i = 0; i < UI_TEX_TYPE_MAX; i++)
+	for (int i = 0; i < GAMEUI_TEX_TYPE_MAX; i++)
 	{
 		// 初期化処理実行
-		m_Texture[i].Init();	// 一旦ゼロで初期化
+		m_GameTexture[i].Init();	// 一旦ゼロで初期化
 	}
 
 	//------------------- テクスチャの情報を個別でセット
-	m_Texture[UI_TEX_TYPE_HPgage].SetTexPos(D3DXVECTOR2(HP_GAGE_WIDTH * 0.5f, HP_GAGE_HEIGHT * 0.5f));
-	m_Texture[UI_TEX_TYPE_HPgage].SetTexSize( D3DXVECTOR2(HP_GAGE_WIDTH, HP_GAGE_HEIGHT) );
-	m_Texture[UI_TEX_TYPE_HPgage].SetTexColor( HP_GAGE_COLOR );
+	m_GameTexture[GAMEUI_TEX_TYPE_HPgage].SetTexPos( HP_GAGE_POS_TOPLEFT );	// 描画位置をセット（左上）
+	m_GameTexture[GAMEUI_TEX_TYPE_HPgage].SetTexSize( HP_GAGE_SIZE );		// サイズをセット
+	m_GameTexture[GAMEUI_TEX_TYPE_HPgage].SetTexColor( HP_GAGE_COLOR );		// 色をセット
 
-	D3DXVECTOR2 Pos = m_Texture[UI_TEX_TYPE_HPgage].GetTexPos();
-	Pos.x *= 0.5f;
-		m_Texture[UI_TEX_TYPE_HPgage_Cover].SetTexPos(Pos);
-	m_Texture[UI_TEX_TYPE_HPgage_Cover].SetTexSize( D3DXVECTOR2(HP_GAGE_COVER_WIDTH, HP_GAGE_COVER_HEIGHT) );
-
+	m_GameTexture[GAMEUI_TEX_TYPE_HPgage_Cover].SetTexPos( HP_GAGE_POS_TOPLEFT );	// 描画位置をセット（左上）
+	m_GameTexture[GAMEUI_TEX_TYPE_HPgage_Cover].SetTexSize( HP_GAGE_SIZE );			// サイズをセット
 }
 
 
@@ -76,9 +76,9 @@ void CGameUI::Uninit()
 	ReleaseGameUITexture();
 
 	// テクスチャクラスの終了処理
-	for (int i = 0; i < UI_TEX_TYPE_MAX; i++)
+	for (int i = 0; i < GAMEUI_TEX_TYPE_MAX; i++)
 	{
-		m_Texture[i].Uninit();	// 終了処理実行
+		m_GameTexture[i].Uninit();	// 終了処理実行
 	}
 }
 
@@ -89,20 +89,20 @@ void CGameUI::Uninit()
 void CGameUI::Update()
 {
 
-	// プレイヤーのHPの比率を計算し、ゲージの長さを設定
+	// プレイヤーのHPの比率を計算し、描画するゲージの幅をセット
 	{
-		CPlayer PlayerInf;
+		CPlayer PlayerInf;		// 現在のプレイヤーの情報を保存するインスタンス
 		D3DXVECTOR2 GageSize;	// 現在のゲージのサイズ
 		float rate;				// 比率
 
-		PlayerInf = *GetGame()->GetPlayer();	// プレイヤーの情報を取得
+		PlayerInf = *GetGame()->GetPlayer();					// プレイヤーの情報を取得
 		rate = PlayerInf.GetCurrentHP() / PlayerInf.GetHP();	// プレイヤーのHPの比率を取得
 
-		GageSize = m_Texture[UI_TEX_TYPE_HPgage].GetTexSize();	// 現在のゲージの大きさを取得
-		GageSize.x = HP_GAGE_WIDTH * rate;		// ゲージの幅を、比率をかけた値にセット
+		GageSize = m_GameTexture[GAMEUI_TEX_TYPE_HPgage].GetTexSize();	// 現在のゲージの大きさを取得
+		GageSize.x = HP_GAGE_WIDTH * rate;						// ゲージの幅を、比率をかけた値にセット
 
 		// 最終的なゲージの大きさをセット
-		m_Texture[UI_TEX_TYPE_HPgage].SetTexSize(GageSize);	// セット
+		m_GameTexture[GAMEUI_TEX_TYPE_HPgage].SetTexSize(GageSize);	// セット
 	}
 
 
@@ -117,9 +117,11 @@ void CGameUI::Update()
 void CGameUI::Draw()
 {
 	// 全てのテクスチャを描画
-	for (int i = 0; i < UI_TEX_TYPE_MAX; i++)
+	for (int i = 0; i < GAMEUI_TEX_TYPE_MAX; i++)	// ゲーム画面
 	{
-		m_Texture[i].DrawTexture(g_Texture[i]);	// 描画処理実行
+		// 左上と中心のどちらを原点で描画するかによって処理を変える
+		if (i <= GAMEUI_TEX_DRAW_TOPLEFT_MAXNO)	m_GameTexture[i].DrawTextureTopLeft(g_Texture[i]);	// 描画処理実行（左上原点）
+		else m_GameTexture[i].DrawTexture(g_Texture[i]);	// 描画処理実行（中心原点）
 	}
 }
 
@@ -129,7 +131,7 @@ void CGameUI::Draw()
 void CreateGameUITexture(void)
 {
 	// 全てのテクスチャ情報を生成
-	for (int i = 0; i < UI_TEX_TYPE_MAX; i++)
+	for (int i = 0; i < GAMEUI_TEX_TYPE_MAX; i++)
 	{
 		CreateTexture(g_TextureName[i], &g_Texture[i]);	// テクスチャ生成
 	}
@@ -139,7 +141,7 @@ void CreateGameUITexture(void)
 void ReleaseGameUITexture(void)
 {
 	// 全てのテクスチャ情報を生成
-	for (int i = 0; i < UI_TEX_TYPE_MAX; i++)
+	for (int i = 0; i < GAMEUI_TEX_TYPE_MAX; i++)
 	{
 		ReleaseTexture(&g_Texture[i]);	// テクスチャ解放
 	}

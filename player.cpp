@@ -26,7 +26,7 @@
 // アニメーションの分割数
 #define TEXTURE_DIVIDE_X			(6)			// アニメパターンのテクスチャ内分割数（X)
 #define TEXTURE_DIVIDE_Y			(1)			// アニメパターンのテクスチャ内分割数（Y)
-#define ANIM_PATTERN_NUM			(TEXTURE_PATTERN_DIVIDE_X*TEXTURE_PATTERN_DIVIDE_Y)	// アニメーションパターン数
+#define ANIM_PATTERN_NUM			(TEXTURE_PATTERN_DIVIDE_X * TEXTURE_PATTERN_DIVIDE_Y)	// アニメーションパターン数
 // アニメーションが切り替わるWait値
 #define ANIM_WAIT_DEFAULT			(5)			// デフォルト
 #define ANIM_WAIT_DUSH				(2)			// ダッシュ時
@@ -179,7 +179,6 @@ void CPlayer::Update()
 		m_fCurrentHP += 10.0f;
 		if (m_fCurrentHP > m_fHitPointMAX) m_fCurrentHP = m_fHitPointMAX;	// MAX値以上にしないようにする
 	}
-	wsprintf(&str[strlen(str)],"  現在のHP:%f", m_fCurrentHP);
 	PrintDebugProc("現在のHP: %f\n", m_fCurrentHP);
 #endif
 }
