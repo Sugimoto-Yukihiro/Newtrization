@@ -195,17 +195,17 @@ void CTexture::SetTexV(float V)
 //=============================================================================
 // ゲッター関数（CTexture）
 //=============================================================================
-// テクスチャの描画位置を取得する関数
-D3DXVECTOR2 CTexture::GetTexPos()
-{
-	return m_vTexPos;
-}
-
-// テクスチャのサイズを取得する関数
-D3DXVECTOR2 CTexture::GetTexSize()
-{
-	return m_vTexSize;
-}
+//// テクスチャの描画位置を取得する関数
+//D3DXVECTOR2 CTexture::GetTexPos()
+//{
+//	return m_vTexPos;
+//}
+//
+//// テクスチャのサイズを取得する関数
+//D3DXVECTOR2 CTexture::GetTexSize()
+//{
+//	return m_vTexSize;
+//}
 
 
 // ************************ アニメーションクラス ************************
@@ -294,20 +294,20 @@ void CAnimation::SetAnimWait(int Wait)
 //=============================================================================
 // ゲッター関数（CAnimation）
 //=============================================================================
-int CAnimation::GetCurrentAnim()		// 現在のアニメーション番号を取得する関数
-{
-	return m_nCurrentAnimIndex;
-}
-
-int CAnimation::GetTexDivideX()			// 横方向のアニメーションパターン数を取得する関数
-{
-	return m_nDivideX;
-}
-
-int CAnimation::GetTexDivideY()			// 縦方向のアニメーションパターン数を取得する関数
-{
-	return m_nDivideY;
-}
+//int CAnimation::GetCurrentAnim()	// 現在のアニメーション番号を取得する関数
+//{
+//	return m_nCurrentAnimIndex;
+//}
+//
+//int CAnimation::GetTexDivideX()	// 横方向のアニメーションパターン数を取得する関数
+//{
+//	return m_nDivideX;
+//}
+//
+//int CAnimation::GetTexDivideY()	// 縦方向のアニメーションパターン数を取得する関数
+//{
+//	return m_nDivideY;
+//}
 
 
 
@@ -344,6 +344,9 @@ void SetVertex(float X, float Y, float Width, float Height, float U, float V, fl
 // テクスチャの配置
 void SetSprite(ID3D11Buffer *buf, float X, float Y, float Width, float Height, float U, float V, float UW, float VH)
 {
+	// バッファが指定されていなければグローバルのやつを使う
+	if (buf == NULL) buf = g_VertexBuffer2D;
+
 	D3D11_MAPPED_SUBRESOURCE msr;
 	GetDeviceContext()->Map(buf, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
 
@@ -473,6 +476,9 @@ void SetSpriteColorTopLeft(ID3D11Buffer *buf, float X, float Y, float Width, flo
 	float U, float V, float UW, float VH,
 	D3DXCOLOR Color)
 {
+	// バッファが指定されていなければグローバルのやつを使う
+	if (buf == NULL) buf = g_VertexBuffer2D;
+
 	D3D11_MAPPED_SUBRESOURCE msr;
 	GetDeviceContext()->Map(buf, 0, D3D11_MAP_WRITE_DISCARD, 0, &msr);
 
@@ -513,7 +519,8 @@ void CreateTexture(const char* TextureName, ID3D11ShaderResourceView** TexrureDa
 
 }
 
-void CreateVertexBuffer(ID3D11Buffer** VertexBuffer)
+// 頂点バッファ（2D）の生成
+void CreateVertexBuffer(ID3D11Buffer** VertexBuffer)	// 任意の頂点バッファを生成
 {
 	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
@@ -524,7 +531,7 @@ void CreateVertexBuffer(ID3D11Buffer** VertexBuffer)
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	GetDevice()->CreateBuffer(&bd, NULL, VertexBuffer);
 }
-void CreateVertexBuffer(void)
+void CreateVertexBuffer(void)	// グローバルの頂点バッファを生成
 {
 	// 頂点バッファ生成
 	D3D11_BUFFER_DESC bd;
@@ -536,17 +543,29 @@ void CreateVertexBuffer(void)
 	GetDevice()->CreateBuffer(&bd, NULL, &g_VertexBuffer2D);
 }
 
+// テクスチャ情報の解放
 void ReleaseTexture(ID3D11ShaderResourceView** TextureData)
 {
 	if (*TextureData)
 	{
-		TextureData[0]->Release();
-		*TextureData = NULL;
+		TextureData[0]->Release();	// 解放処理実行
+		*TextureData = NULL;		// NULLをセット
 	}
 
 }
+bool ReleaseTexture(ID3D11ShaderResourceView* TextureData)
+{
+	if (TextureData)	// NULLじゃないなら解放
+	{
+		TextureData->Release();	// 解放処理実行
+		return(true);			// "実行してる"を返す
+	}
 
-void ReleaseVertexBuffer(ID3D11Buffer** VertexBuffer)	// 任意の頂点バッファ
+	return(false);	// 解放処理実行してない
+}
+
+// 頂点バッファ（2D）の解放
+void ReleaseVertexBuffer(ID3D11Buffer** VertexBuffer)	// 任意の頂点バッファを解放
 {
 	if (*VertexBuffer)
 	{
@@ -555,7 +574,7 @@ void ReleaseVertexBuffer(ID3D11Buffer** VertexBuffer)	// 任意の頂点バッファ
 	}
 
 }
-void ReleaseVertexBuffer(void)	// デフォルトの頂点バッファver
+void ReleaseVertexBuffer(void)	// グローバルの頂点バッファを解放
 {
 	if (g_VertexBuffer2D)
 	{
@@ -565,7 +584,8 @@ void ReleaseVertexBuffer(void)	// デフォルトの頂点バッファver
 
 }
 
-void PresetDraw2D(ID3D11Buffer** VertexBuffer)
+// 描画前準備（頂点バッファの設定）
+void PresetDraw2D(ID3D11Buffer** VertexBuffer)	// 任意の頂点バッファ
 {
 	// 頂点バッファ設定
 	UINT stride = sizeof(VERTEX_3D);
@@ -584,7 +604,7 @@ void PresetDraw2D(ID3D11Buffer** VertexBuffer)
 	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 	SetMaterial(material);
 }
-void PresetDraw2D(void)
+void PresetDraw2D(void)	// グローバルの頂点バッファ
 {
 	// 頂点バッファ設定
 	UINT stride = sizeof(VERTEX_3D);

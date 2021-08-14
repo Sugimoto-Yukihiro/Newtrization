@@ -33,10 +33,10 @@ public:
 	void SetAnimWait(int Wait);		// アニメーションのWait値をセット
 
 	//------------------- ゲッター関数
-	int GetCurrentAnim();			// 現在のアニメーション番号を取得
-	int GetTexDivideX();			// 横の分割数を取得
-	int GetTexDivideY();			// 縦の分割数を取得
-//	int GetAnimWait();				// アニメーションのWait値を取得
+	int GetTexDivideX() { return m_nDivideX; };				// 横の分割数を取得
+	int GetTexDivideY() { return m_nDivideY; };				// 縦の分割数を取得
+	int GetAnimWait() { return m_nAnimWait; };				// アニメーションのWait値を取得
+	int GetCurrentAnim() { return m_nCurrentAnimIndex; };	// 現在のアニメーション番号を取得
 
 private:
 	//------------------- メンバ変数
@@ -78,8 +78,10 @@ public:
 	void SetTexV(float V);					// テクスチャのUV座標のV値をセット
 
 	//------------------- ゲッター関数
-	D3DXVECTOR2 GetTexPos();				// テクスチャの描画位置を取得
-	D3DXVECTOR2 GetTexSize();				// テクスチャのサイズを取得
+	D3DXVECTOR2 GetTexPos() { return m_vTexPos; };		// テクスチャの描画位置を取得
+	D3DXVECTOR2 GetTexSize() { return m_vTexSize; };	// テクスチャのサイズを取得
+	D3DXCOLOR GetTexColor() { return m_TexColor; };		// テクスチャの色を取得
+	float GetTexRotation() { return m_fTexRotation; };	// テクスチャの回転角を取得
 
 	//------------------- メンバ変数(public)
 //	int		m_nTexNo;		// テクスチャ番号		// tecture.cpp内で使ってないからいらん
@@ -91,8 +93,8 @@ private:
 	D3DXVECTOR2					m_vTexPos;			// テクスチャの描画位置
 	D3DXVECTOR2					m_vTexSize;			// テクスチャの 幅＆高さ
 	D3DXCOLOR					m_TexColor;			// 頂点色
-	float						m_fTexU, m_fTexV;	// UV座標系(テクスチャ関数の内部的に処理してる)
 	float						m_fTexRotation;		// テクスチャの回転角
+	float						m_fTexU, m_fTexV;	// UV座標系(テクスチャ関数の内部的に処理してる)
 
 };
 
@@ -113,12 +115,16 @@ void SetSpriteColorTopLeft(ID3D11Buffer *buf, float X, float Y, float Width, flo
 
 // テクスチャ情報の生成
 void CreateTexture(const char* TextureName, ID3D11ShaderResourceView** TexrureData);
+
 // テクスチャ情報の解放
-void ReleaseTexture(ID3D11ShaderResourceView** TexrureData);
+void ReleaseTexture(ID3D11ShaderResourceView** TexrureData);	// (解放したあと、NULLがセットされる)
+bool ReleaseTexture(ID3D11ShaderResourceView* TextureData);		// 解放処理実行されたときはtrue, されてないときはfalse (解放したあと、NULLはセットされない)
+
 
 // 頂点バッファ生成
 void CreateVertexBuffer(ID3D11Buffer** VertexBuffer);	// 任意の頂点バッファを生成
 void CreateVertexBuffer(void);							// テクスチャ関数のグローバルの頂点バッファver
+
 // 頂点バッファの解放
 void ReleaseVertexBuffer(ID3D11Buffer** VertexBuffer);	// 任意の頂点バッファを解放
 void ReleaseVertexBuffer(void);							// テクスチャ関数のグローバルの頂点バッファver

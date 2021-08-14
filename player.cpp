@@ -55,6 +55,8 @@ static char *g_TextureName[] = {	// ここに新しいファイル名を追加�
 	"data/TEXTURE/player/player01_Back_Not_Invisible.png",	// TexNo : 1
 };
 
+
+
 //=============================================================================
 // コンストラクタ・デストラクタ
 //=============================================================================
@@ -152,11 +154,11 @@ void CPlayer::Update()
 			D3DXVECTOR2 pos;	// 一時的な変数
 			pos.x = GetPosition().x - SCROLL_SET_X;	// スクロール座標<x>に値を代入
 			pos.x = (pos.x < 0.0f) ? 0.0f : pos.x;		// スクロール座標<x>が負なら「0」にリセット、正の数ならそのまま
-			pos.x = (pos.x + SCREEN_WIDTH > Mapchip.GetStageSize().x) ? Mapchip.GetStageSize().x - SCREEN_WIDTH : pos.x;		// 画面右上の点がワールドの端に来たら"STAGE_W"の値にリセット
+			pos.x = (pos.x + SCREEN_WIDTH > Mapchip.GetMapChipSize().x) ? Mapchip.GetMapChipSize().x - SCREEN_WIDTH : pos.x;		// 画面右上の点がワールドの端に来たら"STAGE_W"の値にリセット
 	
 			pos.y = GetPosition().y - SCROLL_SET_Y;	// スクロール座標<y>に値を代入
 			pos.y = (pos.y < 0.0f) ? 0.0f : pos.y;		// スクロール座標<y>負なら「0」にリセット、正の数ならそのまま
-			pos.y = (pos.y + SCREEN_HEIGHT > Mapchip.GetStageSize().y) ? Mapchip.GetStageSize().y - SCREEN_HEIGHT : pos.y;	// 画面右上の点がワールドの端に来たら"STAGE_H"の値にリセット
+			pos.y = (pos.y + SCREEN_HEIGHT > Mapchip.GetMapChipSize().y) ? Mapchip.GetMapChipSize().y - SCREEN_HEIGHT : pos.y;	// 画面右上の点がワールドの端に来たら"STAGE_H"の値にリセット
 
 			// 座標をセット
 			GetGame()->SetScrollPosition(pos);

@@ -9,6 +9,7 @@
 #include "player.h"			// プレイヤー
 #include "mapchip.h"		// マップチップ
 #include "userInterface.h"	// UI
+#include "sideblack.h"		// 画面端処理
 
 //*****************************************************************************
 // マクロ定義
@@ -20,13 +21,15 @@
 #define ENEMY_SYMBOL				'E'		// エネミーの記号
 
 //------------------- マップチップに関する定義
+#define TEXTURE_NAME_MAPCHIP		"data/TEXTURE/mapchip/Mapchip.png"
+
 /* マップチップテクスチャの分割数　→　固定値とする */
 #define MAPCHIP_TEXTURE_DIVIDE_X	(5)		// 横方向の分割数
 #define MAPCHIP_TEXTURE_DIVIDE_Y	(16)	// 縦方向の分割数
 
 /* "MAPCHIP_HIT_min" ~ "MAPCHIP_HIT_MAX" の番号が当たり判定属性を持つマップチップ */
-#define MAPCHIP_HIT_min		(1)		// 壁判定属性のマップチップ番号の最小値
-#define MAPCHIP_HIT_MAX		(9)		// 壁判定属性のマップチップ番号の最大値
+#define MAPCHIP_HIT_min				(1)		// 壁判定属性のマップチップ番号の最小値
+#define MAPCHIP_HIT_MAX				(9)		// 壁判定属性のマップチップ番号の最大値
 
 // エンジンのマップチップ番号
 #define CASE_CANGE_GRAVITY_NO		case 12:
@@ -37,15 +40,19 @@
 
 
 //------------------- スクロール座標に関する定義
-#define SCROLL_SET_X	(SCREEN_CENTER_X )	// スクロール座標のセット位置
-#define SCROLL_SET_Y	(SCREEN_CENTER_Y)	// スクロール座標のセット位置
+#define SCROLL_SET_X	(SCREEN_CENTER_X * 0.5f)	// スクロール座標のセット位置
+#define SCROLL_SET_Y	(SCREEN_CENTER_Y)			// スクロール座標のセット位置
 
 //------------------- ゲーム内オブジェクトに関する定義
-#define PLAYER_MAX		(1)			// プレイヤーのMax人数
+#define PLAYER_MAX				(1)			// プレイヤーのMax人数
+
+//------------------- シネマチック処理
+#define TEXTURE_NAME_SIDEBLACK		"data/TEXTURE/SideBlack/CinemaScope.png"		// テクスチャのファイル名
+
 
 //------------------- その他ゲーム内で使用するパラメータ
-#define DEFAULT_GRAVITY_WAIT		(0.55f)		// 重力の値(デフォルトの時)
-#define LEFT_GRAVITY_WAIT			(0.55f)		// 重力の値(左方向の時)
+#define DEFAULT_GRAVITY_WAIT	(0.55f)		// 重力の値(デフォルトの時)
+#define LEFT_GRAVITY_WAIT		(0.55f)		// 重力の値(左方向の時)
 
 
 //*****************************************************************************
@@ -85,9 +92,10 @@ private:
 
 
 	//------------------- 各インスタンス
-	CGameUI m_GameUI;					// ゲームUI
+	CGameUI m_GameUI;				// ゲームUI
 	CPlayer	m_Player;				// プレイヤーのインスタンス
 	CMapchip m_Mapchip;				// マップチップのサンプル
+	CSideBlack m_SideBlack;			// 画面端の黒くするやつ
 
 	//------------------- メンバ変数
 	D3DXVECTOR2 m_vScrollPos;		// スクロール座標

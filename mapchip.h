@@ -20,16 +20,6 @@
 #define MAPCHIP_NUM_MAX_Y	(64)	// マップチップの最大行数
 #define MAPCHIP_NUM_MAX		(MAPCHIP_NUM_MAX_X * MAPCHIP_NUM_MAX_Y)	// マップチップの最大数（合計）
 
-enum
-{
-	STAGE_NONE = -1,
-
-	MAPCHIP_STAGE_Sample,	// サンプルの画像
-	MAPCHIP_STAGE_Game,		// ゲームのマップチップ
-//	STAGE_Tutorial,
-
-	MAPCHIP_PATTARN_MAX
-};
 
 //*****************************************************************************
 // クラス定義
@@ -49,7 +39,8 @@ public:
 	void Update();	// 更新処理
 
 	int LoadMapchipData(char* pFileName);		// マップチップ情報のファイル読み込み
-	void DrawChip(D3DXVECTOR2 Pos, int Num);	// 1枚のチップの描画
+	void DrawChip(D3DXVECTOR2 Pos, int Num);		// 1枚のチップの描画
+	void DrawChipTopLeft(D3DXVECTOR2 Pos, int Num);	// 1枚のチップの描画
 //	void RotationMapChip(float Angle);			// マップチップステージの回転
 
 #ifdef MAPCHIP_DYNAMIC
@@ -66,8 +57,8 @@ public:
 
 
 	//------------------- ゲッター関数
-	D3DXVECTOR2 GetStageSize();			// マップ全体の大きさを取得
-	D3DXVECTOR2 GetMapchipSize();		// １つのチップの大きさを取得
+	D3DXVECTOR2 GetMapChipSize();				// マップチップ全体の大きさを取得
+	D3DXVECTOR2 GetChipSize();					// １つのチップの大きさを取得
 	D3DXVECTOR2 GetMapchipPosition(int nIdxNo);	// マップチップ配列の要素数(一次元)を、D3DXVECTOR2 で取得。返ってくるのはチップの中心座標
 
 
@@ -84,7 +75,7 @@ private:
 	D3DXVECTOR2		m_vChipSize;		// １つのチップの大きさ
 
 #ifdef MAPCHIP_STATIC
-	int				m_MapChipData[MAPCHIP_NUM_MAX];	// マップチップ情報
+	int				m_MapChipData[MAPCHIP_NUM_MAX] = { 0 };	// マップチップ情報
 #endif // MAPCHIP_STATIC
 
 #ifdef MAPCHIP_DYNAMIC
@@ -101,8 +92,8 @@ private:
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-void CreateMapchipTexture(int MapchipPattarn);	// マップチップテクスチャの生成
-void ReleaseMapchipTexture(void);				// マップチップテクスチャの解放
+void CreateMapchipTexture(char* FileName);	// マップチップテクスチャの生成
+void ReleaseMapchipTexture(void);			// マップチップテクスチャの解放
 
 
 //*****************************************************************************

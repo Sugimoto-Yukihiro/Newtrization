@@ -21,13 +21,6 @@
 //*****************************************************************************
 static ID3D11ShaderResourceView	*g_Texture = { NULL };	// テクスチャ情報
 
-// テクスチャのファイル名
-static char *g_TextureName[] = {
-	"data/TEXTURE/mapchip/mapchip_sample.png",	// MAPCHIP_STAGE_Sample
-	"data/TEXTURE/mapchip/Mapchip.png",			// MAPCHIP_STAGE_Game
-};
-
-
 //=============================================================================
 // コンストラクタ・デストラクタ
 //=============================================================================
@@ -38,6 +31,9 @@ CMapchip::CMapchip()	// コンストラクタ
 	m_nChipNumX = -1;					// マップチップの列数をセット
 	m_nChipNumY = -1;					// マップチップの列数をセット
 
+	// テクスチャクラスの初期化
+	CTexture::Init();
+	CAnimation::Init();
 }
 
 CMapchip::~CMapchip()	// デストラクタ
@@ -115,16 +111,16 @@ void CMapchip::Draw()
 	// 表示座標の取得("ScrollPos"→スクロール座標)
 	ScrollPos = GetGame()->GetScrollPosition();
 
-	numx = (int)(ScrollPos.x / GetMapchipSize().x) - 1;	// スクロール座標より左側（画面外）にあるマップチップ数
-	numy = (int)(ScrollPos.y / GetMapchipSize().y) - 1;	// スクロール座標より上側（画面外）にあるマップチップ数
+	numx = (int)(ScrollPos.x / GetChipSize().x) - 1;	// スクロール座標より左側（画面外）にあるマップチップ数
+	numy = (int)(ScrollPos.y / GetChipSize().y) - 1;	// スクロール座標より上側（画面外）にあるマップチップ数
 
 	// マップチップ表示座標の算出
 	offset_x = -ScrollPos.x;
 	offset_y = -ScrollPos.y;
 
 	// 描画するチップ数を算出
-	nDrawChipNumX = SCREEN_WIDTH / (int)GetMapchipSize().x + numx;	// 横方向(x軸)のチップ数
-	nDrawChipNumY = SCREEN_HEIGHT / (int)GetMapchipSize().y + numy;	// 縦方向(y軸)のチップ数
+	nDrawChipNumX = SCREEN_WIDTH / (int)GetChipSize().x + numx;	// 横方向(x軸)のチップ数
+	nDrawChipNumY = SCREEN_HEIGHT / (int)GetChipSize().y + numy;	// 縦方向(y軸)のチップ数
 
 	// マップ描画
 	for (int y = numy; y < nDrawChipNumY + 3; y++)	// 2は中途半端に出てるやつ
@@ -140,8 +136,8 @@ void CMapchip::Draw()
 
 			// チップの描画位置を算出
 			D3DXVECTOR2 ChipPos;
-			ChipPos.y = (float)(offset_y + (GetMapchipSize().y * y));	// 背景の表示座標Y
-			ChipPos.x = (float)(offset_x + (GetMapchipSize().x * x));	// 背景の表示座標X
+			ChipPos.y = (float)(offset_y + (GetChipSize().y * y));	// 背景の表示座標Y
+			ChipPos.x = (float)(offset_x + (GetChipSize().x * x));	// 背景の表示座標X
 
 			// 描画
 			DrawChip(ChipPos, nChipId);	// 描画座標が中心指定のとき
@@ -162,12 +158,27 @@ void CMapchip::DrawChip(D3DXVECTOR2 Pos, int Num)
 	float ty = (float)(Num / GetTexDivideX()) * th;	// テクスチャの左上Y座標
 
 	// １枚のポリゴンの頂点とテクスチャ座標を設定
-	SetVertex(Pos.x, Pos.y, GetMapchipSize().x, GetMapchipSize().y, tx, ty, tw, th);
+	SetVertex(Pos.x, Pos.y, GetChipSize().x, GetChipSize().y, tx, ty, tw, th);
 
 	// ポリゴン描画
 	GetDeviceContext()->Draw(4, 0);
 }
+void CMapchip::DrawChipTopLeft(D3DXVECTOR2 Pos, int Num)	// 左上原点で描画
+{
+	// テクスチャ設定
+	GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture);
 
+	float tw = 1.0f / GetTexDivideX();	// テクスチャの幅
+	float th = 1.0f / GetTexDivideY();	// テクスチャの高さ
+	float tx = (float)(Num % GetTexDivideX()) * tw;	// テクスチャの左上X座標
+	float ty = (float)(Num / GetTexDivideX()) * th;	// テクスチャの左上Y座標
+
+	// １枚のポリゴンの頂点とテクスチャ座標を設定
+	SetSpriteColorTopLeft(NULL, Pos.x, Pos.y, GetChipSize().x, GetChipSize().y, tx, ty, tw, th, GetTexColor());
+
+	// ポリゴン描画
+	GetDeviceContext()->Draw(4, 0);
+}
 
 
 //=============================================================================
@@ -285,7 +296,7 @@ void CMapchip::SetMapchipNo(int No, int X, int Y)
 // ゲッター関数
 //=============================================================================
 // マップ全体の大きさを取得
-D3DXVECTOR2 CMapchip::GetStageSize()
+D3DXVECTOR2 CMapchip::GetMapChipSize()
 {
 	D3DXVECTOR2 ans;
 	ans.x = m_vChipSize.x * m_nChipNumX;	// 幅を格納
@@ -295,7 +306,7 @@ D3DXVECTOR2 CMapchip::GetStageSize()
 }
 
 // １つのチップの大きさを取得
-D3DXVECTOR2 CMapchip::GetMapchipSize()
+D3DXVECTOR2 CMapchip::GetChipSize()
 {
 	return m_vChipSize;
 }
@@ -346,10 +357,10 @@ int CMapchip::GetMapchipNo(D3DXVECTOR2 Pos, int* retIdxNumX, int* retIdxNumY)
 }
 
 // マップチップテクスチャの生成
-void CreateMapchipTexture(int MapchipPattarn)
+void CreateMapchipTexture(char* FileName)
 {
 	// テクスチャ生成
-	CreateTexture(g_TextureName[MapchipPattarn], &g_Texture);
+	CreateTexture(FileName, &g_Texture);	
 }
 
 // マップチップテクスチャの解放

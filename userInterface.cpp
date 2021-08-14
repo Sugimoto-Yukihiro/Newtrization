@@ -11,7 +11,7 @@
 #include "game.h"
 
 //*****************************************************************************
-// グローバル変数
+// マクロ定義
 //*****************************************************************************
 #define CASE_DRAW_TOPLEFT	case GAMEUI_TEX_TYPE_HPgage: case GAMEUI_TEX_TYPE_HPgage_Cover:		// 左上原点で描画するテクスチャの種類
 
@@ -140,7 +140,7 @@ void CreateGameUITexture(void)
 // テクスチャの解放
 void ReleaseGameUITexture(void)
 {
-	// 全てのテクスチャ情報を生成
+	// 全てのテクスチャ情報を解放
 	for (int i = 0; i < GAMEUI_TEX_TYPE_MAX; i++)
 	{
 		ReleaseTexture(&g_Texture[i]);	// テクスチャ解放

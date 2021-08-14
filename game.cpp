@@ -62,7 +62,7 @@ void CModeGame::Init()
 	}
 
 	// マップチップの初期化
-	CreateMapchipTexture(MAPCHIP_STAGE_Game);	// テクスチャ・頂点バッファ生成
+	CreateMapchipTexture(TEXTURE_NAME_MAPCHIP);	// テクスチャ生成
 	m_Mapchip.Init(NULL, MAPCHIP_TEXTURE_DIVIDE_X, MAPCHIP_TEXTURE_DIVIDE_Y, MAPCHIP_SIZE_DEFAULT);		// 初期化処理実行
 
 	// エネミーの初期化
@@ -74,22 +74,22 @@ void CModeGame::Init()
 	// スコアの初期化
 //	InitScore();
 
-	// パーティクルの初期化
-//	InitParticle();
+	// 画面端の初期化
+	m_SideBlack.Init(TEXTURE_NAME_SIDEBLACK);
 
 	// オブジェクトの配置 & マップチップのセット
 	PutAllObject(GAME_MAP_DATA_1);
 
-	// プレイヤーの位置が決まったから、スクロール座標をセット
+	//------------------- プレイヤーの位置が決まったから、スクロール座標をセット
 	{
-		D3DXVECTOR2 pos;	// 一時的な変数
+		D3DXVECTOR2 pos = ZERO_VECTOR2;	// 一時的な変数
 		pos.x = m_Player.GetPosition().x - SCROLL_SET_X;	// スクロール座標<x>に値を代入
 		pos.x = (pos.x < 0.0f) ? 0.0f : pos.x;	// スクロール座標<x>が負なら「0」にリセット、正の数ならそのまま
-		pos.x = (pos.x + SCREEN_WIDTH > m_Mapchip.GetStageSize().x) ? m_Mapchip.GetStageSize().x - SCREEN_WIDTH : pos.x;	// 画面右上の点がワールドの端に来たら"STAGE_W"の値にリセット
+		pos.x = (pos.x + SCREEN_WIDTH > m_Mapchip.GetMapChipSize().x) ? m_Mapchip.GetMapChipSize().x - SCREEN_WIDTH : pos.x;	// 画面右上の点がワールドの端に来たら"STAGE_W"の値にリセット
 
 		pos.y = m_Player.GetPosition().y - SCROLL_SET_Y;	// スクロール座標<y>に値を代入
 		pos.y = (pos.y < 0.0f) ? 0.0f : pos.y;	// スクロール座標<y>負なら「0」にリセット、正の数ならそのまま
-		pos.y = (pos.y + SCREEN_HEIGHT > m_Mapchip.GetStageSize().y) ? m_Mapchip.GetStageSize().y - SCREEN_HEIGHT : pos.y;	// 画面右上の点がワールドの端に来たら"STAGE_H"の値にリセット
+		pos.y = (pos.y + SCREEN_HEIGHT > m_Mapchip.GetMapChipSize().y) ? m_Mapchip.GetMapChipSize().y - SCREEN_HEIGHT : pos.y;	// 画面右上の点がワールドの端に来たら"STAGE_H"の値にリセット
 
 		// 座標をセット
 		m_vScrollPos = pos;
@@ -97,10 +97,6 @@ void CModeGame::Init()
 
 	// BGM再生
 //	PlaySound(SOUND_LABEL_BGM_sample001);
-
-	// 2Dの頂点バッファ生成
-//	CreateVertexBuffer();
-
 }
 
 
@@ -110,11 +106,11 @@ void CModeGame::Init()
 //=============================================================================
 void CModeGame::Uninit(void)
 {
-	// 頂点バッファ解放
-//	ReleaseVertexBuffer();
+	// BGM停止
+//	StopSound();
 
-	// パーティクルの終了処理
-//	UninitParticle();
+	// 画面端の終了処理
+	m_SideBlack.Uninit();
 
 	// スコアの終了処理
 //	UninitScore();
@@ -161,7 +157,15 @@ void CModeGame::Update(void)
 		CModeGame::Uninit();	// ゲームモードの解放
 		CModeGame::Init();		// ゲームモードの初期化
 	}
+	// 重力方向の変更
+	if (KEY_CHANGE_GRAVITY)
+	{
+		m_GravityDirection = (m_GravityDirection + 1) % GRAVITY_DIRECTION_MAX;
+		ChangeGravityDirection(m_GravityDirection);
+	}
+#endif // _DEBUG
 
+#ifdef KEY_MODE_CHANGE
 	//------------------- キー・ゲームパットでの入力で次のモードへ
 	if (KEY_MODE_CHANGE)
 	{// Enter押したら、ステージを切り替える
@@ -174,15 +178,7 @@ void CModeGame::Update(void)
 		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
 	//	SetMode(NEXT_MODE);				// 次のモードにシーン遷移
 	}
-
-	// 重力方向の変更
-	if (KEY_CHANGE_GRAVITY)
-	{
-		m_GravityDirection = (m_GravityDirection + 1) % GRAVITY_DIRECTION_MAX;
-		ChangeGravityDirection(m_GravityDirection);
-	}
-
-#endif // _DEBUG
+#endif // KEY_MODE_CHANGE
 
 
 	// マップチップの更新処理
@@ -203,8 +199,10 @@ void CModeGame::Update(void)
 	// パーティクルの更新処理
 //	UpdateParticle();
 
-	// 当たり判定処理
+	//-------------------  当たり判定処理
 	CollisionCheck();
+
+	/* 当たり判定の結果によって内容が変わる更新処理はこれ以降に記載する！ */
 
 	// スコアの更新処理
 //	UpdateScore();
@@ -212,8 +210,12 @@ void CModeGame::Update(void)
 	// 背景の更新処理
 	UpdateBg();
 
+	// 画面端の更新処理
+	m_SideBlack.Update();
+
 	// UIの更新処理
 	m_GameUI.Update();
+
 }
 
 //=============================================================================
@@ -234,10 +236,7 @@ void CModeGame::Draw()
 //	DrawEnemy();
 
 	// プレイヤーの描画処理
-//	for (int i = 0; i < PLAYER_MAX; i++)
-	{
-		m_Player.Draw();	// プレイヤー描画
-	}
+	m_Player.Draw();
 
 	// 弾の描画処理
 //	DrawBullet();
@@ -247,6 +246,9 @@ void CModeGame::Draw()
 
 	// スコアの描画処理
 //	DrawScore();
+
+	// 画面端の描画
+	m_SideBlack.Draw();	// UIの前に描画する
 
 	// UIの描画処理
 	m_GameUI.Draw();
@@ -321,14 +323,14 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 	
 				if (isLeft)
 				{	// 移動前座標が左側の時
-					CurrentPos->x = (Mapchip.GetMapchipSize().x * nCurX);			// 座標調整（押し出し処理）
+					CurrentPos->x = (Mapchip.GetChipSize().x * nCurX);			// 座標調整（押し出し処理）
 
 					/* 上の命令だけだと、次ループ時に、isLeft = 0判定となり、すりぬけちゃう */
 					CurrentPos->x -= 0.5f;		// ↑これ対策の、やりたくないけど応急処置
 				}
 				else
 				{
-					CurrentPos->x = (Mapchip.GetMapchipSize().x * (nCurX + 1) );	// 座標調整（押し出し処理）
+					CurrentPos->x = (Mapchip.GetChipSize().x * (nCurX + 1) );	// 座標調整（押し出し処理）
 				}
 			}
 
@@ -340,14 +342,14 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 
 				if (isTop)
 				{	// 移動前座標が上側の時
-					CurrentPos->y = (Mapchip.GetMapchipSize().y * nCurY);		// 座標調整（押し出し処理）
+					CurrentPos->y = (Mapchip.GetChipSize().y * nCurY);		// 座標調整（押し出し処理）
 
 					/* 上の命令だけだと、次ループ時に、isTop = 0 判定となり、すりぬけちゃう */
 					CurrentPos->y -= 0.5f;		// ↑これ対策の、やりたくないけど応急処置
 				}
 				else
 				{
-					CurrentPos->y = (Mapchip.GetMapchipSize().y * (nCurY + 1));	// 座標調整（押し出し処理）
+					CurrentPos->y = (Mapchip.GetChipSize().y * (nCurY + 1));	// 座標調整（押し出し処理）
 				}
 			}
 		}
