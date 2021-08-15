@@ -126,6 +126,7 @@ void RequestSetMode(MODE mode);					// セットモード
 
 //------------------- ファイル関数
 int LoadCsvFile(const char* pCsvFileName, char* &pFirst, int MaxCharCell, char* DivMark);
+int LoadCsvFile(const char* pCsvFileName, char** ppRet, bool Flag = true, int MaxLineChar = 1028, int RowNum = 64, char* Symbol = "#");
 int DivideString(const char* String, int* retCol, int* retRow, char* DivMark);
 int SerchWordOffset(const char* String, const char SingleWord);
 

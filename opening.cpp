@@ -68,7 +68,7 @@ void CModeOpening::Uninit(void)
 //=============================================================================
 void CModeOpening::Update(void)
 {
-#ifdef _DEBUG
+#ifdef KEY_MODE_CHANGE
 	//------------------- キー・ゲームパットでの入力で次のモードへ
 	if (KEY_MODE_CHANGE)
 	{// Enter押したら、ステージを切り替える
@@ -81,7 +81,7 @@ void CModeOpening::Update(void)
 		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
 	//	SetMode(NEXT_MODE);				// 次のモードにシーン遷移
 	}
-#endif // _DEBUG
+#endif // KEY_MODE_CHANGE
 
 
 	/* 以下、各テクスチャごとに更新処理があれば記入 */

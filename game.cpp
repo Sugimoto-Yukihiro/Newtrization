@@ -56,10 +56,7 @@ void CModeGame::Init()
 
 	// プレイヤーの初期化
 	CreatePlayerTexture();	// テクスチャ・頂点バッファ生成
-//	for(int i =0; i < PLAYER_MAX; i++)
-	{
-		m_Player.Init();	// 初期化処理実行
-	}
+	m_Player.Init();		// 初期化処理実行
 
 	// マップチップの初期化
 	CreateMapchipTexture(TEXTURE_NAME_MAPCHIP);	// テクスチャ生成
@@ -185,10 +182,7 @@ void CModeGame::Update(void)
 	m_Mapchip.Update();
 
 	// プレイヤーの更新処理
-//	for (int i = 0; i < PLAYER_MAX; i++)
-	{
-		m_Player.Update();	// プレイヤーの更新処理実行
-	}
+	m_Player.Update();	// プレイヤーの更新処理実行
 
 	// エネミーの更新処理
 	UpdateEnemy();
@@ -198,6 +192,9 @@ void CModeGame::Update(void)
 
 	// パーティクルの更新処理
 //	UpdateParticle();
+
+	// 画面端の更新処理
+	m_SideBlack.Update();
 
 	//-------------------  当たり判定処理
 	CollisionCheck();
@@ -209,9 +206,6 @@ void CModeGame::Update(void)
 
 	// 背景の更新処理
 	UpdateBg();
-
-	// 画面端の更新処理
-	m_SideBlack.Update();
 
 	// UIの更新処理
 	m_GameUI.Update();
@@ -383,15 +377,14 @@ int CModeGame::PutAllObject(const char* pCsvMapFile)
 	int nTokenCnt = 0;				// 格納したトークンの数をカウントする変数（＝ マップチップ配列の要素数）
 
 	// Csvファイルの、コメント部分を削除した状態のものを読み込み（カンマで区切られた数値データを抽出）
-	if ( LoadCsvFile(pCsvMapFile, pLoadedMapData, 8, ",") < 0)	// 負数が返されたら、読み込み失敗
+//	if ( LoadCsvFile(pCsvMapFile, pLoadedMapData, 8, ",") < 0)	// 負数が返されたら、読み込み失敗
+	if ( LoadCsvFile(pCsvMapFile, &pLoadedMapData, true) < 0)	// 負数が返されたら、読み込み失敗
 	{	// csvファイルのロード失敗時（エラーチェック）
 		return 0;	// 失敗を返す
 	}
 
 	// マップチップデータをセット
-	{
-		m_Mapchip.SetMapChipData(pLoadedMapData);
-	}
+	m_Mapchip.SetMapChipData(pLoadedMapData);
 
 	// 全てのオブジェクトをセット
 	{

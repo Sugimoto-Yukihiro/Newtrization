@@ -76,10 +76,13 @@ BOOL IsButtonTriggered(int padNo,DWORD button);
 #define KEY_MOVE_PLAYER_JUMP		GetKeyboardTrigger(DIK_SPACE)	// プレイヤーをジャンプさせるキー
 #define KEY_MOVE_PLAYER_DUSH		GetKeyboardPress(DIK_S)			// プレイヤーをダッシュさせるキー
 
+/* これは最終的なRelease時には、削除すること */
+#define KEY_MODE_CHANGE			GetKeyboardTrigger(DIK_RETURN)
+
 // デバッグ時
 #ifdef _DEBUG
-	#define KEY_CHANGE_DRAW_DEBUG	GetKeyboardTrigger(DIK_3)
 	#define KEY_MODE_CHANGE			GetKeyboardTrigger(DIK_RETURN)
+	#define KEY_CHANGE_DRAW_DEBUG	GetKeyboardTrigger(DIK_3)
 	#define KEY_PAUSE				GetKeyboardTrigger(DIK_0)
 	#define KEY_RESTART_GAMEMODE	GetKeyboardTrigger(DIK_1)		// ゲームモードのリセット
 	#define KEY_CHANGE_GRAVITY		GetKeyboardTrigger(DIK_2)
@@ -92,7 +95,10 @@ BOOL IsButtonTriggered(int padNo,DWORD button);
 #define PAD_MOVE_PLAYER_JUMP		IsButtonTriggered(0,BUTTON_X)	// プレイヤーをジャンプさせるキー
 #define PAD_MOVE_PLAYER_DUSH		IsButtonPressed(0,BUTTON_B)		// プレイヤーをダッシュさせるキー
 
+/* これは最終的なReleaseには、削除すること */
+#define PAD_MODE_CHANGE			IsButtonTriggered(0, BUTTON_START) || IsButtonTriggered(0, BUTTON_B)
 
+// デバッグ時
 #ifdef _DEBUG
 	#define PAD_MODE_CHANGE			IsButtonTriggered(0, BUTTON_START) || IsButtonTriggered(0, BUTTON_B)
 #endif // _DEBUG

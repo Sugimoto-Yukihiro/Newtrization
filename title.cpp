@@ -126,6 +126,7 @@ void UninitTitle(void)
 void UpdateTitle(void)
 {
 	//------------------- キー・ゲームパットでの入力で次のモードへ
+#ifdef KEY_MODE_CHANGE
 	if (KEY_MODE_CHANGE)
 	{// Enter押したら、ステージを切り替える
 		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
@@ -137,6 +138,7 @@ void UpdateTitle(void)
 		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
 	//	SetMode(NEXT_MODE);				// 次のモードにシーン遷移
 	}
+#endif // KEY_MODE_CHANGE
 
 	if (flag_alpha == true)
 	{

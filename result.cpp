@@ -82,7 +82,7 @@ void CModeResult::Uninit()
 void CModeResult::Update()
 {
 	//------------------- キー・ゲームパットでの入力で次のモードへ
-#ifdef _DEBUG
+#ifdef KEY_MODE_CHANGE
 	if (KEY_MODE_CHANGE)
 	{// Enter押したら、ステージを切り替える
 		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
@@ -94,7 +94,7 @@ void CModeResult::Update()
 		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
 	//	SetMode(NEXT_MODE);				// 次のモードにシーン遷移
 	}
-#endif // _DEBUG
+#endif // KEY_MODE_CHANGE
 
 
 

@@ -47,7 +47,7 @@
 #define PLAYER_MAX				(1)			// プレイヤーのMax人数
 
 //------------------- シネマチック処理
-#define TEXTURE_NAME_SIDEBLACK		"data/TEXTURE/SideBlack/CinemaScope.png"		// テクスチャのファイル名
+#define TEXTURE_NAME_SIDEBLACK	"data/TEXTURE/SideBlack/CinemaScope.png"		// テクスチャのファイル名
 
 
 //------------------- その他ゲーム内で使用するパラメータ

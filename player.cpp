@@ -153,12 +153,13 @@ void CPlayer::Update()
 		{
 			D3DXVECTOR2 pos;	// 一時的な変数
 			pos.x = GetPosition().x - SCROLL_SET_X;	// スクロール座標<x>に値を代入
-			pos.x = (pos.x < 0.0f) ? 0.0f : pos.x;		// スクロール座標<x>が負なら「0」にリセット、正の数ならそのまま
-			pos.x = (pos.x + SCREEN_WIDTH > Mapchip.GetMapChipSize().x) ? Mapchip.GetMapChipSize().x - SCREEN_WIDTH : pos.x;		// 画面右上の点がワールドの端に来たら"STAGE_W"の値にリセット
+			if (pos.x < 0.0f) pos.x = 0.0f;	// スクロール座標<x>が負なら「0」にリセット、正の数ならそのまま
+			if (pos.x + SCREEN_WIDTH > Mapchip.GetMapChipSize().x) pos.x = Mapchip.GetMapChipSize().x - SCREEN_WIDTH;	// 画面右上の点がワールドの端に来たら"STAGE_W"の値にリセット
 	
 			pos.y = GetPosition().y - SCROLL_SET_Y;	// スクロール座標<y>に値を代入
-			pos.y = (pos.y < 0.0f) ? 0.0f : pos.y;		// スクロール座標<y>負なら「0」にリセット、正の数ならそのまま
-			pos.y = (pos.y + SCREEN_HEIGHT > Mapchip.GetMapChipSize().y) ? Mapchip.GetMapChipSize().y - SCREEN_HEIGHT : pos.y;	// 画面右上の点がワールドの端に来たら"STAGE_H"の値にリセット
+			if (pos.y < 0.0f) pos.y = 0.0f;	// スクロール座標<y>負なら「0」にリセット、正の数ならそのまま
+			if (pos.y + SCREEN_HEIGHT > Mapchip.GetMapChipSize().y) pos.y = Mapchip.GetMapChipSize().y - SCREEN_HEIGHT;	// 画面左下の点がワールドの端に来たら"STAGE_H"の値にリセット
+
 
 			// 座標をセット
 			GetGame()->SetScrollPosition(pos);

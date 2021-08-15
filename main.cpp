@@ -19,6 +19,9 @@
 #include "sound.h"		// サウンド
 #include "debugproc.h"	// デバック
 
+//#include <string>		// C++ライブラリ、std::string のインクルード
+#include <string.h>
+
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
@@ -26,7 +29,9 @@
 #define WINDOW_NAME			"ガンバ東京ドラゴンズ - NewTrization"		// ウインドウのキャプション名
 
 #ifndef _DEBUG	// こっちは製品版
-	#define START_MODE		(MODE_OPENING)		// 起動時のモード
+/* 最終的には上の方にする↓ */
+//	#define START_MODE		(MODE_OPENING)		// 起動時のモード	
+	#define START_MODE		(MODE_GAME)		// 起動時のモード
 #endif // !_DEBUG
 
 #ifdef _DEBUG	// デバック時
@@ -55,13 +60,11 @@ long g_MouseX = 0;
 long g_MouseY = 0;
 
 #ifdef _DEBUG
-int		g_CountFPS;							// FPSカウンタ
-char	g_DebugStr[2048] = WINDOW_NAME;		// デバッグ文字表示用
+int		g_CountFPS;				// FPSカウンタ
+char	g_DebugStr[2048] = { "\0" };		// デバッグ文字表示用
 #endif
 
-// 起動時の画面を初期値として設定
-//MODE g_Mode = START_MODE;
-
+// モードクラスのインスタンス
 CMode g_aMode;
 
 //=============================================================================
@@ -177,23 +180,27 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			{
 				dwExecLastTime = dwCurrentTime;	// 処理した時刻を保存
 
-				// WINDOW_NAMEの表示
-				wsprintf(g_DebugStr, WINDOW_NAME);
-
 #ifdef _DEBUG	// デバッグ版の時だけ表示するやつ
+				memset(g_DebugStr, '\0', strlen(g_DebugStr));	// 文字列クリア
+
 				// FPSを表示
 				wsprintf(&g_DebugStr[strlen(g_DebugStr)], " FPS:%d", g_CountFPS);
 				// マウス座標の表示
 				wsprintf(&g_DebugStr[strlen(g_DebugStr)], " MX:%d MY:%d", GetMousePosX(), GetMousePosY());
 				// 現在のモードの表示
 				wsprintf(&g_DebugStr[strlen(g_DebugStr)], "  CurrentMode:%d", g_aMode.GetMode());
-
-#endif
+			
 				// テキストのセット
 				SetWindowText(hWnd, g_DebugStr);
+#else
+// Release
+				// WINDOW_NAMEの表示
+				SetWindowText(hWnd, WINDOW_NAME);	// テキストのセット
+#endif // _DEBUG
 
-				g_aMode.Update();			// 更新処理
-				g_aMode.Draw();				// 描画処理
+
+				g_aMode.Update();	// 更新処理
+				g_aMode.Draw();		// 描画処理
 
 				dwFrameCount++;		// 処理回数のカウントを加算
 			}
@@ -558,11 +565,17 @@ char* GetDebugStr(void)
 #define	SizeOfLine(wordCnt)	(SizeOfCell(wordCnt) * MAX_COLUMN)	// 1行あたりに使うchar型メモリ
 #define	MAX_SIZE(wordCnt)	(SizeOfLine(wordCnt) * MAX_ROW)		// 使用する最大char型メモリ（= 1つのcsvファイルに記載されている最大文字列）
 #define	CommentsSymbol		'#'									// コメント記号
-#define	DefaultDivMark		"#"									// デフォルトの区切り記号
+#define	DefaultDivMark		","									// デフォルトの区切り記号
 
 int LoadCsvFile(const char* pCsvFileName, char* &pFirst, int MaxCharCell, char* DivMark)
 {
 	FILE*	csvFile = fopen(pCsvFileName, "r");					// ファイルのオープン<fclose記載済み>
+	char*	pTmpArray = NULL;
+	// ファイルへのアクセスに使用するchar型変数
+	char	OneLineStr[1024] = { NULL };	// 読み取るファイルの、一行分の文字列を格納するためのchar型配列
+	char*	pDivideStr = NULL;				// str配列へのアクセス用char型ポインタ
+
+
 
 	// 読み込み失敗時(エラーチェック)
 	if (csvFile == NULL) {
@@ -572,14 +585,13 @@ int LoadCsvFile(const char* pCsvFileName, char* &pFirst, int MaxCharCell, char* 
 	}
 
 	// 成功したらロード
-	// 区切り記号に指定が無かった場合、"#"にする
+	// 区切り記号に指定が無かった場合、"DefaultDivMark"にする
 	if (DivMark == NULL)
 	{
 		DivMark = DefaultDivMark;
 	}
 
 	// 動的配列の生成
-	char*	pTmpArray = NULL;
 	pTmpArray = (char*)malloc(MAX_SIZE(MaxCharCell) + NULL_SIZE);		// char型配列を使用する最大メモリ数分だけ確保<free記載済み>
 	if (pTmpArray == NULL) {	// 確保できなかったら
 		fclose(csvFile);		// ファイルのクローズ
@@ -588,13 +600,6 @@ int LoadCsvFile(const char* pCsvFileName, char* &pFirst, int MaxCharCell, char* 
 
 	// 初期化
 	memset(pTmpArray, '\0', MAX_SIZE(MaxCharCell) + NULL_SIZE);
-
-	// ファイルへのアクセスに使用するchar型変数
-	char	OneLineStr[1024] = { NULL };	// 読み取るファイルの、一行分の文字列を格納するためのchar型配列
-	char*	pDivideStr = NULL;				// str配列へのアクセス用char型ポインタ
-
-	// 読み込んだデータの数をカウントする変数
-	//int		storeCharCnt = 0;
 
 	// 配列に数値を格納する作業
 	while (fgets(&OneLineStr[0], (MaxCharCell * MAX_COLUMN), csvFile) != NULL)	// 読み取るファイルの、一行分の文字列を格納
@@ -661,8 +666,88 @@ int LoadCsvFile(const char* pCsvFileName, char* &pFirst, int MaxCharCell, char* 
 	}
 
 	return (int)BufSize;	// 総文字数を返す
-	//return storeCharCnt;
 }
+
+/*******************************************************************************
+関数名	:	int LoadCsvFile(const char* pCsvFileName, char** ppRet, bool Flag = true, int MaxLineChar = 1028, int RowNum = 64, char* Symbol = "#");
+引数		:	読み込むファイル名, 作成データの返却先, コメント削除処理フラグ, 一行の最大文字数, ファイルの行数, コメント記号文字列
+返り値	:	トークンの数。　　エラー時は「-1」, 読み込み失敗エラー「-2」
+説明		:	カンマ区切りのcsvファイルを、文字列のまま読み込む
+			"new演算子"でメモリを確保しているため、使った後は必ず"delete"すること
+*******************************************************************************/
+														// 一行分の最大文字数, コメント部分削除の処理フラグ
+int LoadCsvFile(const char* pCsvFileName, char** ppRet, bool Flag, int MaxLineChar, int RowNum, char* Symbol)
+{
+	// この関数内で使用する変数の宣言
+	FILE* csvFile = NULL;		// ファイルポインタ
+//	std::string OneLineStr(MaxLineChar, 'a');	// 一行分の文字列を読み込むstring型オブジェクト(要素数は適当)
+//	↑"std"っていう 名前空間 を指定
+	char* pLoadedStr = NULL;	// 文字列の読み込み先
+	char* OneLineStr = NULL;	// 一行分の文字列を読み込む文字列
+	char* pToken = NULL;		// 抽出した字句
+	char* pStrtok = NULL;		// strtok_s用のポインタ
+	int nTokenCnt = 0;			// 抽出した字句（コメント部分は含まない）のカウント
+
+	// ファイルのオープン
+	csvFile = fopen(pCsvFileName, "r");
+	if ( csvFile == NULL ) {	// 読み込み失敗時(エラーチェック)
+	//	fclose(csvFile);
+	//	printf("オープンエラー！");
+		return -2;		// 読み込み失敗エラーを返して終了
+	}
+
+	// メモリ確保
+	OneLineStr = new char[ MaxLineChar ];			// 一行の最大文字数分のメモリを確保
+	pLoadedStr = new char[ MaxLineChar * RowNum];	// トータルの最大文字数分のメモリを確保
+	pLoadedStr[0] = '\0';
+
+	// オープンしたファイルの読み込み作業
+	while ( fgets(&OneLineStr[0], MaxLineChar, csvFile) )	// 読み取るファイルの、一行分の文字列を格納
+	{	// 一行単位の読み取り作業を、ファイル終了まで繰り返す
+		pToken = OneLineStr;	// 文字列の先頭アドレスを格納
+		while ( (pToken = strtok_s(pToken, ",", &pStrtok)) )		// カンマで区切られた文字を抽出
+		{
+			// コメント部分の削除ラグが立っていたら、コメント削除処理も行う
+			if (Flag)
+			{
+				// 先頭にコメント記号があるか探す
+				if ( strncmp(pToken, Symbol, strlen(Symbol)) == NULL )	// 文字列の先頭を比較
+				{	// あった時
+					pToken = NULL;	// 次のトークンを抽出するために NULL を格納
+					continue;		// 今回抽出したトークンは格納せずに、次のトークンへ
+				}
+
+			}
+
+			// 抽出したトークンを格納
+			strcat(pLoadedStr, pToken);	// 文字列を格納
+			strcat(pLoadedStr, ",");	// 末尾にカンマを付加する
+			nTokenCnt++;	// トークン数のカウント
+			pToken = NULL;	// 次のトークンを抽出するために NULL を格納
+		}
+
+	}
+
+
+	// 文字列の返却
+	*ppRet = new char [ strlen(pLoadedStr) + 1 ];	// メモリの確保（「+1」はヌル文字格納用）
+	strcpy(*ppRet, pLoadedStr);	// 文字列を必要な分だけ格納
+
+	// メモリ解放
+	delete[] pLoadedStr;
+	delete[] OneLineStr;
+
+	// ファイルのクローズかつエラーチェック
+	if (fclose(csvFile) == EOF) {
+		// エラー時の処理
+	//	printf("クローズドエラー！");
+	//	exit(1);			// クローズ失敗時、OSに「1」を返して正常終了させる
+		return -1;
+	}
+
+	return nTokenCnt;	// トークンの数を返す
+}
+
 
 
 /*******************************************************************************

@@ -220,8 +220,8 @@ int CMapchip::SetMapChipData(const char* pCsvString)
 {
 	int nTokenCnt = 0;	// 数値代入したトークンのカウント ＝ マップチップの列数
 	int nLinesCnt = 0;	// 行数のカウント
-	char* pCopyStr;		// 引数の文字列をコピーしたメモリを示すポインタ
-	char* pToken;		// strtok で切り抜いたトークンを示すポインタ
+	char* pCopyStr = NULL;		// 引数の文字列をコピーしたメモリを示すポインタ
+	char* pToken = NULL;		// strtok で切り抜いたトークンを示すポインタ
 
 	// 引数の文字列をコピー
 	pCopyStr = new char [ strlen(pCsvString) + NULL_SIZE ];	// メモリ確保
