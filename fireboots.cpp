@@ -13,12 +13,12 @@
 //==================================================================
 CFireBoots::CFireBoots()	// コンストラクタ
 {
-	Init();	// 初期化する
+	Init();		// 初期化する
 }
 
 CFireBoots::~CFireBoots()	// デストラクタ
 {
-
+	Uninit();	// 終了処理をする
 }
 
 
@@ -34,6 +34,11 @@ void CFireBoots::Init(char* pTextureName, int TexDivX, int TexDivY, int AnimWait
 		m_Bullet[i].Init(pTextureName, TexDivX, TexDivY, AnimWait);
 	}
 
+	// メンバ変数の初期化
+	m_pPosition = NULL;
+	m_nUsedBulletNum = 0;
+	m_fUpForce = 0.0f;
+
 }
 
 
@@ -43,6 +48,11 @@ void CFireBoots::Init(char* pTextureName, int TexDivX, int TexDivY, int AnimWait
 //==================================================================
 void CFireBoots::Uninit()
 {
+	// メンバ変数の解放
+	m_fUpForce = 0.0f;
+	m_nUsedBulletNum = 0;
+	m_pPosition = NULL;
+
 	// バレットの解放
 	for (int i = 0; i < BULLET_NUM; i++)
 	{
@@ -59,4 +69,59 @@ void CFireBoots::Uninit()
 void CFireBoots::Update()
 {
 	
+}
+
+
+
+//==================================================================
+// 描画処理
+//==================================================================
+void CFireBoots::Draw(D3DXVECTOR2 ScrollPos)
+{
+	// バレットの描画
+	for (int i = 0; i < BULLET_NUM; i++)
+	{
+		m_Bullet[i].Draw(ScrollPos);	// 描画
+	}
+}
+
+
+
+//==================================================================
+// セッター関数
+//==================================================================
+/*******************************************************************************
+* 関数名	:	bool CFireBoots::SetFireBoots(D3DXVECTOR2* UserPos)
+* 引数	:	ファイヤーブーツを装着するキャラクタの座標を格納する変数へのポインタ
+* 返り値	:	成功(true) or 失敗(false)
+* 説明	:	ファイヤーブーツを装着する
+********************************************************************************/
+bool CFireBoots::SetFireBoots(D3DXVECTOR2* UserPos)
+{
+	// すでに装着されている状態であれば失敗を返す
+	if (m_pPosition != NULL) return (false);
+
+	// ポインタをセット
+	m_pPosition = UserPos;
+
+	// 成功を返す
+	return (true);
+}
+
+/*******************************************************************************
+* 関数名	:	void CFireBoots::UnsetFireBoots()
+* 引数	:	void
+* 返り値	:	成功(true) or 失敗(false)
+* 説明	:	ファイヤーブーツの解除
+********************************************************************************/
+bool CFireBoots::UnsetFireBoots()
+{
+	// すでに解除されている状態であれば失敗を返す
+	if (m_pPosition == NULL) return (false);
+
+	// ポインタにNULLをセット
+	m_pPosition = NULL;
+
+	// 成功を返す
+	return (true);
 }

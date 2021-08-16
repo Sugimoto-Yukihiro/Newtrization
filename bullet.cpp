@@ -138,6 +138,9 @@ bool CBullet::SetBullet(D3DXVECTOR2 Pos, D3DXVECTOR2 Size, D3DXVECTOR2 Move, flo
 	m_Move = Move;		// 移動量をセット
 	m_fAttack = Attack;	// 攻撃力をセット
 	m_bUse = true;		// true(使用中)をセット
+
+	// 成功を返す
+	return (true);
 }
 
 //=============================================================================
@@ -148,5 +151,9 @@ bool CBullet::UnsetBullet()
 	// 既に未使用なら失敗を返す
 	if (!m_bUse) return (false);
 
-	m_bUse = false;	// 未使用にする
+	// 未使用にする
+	m_bUse = false;
+
+	// 成功を返す
+	return (true);
 }

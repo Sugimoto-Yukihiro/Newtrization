@@ -784,12 +784,12 @@ int SerchWordOffset(const char* String, const char SingleWord)
 
 
 /*******************************************************************************
-* 関数名		:	int DivideString(const char* String, int* Col, int* Row, char* DivMark)
+* 関数名		:	int GetDivideString(const char* String, int* Col, int* Row, char* DivMark)
 * 引数		:	座標番号, 最大列数を格納する番地, 行数を格納する番地, 区切り記号
 * 返り値		:	成功 → 1		失敗 → 0
 * 説明		:	読み込んだ文字列の縦横の分割数を、"\n"(改行コード)から求める
 ********************************************************************************/
-int DivideString(const char* String, int* retCol, int* retRow, char* DivMark)
+int GetDivideString(const char* String, int* retCol, int* retRow, char* DivMark)
 {
 	// 文字列が見つからない時(エラーチェック)
 	if (String == NULL) return 0;

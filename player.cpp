@@ -11,7 +11,7 @@
 #include "player.h"			// プレイヤー処理
 #include "texture.h"		// テクスチャ描画処理
 #include "game.h"			// ゲーム画面
-#include "collision.h"		// 衝突判定
+//#include "collision.h"		// 衝突判定
 #include "debugproc.h"		// デバッグ表示
 
 //*****************************************************************************
