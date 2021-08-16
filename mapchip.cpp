@@ -123,24 +123,26 @@ void CMapchip::Draw()
 	nDrawChipNumY = SCREEN_HEIGHT / (int)GetChipSize().y + numy;	// 縦方向(y軸)のチップ数
 
 	// マップ描画
-	for (int y = numy; y < nDrawChipNumY + 3; y++)	// 2は中途半端に出てるやつ
+	for (int y = numy; y < nDrawChipNumY + 2; y++)
 	{
-		for (int x = numx; x < nDrawChipNumX + 3; x++)
+		for (int x = numx; x < nDrawChipNumX + 2; x++)
 		{
 			// マップの番号を取得
 		//	int nChipId = m_MapChipData[(y + numy) * GetMapchipNumX() + (x + numx)];	// 
 			int nChipId = m_MapChipData[y * GetMapchipNumX() + x];	// 
 
 			// チップ番号が0番のときは描画しない
-			if(nChipId == 0) continue;
+			if(nChipId == 0) continue;	// 次のループへ
 
 			// チップの描画位置を算出
-			D3DXVECTOR2 ChipPos;
-			ChipPos.y = (float)(offset_y + (GetChipSize().y * y));	// 背景の表示座標Y
-			ChipPos.x = (float)(offset_x + (GetChipSize().x * x));	// 背景の表示座標X
-
-			// 描画
-			DrawChip(ChipPos, nChipId);	// 描画座標が中心指定のとき
+		//	D3DXVECTOR2 ChipPos;
+		//	ChipPos.y = (float)(offset_y + (GetChipSize().y * y));	// 背景の表示座標Y
+		//	ChipPos.x = (float)(offset_x + (GetChipSize().x * x));	// 背景の表示座標X
+		//
+		//	// 描画
+		//	DrawChipTopLeft(ChipPos, nChipId);	// 左上原点で描画
+			DrawChipTopLeft( D3DXVECTOR2( (float)(offset_y + (GetChipSize().y * y)), (float)(offset_x + (GetChipSize().x * x))),
+							nChipId);	// 最適化
 		}
 	}
 

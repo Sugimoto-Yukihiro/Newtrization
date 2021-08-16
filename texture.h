@@ -89,7 +89,7 @@ public:
 private:
 	//------------------- メンバ変数
 //	ID3D11Buffer*				VertexBuffer = NULL;// 頂点情報
-//	ID3D11ShaderResourceView*	TextureData;
+	ID3D11ShaderResourceView*	TextureData;		// テクスチャ情報
 	D3DXVECTOR2					m_vTexPos;			// テクスチャの描画位置
 	D3DXVECTOR2					m_vTexSize;			// テクスチャの 幅＆高さ
 	D3DXCOLOR					m_TexColor;			// 頂点色
