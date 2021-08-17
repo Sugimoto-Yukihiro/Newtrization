@@ -70,11 +70,13 @@ BOOL IsButtonTriggered(int padNo,DWORD button);
 //*****************************************************************************
 //-------- キー操作
 //#define KEY_MOVE_PLAYER_UP			GetKeyboardPress(DIK_W)
-//#define KEY_MOVE_PLAYER_DOWN		GetKeyboardPress(DIK_S)
-#define KEY_MOVE_PLAYER_LEFT		GetKeyboardPress(DIK_A)			// プレイヤーを左方向に移動するキー
-#define KEY_MOVE_PLAYER_RIGHT		GetKeyboardPress(DIK_D)			// プレイヤーを右方向に移動するキー
-#define KEY_MOVE_PLAYER_JUMP		GetKeyboardTrigger(DIK_SPACE)	// プレイヤーをジャンプさせるキー
-#define KEY_MOVE_PLAYER_DUSH		GetKeyboardPress(DIK_S)			// プレイヤーをダッシュさせるキー
+//#define KEY_MOVE_PLAYER_DOWN			GetKeyboardPress(DIK_S)
+#define KEY_MOVE_PLAYER_LEFT			GetKeyboardPress(DIK_A)			// プレイヤーを左方向に移動するキー
+#define KEY_MOVE_PLAYER_RIGHT			GetKeyboardPress(DIK_D)			// プレイヤーを右方向に移動するキー
+#define KEY_MOVE_PLAYER_JUMP			GetKeyboardTrigger(DIK_SPACE)	// プレイヤーをジャンプさせるキー
+#define KEY_MOVE_PLAYER_DUSH			GetKeyboardPress(DIK_S)			// プレイヤーをダッシュさせるキー
+#define KEY_ACTIVATE_PLAYER_FIREBOOTS	KEY_MOVE_PLAYER_JUMP			// ファイヤーブーツを起動させるキー
+
 
 /* これは最終的なRelease時には、削除すること */
 #define KEY_MODE_CHANGE			GetKeyboardTrigger(DIK_RETURN)
@@ -90,10 +92,12 @@ BOOL IsButtonTriggered(int padNo,DWORD button);
 
 
 //-------- ゲームパッド操作
-#define PAD_MOVE_PLAYER_LEFT		IsButtonPressed(0,BUTTON_LEFT)	// プレイヤーを左方向に移動するキー
-#define PAD_MOVE_PLAYER_RIGHT		IsButtonPressed(0,BUTTON_RIGHT)	// プレイヤーを右方向に移動するキー
-#define PAD_MOVE_PLAYER_JUMP		IsButtonTriggered(0,BUTTON_X)	// プレイヤーをジャンプさせるキー
-#define PAD_MOVE_PLAYER_DUSH		IsButtonPressed(0,BUTTON_B)		// プレイヤーをダッシュさせるキー
+#define PAD_MOVE_PLAYER_LEFT			IsButtonPressed(0,BUTTON_LEFT)	// プレイヤーを左方向に移動するキー
+#define PAD_MOVE_PLAYER_RIGHT			IsButtonPressed(0,BUTTON_RIGHT)	// プレイヤーを右方向に移動するキー
+#define PAD_MOVE_PLAYER_JUMP			IsButtonTriggered(0,BUTTON_X)	// プレイヤーをジャンプさせるキー
+#define PAD_MOVE_PLAYER_DUSH			IsButtonPressed(0,BUTTON_B)		// プレイヤーをダッシュさせるキー
+#define PAD_ACTIVATE_PLAYER_FIREBOOTS	KEY_MOVE_PLAYER_JUMP			// ファイヤーブーツを起動させるキー
+
 
 /* これは最終的なReleaseには、削除すること */
 #define PAD_MODE_CHANGE			IsButtonTriggered(0, BUTTON_START) || IsButtonTriggered(0, BUTTON_B)

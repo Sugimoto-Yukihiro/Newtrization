@@ -9,6 +9,7 @@
 #include "bullet.h"
 
 #include "game.h"	// ゲーム
+#include "debugproc.h"
 
 
 //*****************************************************************************
@@ -50,9 +51,9 @@ void CBullet::Init(char* pTextureName, int TexDivX, int TexDivY, int AnimWait)
 	if ( pTextureName ) CreateTexture(pTextureName, &m_Texture);
 
 	// メンバ変数の初期化
+	m_Texture = NULL;
 	m_TexBullet.Init();	// テクスチャの初期化
 	m_Position = ZERO_VECTOR2;
-	m_Size = ZERO_VECTOR2;
 	m_Move = ZERO_VECTOR2;
 	m_fAttack = 0.0f;
 	m_bUse = false;		// false(未使用)で初期化
@@ -74,7 +75,6 @@ void CBullet::Uninit()
 	m_bUse = false;		// false(未使用)にセット
 	m_fAttack = 0.0f;
 	m_Move = ZERO_VECTOR2;
-	m_Size = ZERO_VECTOR2;
 	m_Position = ZERO_VECTOR2;
 	m_TexBullet.Uninit();	// テクスチャの終了処理
 
@@ -89,7 +89,7 @@ void CBullet::Uninit()
 // 更新処理
 // 引数	：	ステージの大きさ
 //=============================================================================
-void CBullet::Update(D3DXVECTOR2 StageSize)
+void CBullet::Update()
 {
 	// このバレットが使われていないなら終了
 	if (!m_bUse) return;
@@ -100,11 +100,8 @@ void CBullet::Update(D3DXVECTOR2 StageSize)
 	// 移動を反映
 	m_Position += m_Move;
 
-	// ステージ外にいったら、このバレットを解放
-	if ( (m_Position.x + (m_Size.x * 0.5f) ) < 0.0f)		UnsetBullet();	// 右端の点が、ステージ左端を超えたら解放
-	if ( (m_Position.x - (m_Size.x * 0.5f) ) > StageSize.x)	UnsetBullet();	// 左端の点が、ステージ右端を超えたら解放
-	if ( (m_Position.y + (m_Size.y * 0.5f) ) < 0.0f)		UnsetBullet();	// 下端の点が、ステージ上端を超えたら解放
-	if ( (m_Position.y - (m_Size.y * 0.5f) ) > StageSize.y)	UnsetBullet();	// 上端の点が、ステージ下端を超えたら解放
+	PrintDebugProc("【バレット座標】X: %f, Y: %f\n", m_Position.x, m_Position.y);
+
 }
 
 
@@ -134,7 +131,7 @@ bool CBullet::SetBullet(D3DXVECTOR2 Pos, D3DXVECTOR2 Size, D3DXVECTOR2 Move, flo
 	if (m_bUse) return (false);
 
 	m_Position = Pos;	// 出現させる位置をセット
-	m_Size = Size;		// 大きさをセット
+	m_TexBullet.SetTexSize(Size);	// 描画するサイズをセット
 	m_Move = Move;		// 移動量をセット
 	m_fAttack = Attack;	// 攻撃力をセット
 	m_bUse = true;		// true(使用中)をセット

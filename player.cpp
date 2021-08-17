@@ -78,6 +78,9 @@ CPlayer::~CPlayer()	// デストラクタ
 void CPlayer::Init()
 {
 	//------------------- プレイヤークラスのメンバ変数をデフォルトの値でセット
+	m_FireBoots.Init(FIREBOOTS_BULLET_TEXNAME);	// ファイヤーブーツの初期化
+	m_FireBoots.SetFireBoots(&m_Position);		// ファイヤーブーツを装着
+	m_Position = ZERO_VECTOR2;
 	m_fJumpForce = 0.0f;	// ジャンプ力を初期化
 	m_fHitPointMAX = m_fCurrentHP = HP_DEFAULT;	// プレイヤーのHPをセット
 	m_nTexNo = 0;			// 使うテクスチャ番号を指定
@@ -100,6 +103,7 @@ void CPlayer::Init()
 void CPlayer::Uninit()
 {
 	//------------------- プレイヤークラスのメンバ変数をゼロクリア
+	m_FireBoots.Uninit();	// ファイヤーブーツの終了処理
 	m_fJumpForce = 0.0f;	// ジャンプ力
 	m_fHitPointMAX = 0.0f;	// プレイヤーのHPのMAX値
 	m_fCurrentHP = 0.0f;	// プレイヤーの現在のHP
@@ -137,14 +141,15 @@ void CPlayer::Update()
 			UpdateAnimIndex(0, 5);	// 0-5番目の間をアニメーションする
 		}
 
-
-		// プレイヤーの移動処理（入力処理）
-		InputControllPlayer(GetPosition());
-		CollisionMapchip(Mapchip, OldPosPlayer);	// マップチップとの当たり判定をとって、入力処理移動後の座標をセット
+		// プレイヤーの入力処理
+		InputControllPlayer(GetPosition(), OldPosPlayer, Mapchip);
 
 		// 重力処理
 		OldPosPlayer = GetPosition();	//移動前座標のセット
 		CGravity::Update();				// プレイヤー座標の更新も自動的に行ってる
+
+		// ファイヤーブーツ処理
+		m_FireBoots.Update(GetGame()->GetMapchip()->GetMapChipSize());
 
 		// マップチップと当たり判定を取って、最終的な座標をセット
 		CollisionMapchip(Mapchip, OldPosPlayer);
@@ -153,13 +158,12 @@ void CPlayer::Update()
 		{
 			D3DXVECTOR2 pos;	// 一時的な変数
 			pos.x = GetPosition().x - SCROLL_SET_X;	// スクロール座標<x>に値を代入
-			if (pos.x < 0.0f) pos.x = 0.0f;	// スクロール座標<x>が負なら「0」にリセット、正の数ならそのまま
+			if (pos.x < 0.0f) pos.x = 0.0f;			// スクロール座標<x>が負なら「0」にリセット、正の数ならそのまま
 			if (pos.x + SCREEN_WIDTH > Mapchip.GetMapChipSize().x) pos.x = Mapchip.GetMapChipSize().x - SCREEN_WIDTH;	// 画面右上の点がワールドの端に来たら"STAGE_W"の値にリセット
 	
 			pos.y = GetPosition().y - SCROLL_SET_Y;	// スクロール座標<y>に値を代入
-			if (pos.y < 0.0f) pos.y = 0.0f;	// スクロール座標<y>負なら「0」にリセット、正の数ならそのまま
+			if (pos.y < 0.0f) pos.y = 0.0f;			// スクロール座標<y>負なら「0」にリセット、正の数ならそのまま
 			if (pos.y + SCREEN_HEIGHT > Mapchip.GetMapChipSize().y) pos.y = Mapchip.GetMapChipSize().y - SCREEN_HEIGHT;	// 画面左下の点がワールドの端に来たら"STAGE_H"の値にリセット
-
 
 			// 座標をセット
 			GetGame()->SetScrollPosition(pos);
@@ -197,10 +201,13 @@ void CPlayer::Draw()
 	if (m_bUse == true)
 	{
 		// プレイヤーの表示座標を算出
-		SetTexPos( GetPosition() - GetGame()->GetScrollPosition() );		// 表示座標系をセット
+		SetTexPos( GetPosition() - GetGame()->GetScrollPosition() );	// 表示座標系をセット
 
-		// 描画
+		// プレイヤーの描画
 		DrawTexture(g_Texture[m_nTexNo]);
+
+		// ファイヤーブーツの描画
+		m_FireBoots.Draw(GetGame()->GetScrollPosition());
 	}
 
 }
@@ -220,8 +227,8 @@ void CPlayer::SetPlayer(D3DXVECTOR2 Pos)
 // プレイヤーの座標をセット
 void CPlayer::SetPosition(D3DXVECTOR2 Pos)
 {
-//	SetTexPos(Pos);	// プレイヤーテクスチャの座標 ＝ プレイヤーの座標
 	SetGravityObjectPos(Pos);	// ワールド座標系
+	m_Position = Pos;			// メンバ変数の方も変更
 }
 
 // プレイヤーのサイズを取得
@@ -289,7 +296,7 @@ D3DXVECTOR2 CPlayer::GetSize()
 // メンバ関数(private)
 //=============================================================================
 // プレイヤーを キーまたはゲームパッド入力 で動かす
-void CPlayer::InputControllPlayer(D3DXVECTOR2 NowPosition)
+void CPlayer::InputControllPlayer(D3DXVECTOR2 NowPosition, D3DXVECTOR2 OldPosition, CMapchip MapchipInf)
 {
 	// 移動値の倍率
 	float fMagnification = 1.0f;
@@ -351,6 +358,29 @@ void CPlayer::InputControllPlayer(D3DXVECTOR2 NowPosition)
 		}
 	}
 
+	// ファイヤーブーツの起動
+	if (!m_bOnGround)	// 接地していない（空中にいる）時に実行する
+	{
+		if (KEY_ACTIVATE_PLAYER_FIREBOOTS || PAD_ACTIVATE_PLAYER_FIREBOOTS)	// ファイヤーブーツ起動のキーまたはボタンが押されたとき
+		{
+			D3DXVECTOR2 bulletMove;	// バレットの移動量
+
+			// 現在の重力方向によってバレットの移動量をセット
+			if (GetGravityObjectDirection() == GRAVITY_DEFAULT) bulletMove = D3DXVECTOR2(0.0f, 1.0f) * FIREBOOTS_BULLET_SPEED;
+			else if (GetGravityObjectDirection() == GRAVITY_LEFT) bulletMove = D3DXVECTOR2(-1.0f, 0.0f) * FIREBOOTS_BULLET_SPEED;
+
+			// ファイヤーブーツ起動
+			if ( m_FireBoots.ActivateFireBoots(bulletMove, FIREBOOTS_BULLET_SIZE) )
+			{	// ファイヤーブーツが起動できた時　→　キャラクターを少しだけ浮かせる
+				// 重力処理のリセット
+				SetGravityFlag(false);
+				SetGravityFlag(true);
+				m_fJumpForce *= 0.75f;	// ジャンプ力を半分にする
+
+			}
+		}
+	}
+
 	// ジャンプ処理実行
 	if (m_bIsJump)
 	{
@@ -368,6 +398,10 @@ void CPlayer::InputControllPlayer(D3DXVECTOR2 NowPosition)
 
 	// プレイヤーのキー移動後の座標をセット
 	SetPosition(NowPosition);
+
+	// マップチップとの当たり判定をとって、入力処理移動後の座標をセット
+	CollisionMapchip(MapchipInf, OldPosition);
+
 }
 
 // マップチップとの当たり判定を取って押し出し処理を行う
@@ -386,19 +420,15 @@ void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 	{
 		// （重力方向が左のとき）左側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
 		if (GetGame()->GetGravityDirection() == GRAVITY_LEFT) 
-		{
-			m_bOnGround = false;	// 空中にいる
-			SetGravityFlag(true);	// 重力処理フラグ "true" にセット
+		{	// 空中時の処理
+			NotOnGround();
 		}
 	}
 	else
 	{	// （重力方向が左のとき）左側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
 		if (GetGame()->GetGravityDirection() == GRAVITY_LEFT)
 		{	// 着地時の処理
-			m_bOnGround = true;		// 接地してる
-			SetGravityFlag(false);	// 重力方向が下向きなら実行
-			m_bIsJump = false;		// ジャンプフラグもfalseにする
-			m_fJumpForce = 0.0f;	// ジャンプ力を初期化
+			OnGround();
 		}
 
 	}
@@ -420,9 +450,8 @@ void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 	if (HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos, false, true ) == -1)	// 当たっていない時
 	{	// （重力方向が下のとき）下側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
 		if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT)
-		{
-			m_bOnGround = false;	// 空中にいる
-			SetGravityFlag(true);	// 重力処理フラグ "true" にセット
+		{	// 空中時の処理
+			NotOnGround();
 		}
 	}
 	else
@@ -430,10 +459,7 @@ void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 		// （重力方向が下のとき）下側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
 		if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT)
 		{	// 着地時の処理
-			m_bOnGround = true;		// 接地してる
-			SetGravityFlag(false);	// 重力方向が下向きなら実行
-			m_bIsJump = false;		// ジャンプフラグもfalseにする
-			m_fJumpForce = 0.0f;	// ジャンプ力を初期化
+			OnGround();
 		}
 
 	}
@@ -443,8 +469,21 @@ void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 	SetPosition(CurrentPosPlayer);
 }
 
+// 着地した時の処理
+void CPlayer::OnGround()
+{
+	m_bOnGround = true;		// 接地してる
+	SetGravityFlag(false);	// 重力方向が下向きなら実行
+	m_bIsJump = false;		// ジャンプフラグもfalseにする
+	m_fJumpForce = 0.0f;	// ジャンプ力を初期化
+}
 
-
+// 空中にいる時の処理
+void CPlayer::NotOnGround()
+{
+	m_bOnGround = false;	// 空中にいる
+	SetGravityFlag(true);	// 重力処理フラグ "true" にセット
+}
 
 void CreatePlayerTexture(void)
 {

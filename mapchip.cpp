@@ -135,13 +135,13 @@ void CMapchip::Draw()
 			if(nChipId == 0) continue;	// 次のループへ
 
 			// チップの描画位置を算出
-		//	D3DXVECTOR2 ChipPos;
-		//	ChipPos.y = (float)(offset_y + (GetChipSize().y * y));	// 背景の表示座標Y
-		//	ChipPos.x = (float)(offset_x + (GetChipSize().x * x));	// 背景の表示座標X
-		//
-		//	// 描画
+			D3DXVECTOR2 ChipPos;
+			ChipPos.y = (float)(offset_y + (GetChipSize().y * y));	// 背景の表示座標Y
+			ChipPos.x = (float)(offset_x + (GetChipSize().x * x));	// 背景の表示座標X
+		
+			// 描画
 		//	DrawChipTopLeft(ChipPos, nChipId);	// 左上原点で描画
-			DrawChipTopLeft( D3DXVECTOR2( (float)(offset_y + (GetChipSize().y * y)), (float)(offset_x + (GetChipSize().x * x))),
+			DrawChipTopLeft( D3DXVECTOR2(  (float)( offset_x + (GetChipSize().x * x) ), (float)( offset_y + (GetChipSize().y * y) )  ),
 							nChipId);	// 最適化
 		}
 	}

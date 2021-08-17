@@ -9,6 +9,7 @@
 #include "texture.h"	// テクスチャ描画処理
 #include "gravity.h"	// 重力処理
 #include "mapchip.h"	// マップチップ
+#include "fireboots.h"	// ファイヤーブーツ
 
 //*****************************************************************************
 // マクロ定義
@@ -64,10 +65,14 @@ public:
 private:
 	//------------------- メンバ関数(private)
 	/* ↓ジャンプ処理はこの関数内で行ってるよ（ジャンプ処理専用の関数作る予定） */
-	void InputControllPlayer(D3DXVECTOR2 NowPosition);					// プレイヤーを キーまたはゲームパッド入力 で動かす
+	void InputControllPlayer(D3DXVECTOR2 NowPosition, D3DXVECTOR2 OldPosition, CMapchip MapchipInf);	// プレイヤーを キーまたはゲームパッド入力 で動かす
 	void CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos);	// マップチップとの当たり判定を取って押し出し処理を行う
+	void OnGround();	// 着地した時の処理
+	void NotOnGround();	// 空中にいる時の処理
 
 	//------------------- メンバ変数
+	CFireBoots	m_FireBoots;				// ファイヤーブーツ
+	D3DXVECTOR2	m_Position;					// プレイヤーの座標
 	float		m_fJumpForce;				// プレイヤーのジャンプ力
 	float		m_fHitPointMAX;				// プレイヤーのHPのMAX値
 	float		m_fCurrentHP;				// プレイヤーの現在のHP

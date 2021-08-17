@@ -25,19 +25,20 @@ CFireBoots::~CFireBoots()	// デストラクタ
 
 //==================================================================
 // 初期化処理
+// 引数：バレットテクスチャのファイル名, バレットテクスチャの横分割数, バレットテクスチャの縦分割数, アニメーションのWait値
 //==================================================================
-void CFireBoots::Init(char* pTextureName, int TexDivX, int TexDivY, int AnimWait)	// 初期化処理
+void CFireBoots::Init(char* pBulletTextureName, int TexDivX, int TexDivY, int AnimWait)	// 初期化処理
 {
 	// バレットの初期化
-	for (int i = 0; i < BULLET_NUM; i++)
+	for (int i = 0; i < BOOTS_BULLET_NUM; i++)
 	{
-		m_Bullet[i].Init(pTextureName, TexDivX, TexDivY, AnimWait);
+		m_Bullet[i].Init(pBulletTextureName, TexDivX, TexDivY, AnimWait);
 	}
 
 	// メンバ変数の初期化
 	m_pPosition = NULL;
 	m_nUsedBulletNum = 0;
-	m_fUpForce = 0.0f;
+//	m_fUpForce = 0.0f;
 
 }
 
@@ -49,12 +50,12 @@ void CFireBoots::Init(char* pTextureName, int TexDivX, int TexDivY, int AnimWait
 void CFireBoots::Uninit()
 {
 	// メンバ変数の解放
-	m_fUpForce = 0.0f;
+//	m_fUpForce = 0.0f;
 	m_nUsedBulletNum = 0;
 	m_pPosition = NULL;
 
 	// バレットの解放
-	for (int i = 0; i < BULLET_NUM; i++)
+	for (int i = 0; i < BOOTS_BULLET_NUM; i++)
 	{
 		m_Bullet[i].Uninit();
 	}
@@ -66,9 +67,25 @@ void CFireBoots::Uninit()
 //==================================================================
 // 更新処理
 //==================================================================
-void CFireBoots::Update()
+void CFireBoots::Update(D3DXVECTOR2 StageSize)
 {
-	
+	// バレットの更新
+	for (int i = 0; i < BOOTS_BULLET_NUM; i++)
+	{
+		m_Bullet[i].Update();	// 更新
+
+		// ステージ外にいったら、このバレットを解放
+		if ((m_Bullet[i].GetPosition().x + (m_Bullet[i].GetSize().x * 0.5f)) < 0.0f ||			// 右端の点が、ステージ左端を超えたら解放
+			(m_Bullet[i].GetPosition().x - (m_Bullet[i].GetSize().x * 0.5f)) > StageSize.x ||	// 左端の点が、ステージ右端を超えたら解放
+			(m_Bullet[i].GetPosition().y + (m_Bullet[i].GetSize().y * 0.5f)) < 0.0f ||			// 下端の点が、ステージ上端を超えたら解放
+			(m_Bullet[i].GetPosition().y - (m_Bullet[i].GetSize().y * 0.5f)) > StageSize.y	)	// 上端の点が、ステージ下端を超えたら解放
+		{
+			m_Bullet[i].UnsetBullet();	// バレット解放
+			m_nUsedBulletNum--;			// 使用バレット数の減算
+		}
+
+	}
+
 }
 
 
@@ -79,11 +96,57 @@ void CFireBoots::Update()
 void CFireBoots::Draw(D3DXVECTOR2 ScrollPos)
 {
 	// バレットの描画
-	for (int i = 0; i < BULLET_NUM; i++)
+	for (int i = 0; i < BOOTS_BULLET_NUM; i++)
 	{
 		m_Bullet[i].Draw(ScrollPos);	// 描画
 	}
+
 }
+
+
+
+//==================================================================
+// メンバ関数
+//==================================================================
+/*******************************************************************************
+* 関数名	:	
+* 引数	:	
+* 返り値	:	
+* 説明	:	ファイヤーブーツの起動（バレットを下方向に出して、キャラクターを少し浮かせる）
+********************************************************************************/
+bool CFireBoots::ActivateFireBoots(D3DXVECTOR2 BulletMove, D3DXVECTOR2 BulletSize, float Attack, float HP)
+{
+	// 発射したバレットの数が、許可数を超えていたら失敗を返す
+	if (m_nUsedBulletNum >= BOOTS_BULLET_NUM) return (false);
+
+	// バレットの配置
+	for (int i = 0; i < BOOTS_BULLET_NUM; i++)
+	{
+		// このバレットが使用中なら次のバレットへ
+		if (m_Bullet[i].GetUseFlag()) continue;
+
+		// 未使用のバレットをセット
+		m_Bullet[i].SetBullet(*m_pPosition, BulletSize, BulletMove, Attack, HP);
+		m_nUsedBulletNum++;		// 発射したバレットの数を加算
+
+		// キャラクターを浮かせる
+		//{
+		//	D3DXVECTOR2 Dir;
+		//	D3DXVECTOR2 UpVec;	// キャラクタを移動させるベクトル
+
+		//	D3DXVec2Normalize(&Dir, &BulletMove);	// バレットを発射した方向の逆ベクトルを出す
+		//	UpVec = -Dir * m_fUpForce;				//（バレットを発射した方向の逆ベクトル）*（ファイヤーブーツの推進力）
+		//	*m_pPosition += UpVec;	// キャラクターの座標を加算
+		//}
+
+		// 成功を返す
+		return (true);
+	}
+
+	// バレットをセットできなかったってことだから、失敗を返す
+	return (false);
+}
+
 
 
 
@@ -125,3 +188,4 @@ bool CFireBoots::UnsetFireBoots()
 	// 成功を返す
 	return (true);
 }
+
