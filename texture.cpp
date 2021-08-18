@@ -22,194 +22,11 @@
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11Buffer		*g_VertexBuffer2D = NULL;	// 頂点情報
+static ID3D11Buffer		*g_VertexBuffer2D = NULL;	// 頂点情報（グローバル）
 
 
-//=============================================================================
-// コンストラクタ
-//=============================================================================
-CTexture::CTexture()	// コンストラクタ
-{
-	Init();		// 初期化処理を行う
-}
-
-//=============================================================================
-// 初期化処理（CTexture）
-//=============================================================================
-void CTexture::Init(D3DXVECTOR2 Pos, D3DXVECTOR2 Size, D3DXCOLOR Color, float Rotaiton,
-					int TexDivX, int TexDivY, int AnimWait, int IndexNo)
-{
-	m_vTexPos = Pos;
-	m_vTexSize = Size;
-	m_TexColor = Color;
-	m_fTexRotation = Rotaiton;
-	m_fTexU = m_fTexV = 0.0f;
-
-	//------------------- ベースクラスの初期化
-	CAnimation::Init(TexDivX, TexDivY, AnimWait, IndexNo);		// CAnimation
-}
-
-
-
-//=============================================================================
-// 終了処理（CTexture）
-//=============================================================================
-void CTexture::Uninit()	// 全てのメンバ変数を０でクリア
-{
-	m_vTexPos = ZERO_VECTOR2;
-	m_vTexSize = ZERO_VECTOR2;
-	m_TexColor = DEFAULT_COLOR;
-	m_fTexU = m_fTexV = 0.0f;
-	m_fTexRotation = 0.0f;
-
-	//------------------- ベースクラスの終了処理
-	CAnimation::Uninit();		// CAnimation
-}
-
-
-
-//=============================================================================
-// テクスチャ描画関数（CTexture）
-// 引数 :	テクスチャのファイル名, 頂点座標
-// 説明 :	テクスチャを、引数に指定された値に描画する処理
-//=============================================================================
-void CTexture::DrawTexture(ID3D11ShaderResourceView* pTextureData, ID3D11Buffer* pVertexBuffer)
-{
-	float tw = 0.0f, th = 0.0f, tU = 0.0f, tV = 0.0f;
-
-	// テクスチャ設定
-	GetDeviceContext()->PSSetShaderResources(0, 1, &pTextureData);
-
-	//------------------- アニメーションも考慮して、UV座標の値を決定する
-	// 1つのアニメーションパターンあたりの幅と高さを求める
-	tw = 1.0f / (float)GetTexDivideX();							// 幅
-	th = 1.0f / (float)GetTexDivideY();							// 高さ
-	if (GetCurrentAnim() != 0) tU = (float)(GetCurrentAnim() % GetTexDivideX()) * tw;	// テクスチャの左上X座標
-	if (GetCurrentAnim() != 0) tV = (float)(GetCurrentAnim() / GetTexDivideX()) * th;	// テクスチャの左上Y座標
-
-	// １枚のポリゴンの頂点とテクスチャ座標を設定
-	SetSpriteColorRotation(pVertexBuffer, m_vTexPos.x, m_vTexPos.y, m_vTexSize.x, m_vTexSize.y, tU, tV, tw, th,
-		m_TexColor, m_fTexRotation);
-
-	// ポリゴン描画
-	GetDeviceContext()->Draw(4, 0);
-}
-
-void CTexture::DrawTexture(ID3D11ShaderResourceView* pTextureData)	// テクスチャ座標のみ
-{
-	float tw = 0.0f, th = 0.0f, tU = 0.0f, tV = 0.0f;
-
-	// テクスチャ設定
-	GetDeviceContext()->PSSetShaderResources(0, 1, &pTextureData);
-
-	//------------------- アニメーションも考慮して、UV座標の値を決定する
-	// 1つのアニメーションパターンあたりの幅と高さを求める
-	tw = 1.0f / (float)GetTexDivideX();							// 幅
-	th = 1.0f / (float)GetTexDivideY();							// 高さ
-	if (GetCurrentAnim() != 0) tU = (float)(GetCurrentAnim() % GetTexDivideX()) * tw;	// テクスチャの左上X座標
-	if (GetCurrentAnim() != 0) tV = (float)(GetCurrentAnim() / GetTexDivideX()) * th;	// テクスチャの左上Y座標
-
-	// １枚のポリゴンの頂点とテクスチャ座標を設定
-	SetSpriteColorRotation(g_VertexBuffer2D, m_vTexPos.x, m_vTexPos.y, m_vTexSize.x, m_vTexSize.y, tU, tV, tw, th,
-		m_TexColor, m_fTexRotation);
-
-	// ポリゴン描画
-	GetDeviceContext()->Draw(4, 0);
-}
-
-// 左上を原点とした描画
-void CTexture::DrawTextureTopLeft(ID3D11ShaderResourceView* pTextureData)	// テクスチャ座標のみ
-{
-	float tw = 0.0f, th = 0.0f, tU = 0.0f, tV = 0.0f;
-
-	// テクスチャ設定
-	GetDeviceContext()->PSSetShaderResources(0, 1, &pTextureData);
-
-	//------------------- アニメーションも考慮して、UV座標の値を決定する
-	// 1つのアニメーションパターンあたりの幅と高さを求める
-	tw = 1.0f / (float)GetTexDivideX();							// 幅
-	th = 1.0f / (float)GetTexDivideY();							// 高さ
-	if (GetCurrentAnim() != 0) tU = (float)(GetCurrentAnim() % GetTexDivideX()) * tw;	// テクスチャの左上X座標
-	if (GetCurrentAnim() != 0) tV = (float)(GetCurrentAnim() / GetTexDivideX()) * th;	// テクスチャの左上Y座標
-
-	// １枚のポリゴンの頂点とテクスチャ座標を設定
-	SetSpriteColorTopLeft(g_VertexBuffer2D, m_vTexPos.x, m_vTexPos.y, m_vTexSize.x, m_vTexSize.y, tU, tV, tw, th,
-		m_TexColor);
-
-	// ポリゴン描画
-	GetDeviceContext()->Draw(4, 0);
-}
-
-
-//=============================================================================
-// セッター関数（CTexture）
-//=============================================================================
-//// 全てのメンバ変数を一括で変更する関数
-//void CTexture::SetTextureInf(D3DXVECTOR2 Pos, D3DXVECTOR2 Size, D3DXCOLOR Color, float Rotation, D3DXVECTOR2 UV)
-//{
-//	m_vTexPos = Pos;
-//	m_vTexSize = Size;
-//	m_TexColor = Color;
-//	m_fTexRotation = Rotation;
-//	m_fTexU = UV.x;
-//	m_fTexV = UV.y;
-//}
-
-// テクスチャの描画位置を変更する関数
-void CTexture::SetTexPos(D3DXVECTOR2 Pos)
-{
-	m_vTexPos = Pos;
-}
-
-// テクスチャの描画サイズを変更する関数
-void CTexture::SetTexSize(D3DXVECTOR2 Size)
-{
-	m_vTexSize = Size;
-}
-
-// テクスチャの頂点色を変更する関数
-void CTexture::SetTexColor(D3DXCOLOR Color)
-{
-	m_TexColor = Color;
-}
-
-// テクスチャの回転値を変更する関数
-void CTexture::SetTexRotation(float Rotaiton)
-{
-	m_fTexRotation = Rotaiton;
-}
-
-// UV座標のU値を変更する関数
-void CTexture::SetTexU(float U)
-{
-	m_fTexU = U;
-}
-
-// UV座標のV値を変更する関数
-void CTexture::SetTexV(float V)
-{
-	m_fTexV = V;
-}
-
-
-//=============================================================================
-// ゲッター関数（CTexture）
-//=============================================================================
-//// テクスチャの描画位置を取得する関数
-//D3DXVECTOR2 CTexture::GetTexPos()
-//{
-//	return m_vTexPos;
-//}
-//
-//// テクスチャのサイズを取得する関数
-//D3DXVECTOR2 CTexture::GetTexSize()
-//{
-//	return m_vTexSize;
-//}
-
-
-// ************************ アニメーションクラス ************************
-
+// アニメーションクラス
+#ifdef ANIMATION
 //=============================================================================
 // 初期化処理（CAnimation）
 //=============================================================================
@@ -265,50 +82,200 @@ void CAnimation::UpdateAnimIndex(int MotionStartIndex, int MotionEndIndex)
 	}
 
 }
+#endif // ANIMATION
 
 
-
+// テクスチャクラス
+#ifdef TEXTURE
 //=============================================================================
-// セッター関数（CAnimation）
+// コンストラクタ
 //=============================================================================
-// 横のアニメーションパターン数を格納
-void CAnimation::SetTexDivideX(int DivX)
+CTexture::CTexture()	// コンストラクタ
 {
-	m_nDivideX = DivX;
-}
-
-// 縦のアニメーションパターン数を格納
-void CAnimation::SetTexDivideY(int DivY)
-{
-	m_nDivideY = DivY;
-}
-
-// Wait値を変更する関数
-void CAnimation::SetAnimWait(int Wait)
-{
-	m_nAnimWait = Wait;
+	Init();		// 初期化処理を行う
 }
 
 
 
 //=============================================================================
-// ゲッター関数（CAnimation）
+// 初期化処理（CTexture）
 //=============================================================================
-//int CAnimation::GetCurrentAnim()	// 現在のアニメーション番号を取得する関数
-//{
-//	return m_nCurrentAnimIndex;
-//}
-//
-//int CAnimation::GetTexDivideX()	// 横方向のアニメーションパターン数を取得する関数
-//{
-//	return m_nDivideX;
-//}
-//
-//int CAnimation::GetTexDivideY()	// 縦方向のアニメーションパターン数を取得する関数
-//{
-//	return m_nDivideY;
-//}
+void CTexture::Init(D3DXVECTOR2 Pos, D3DXVECTOR2 Size, D3DXCOLOR Color, float Rotaiton,
+					int TexDivX, int TexDivY, int AnimWait, int IndexNo)
+{
+	m_TextureData = NULL;	// テクスチャ情報はここで設定しない
+	m_vTexPos = Pos;
+	m_vTexSize = Size;
+	m_TexColor = Color;
+	m_fTexRotation = Rotaiton;
+	m_fTexU = m_fTexV = 0.0f;
 
+	//------------------- ベースクラスの初期化
+	CAnimation::Init(TexDivX, TexDivY, AnimWait, IndexNo);	// CAnimation
+}
+
+
+
+//=============================================================================
+// 終了処理（CTexture）
+//=============================================================================
+void CTexture::Uninit()	// 全てのメンバ変数を０でクリア
+{
+//	m_TextureData = NULL;
+	m_vTexPos = ZERO_VECTOR2;
+	m_vTexSize = ZERO_VECTOR2;
+	m_TexColor = DEFAULT_COLOR;
+	m_fTexU = m_fTexV = 0.0f;
+	m_fTexRotation = 0.0f;
+
+	//------------------- ベースクラスの終了処理
+	CAnimation::Uninit();		// CAnimation
+}
+
+
+
+//=============================================================================
+// テクスチャ描画関数（CTexture）
+//=============================================================================
+// 任意のテクスチャ情報 + 任意の頂点バッファ
+void CTexture::DrawTexture(ID3D11ShaderResourceView* pTextureData, ID3D11Buffer* pVertexBuffer)
+{
+	float tw = 0.0f, th = 0.0f, tU = 0.0f, tV = 0.0f;
+
+	// テクスチャ設定
+	GetDeviceContext()->PSSetShaderResources(0, 1, &pTextureData);
+
+	//------------------- アニメーションも考慮して、UV座標の値を決定する
+	// 1つのアニメーションパターンあたりの幅と高さを求める
+	tw = 1.0f / (float)GetTexDivideX();							// 幅
+	th = 1.0f / (float)GetTexDivideY();							// 高さ
+	if (GetCurrentAnim() != 0) tU = (float)(GetCurrentAnim() % GetTexDivideX()) * tw;	// テクスチャの左上X座標
+	if (GetCurrentAnim() != 0) tV = (float)(GetCurrentAnim() / GetTexDivideX()) * th;	// テクスチャの左上Y座標
+
+	// １枚のポリゴンの頂点とテクスチャ座標を設定
+	SetSpriteColorRotation(pVertexBuffer, m_vTexPos.x, m_vTexPos.y, m_vTexSize.x, m_vTexSize.y, tU, tV, tw, th,
+		m_TexColor, m_fTexRotation);
+
+	// ポリゴン描画
+	GetDeviceContext()->Draw(4, 0);
+}
+
+// 任意のテクスチャ情報のみ
+void CTexture::DrawTexture(ID3D11ShaderResourceView* pTextureData)
+{
+	float tw = 0.0f, th = 0.0f, tU = 0.0f, tV = 0.0f;
+
+	// テクスチャ設定
+	GetDeviceContext()->PSSetShaderResources(0, 1, &pTextureData);
+
+	//------------------- アニメーションも考慮して、UV座標の値を決定する
+	// 1つのアニメーションパターンあたりの幅と高さを求める
+	tw = 1.0f / (float)GetTexDivideX();							// 幅
+	th = 1.0f / (float)GetTexDivideY();							// 高さ
+	if (GetCurrentAnim() != 0) tU = (float)(GetCurrentAnim() % GetTexDivideX()) * tw;	// テクスチャの左上X座標
+	if (GetCurrentAnim() != 0) tV = (float)(GetCurrentAnim() / GetTexDivideX()) * th;	// テクスチャの左上Y座標
+
+	// １枚のポリゴンの頂点とテクスチャ座標を設定
+	SetSpriteColorRotation(g_VertexBuffer2D, m_vTexPos.x, m_vTexPos.y, m_vTexSize.x, m_vTexSize.y, tU, tV, tw, th,
+		m_TexColor, m_fTexRotation);
+
+	// ポリゴン描画
+	GetDeviceContext()->Draw(4, 0);
+}
+
+// 左上を原点とした描画（任意のテクスチャ情報のみ）
+void CTexture::DrawTextureTopLeft(ID3D11ShaderResourceView* pTextureData)	// テクスチャ座標のみ
+{
+	float tw = 0.0f, th = 0.0f, tU = 0.0f, tV = 0.0f;
+
+	// テクスチャ設定
+	GetDeviceContext()->PSSetShaderResources(0, 1, &pTextureData);
+
+	//------------------- アニメーションも考慮して、UV座標の値を決定する
+	// 1つのアニメーションパターンあたりの幅と高さを求める
+	tw = 1.0f / (float)GetTexDivideX();							// 幅
+	th = 1.0f / (float)GetTexDivideY();							// 高さ
+	if (GetCurrentAnim() != 0) tU = (float)(GetCurrentAnim() % GetTexDivideX()) * tw;	// テクスチャの左上X座標
+	if (GetCurrentAnim() != 0) tV = (float)(GetCurrentAnim() / GetTexDivideX()) * th;	// テクスチャの左上Y座標
+
+	// １枚のポリゴンの頂点とテクスチャ座標を設定
+	SetSpriteColorTopLeft(g_VertexBuffer2D, m_vTexPos.x, m_vTexPos.y, m_vTexSize.x, m_vTexSize.y, tU, tV, tw, th,
+		m_TexColor);
+
+	// ポリゴン描画
+	GetDeviceContext()->Draw(4, 0);
+}
+
+// 完全オート（テクスチャ情報はメンバ変数、頂点バッファはグローバルのやつを使う）
+void CTexture::DrawTexture()
+{
+	float tw = 0.0f, th = 0.0f, tU = 0.0f, tV = 0.0f;
+
+	// テクスチャ設定
+	GetDeviceContext()->PSSetShaderResources(0, 1, &m_TextureData);
+
+	//------------------- アニメーションも考慮して、UV座標の値を決定する
+	// 1つのアニメーションパターンあたりの幅と高さを求める
+	tw = 1.0f / (float)GetTexDivideX();							// 幅
+	th = 1.0f / (float)GetTexDivideY();							// 高さ
+	if (GetCurrentAnim() != 0) tU = (float)(GetCurrentAnim() % GetTexDivideX()) * tw;	// テクスチャの左上X座標
+	if (GetCurrentAnim() != 0) tV = (float)(GetCurrentAnim() / GetTexDivideX()) * th;	// テクスチャの左上Y座標
+
+	// １枚のポリゴンの頂点とテクスチャ座標を設定
+	SetSpriteColorRotation(g_VertexBuffer2D, m_vTexPos.x, m_vTexPos.y, m_vTexSize.x, m_vTexSize.y, tU, tV, tw, th,
+		m_TexColor, m_fTexRotation);
+
+	// ポリゴン描画
+	GetDeviceContext()->Draw(4, 0);
+}
+
+// 左上を原点とした描画（完全オート）
+void CTexture::DrawTextureTopLeft()	// テクスチャ座標のみ
+{
+	float tw = 0.0f, th = 0.0f, tU = 0.0f, tV = 0.0f;
+
+	// テクスチャ設定
+	GetDeviceContext()->PSSetShaderResources(0, 1, &m_TextureData);
+
+	//------------------- アニメーションも考慮して、UV座標の値を決定する
+	// 1つのアニメーションパターンあたりの幅と高さを求める
+	tw = 1.0f / (float)GetTexDivideX();							// 幅
+	th = 1.0f / (float)GetTexDivideY();							// 高さ
+	if (GetCurrentAnim() != 0) tU = (float)(GetCurrentAnim() % GetTexDivideX()) * tw;	// テクスチャの左上X座標
+	if (GetCurrentAnim() != 0) tV = (float)(GetCurrentAnim() / GetTexDivideX()) * th;	// テクスチャの左上Y座標
+
+	// １枚のポリゴンの頂点とテクスチャ座標を設定
+	SetSpriteColorTopLeft(g_VertexBuffer2D, m_vTexPos.x, m_vTexPos.y, m_vTexSize.x, m_vTexSize.y, tU, tV, tw, th,
+		m_TexColor);
+
+	// ポリゴン描画
+	GetDeviceContext()->Draw(4, 0);
+}
+
+
+/*******************************************************************************
+* 関数名	:	void CTexture::CreateTextureInf(char* TextureFileName)
+* 引数	:	テクスチャのファイル名
+* 返り値	:	void
+* 説明	:	テクスチャ情報の生成
+********************************************************************************/
+void CTexture::CreateTextureInf(char* TextureFileName)
+{
+	CreateTexture(TextureFileName, &m_TextureData);	// テクスチャ情報の生成
+}
+
+/*******************************************************************************
+* 関数名	:	void CTexture::ReleaseTextureInf()
+* 引数	:	void
+* 返り値	:	void
+* 説明	:	テクスチャ情報の解放
+********************************************************************************/
+void CTexture::ReleaseTextureInf()
+{
+	ReleaseTexture(m_TextureData);	// テクスチャ情報の解放
+	m_TextureData = NULL;			// 解放したからNULLをセット
+}
+#endif // TEXTURE
 
 
 //=============================================================================
