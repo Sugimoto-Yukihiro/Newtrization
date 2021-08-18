@@ -49,6 +49,12 @@
 //------------------- シネマチック処理
 #define TEXTURE_NAME_SIDEBLACK	"data/TEXTURE/SideBlack/CinemaScope.png"		// テクスチャのファイル名
 
+//------------------- ファイヤーブーツ
+#define FIREBOOTS_BULLET_TEXNAME	"data/TEXTURE/Bullet/bullet01.png"		// ファイヤーブーツから出すバレットのテクスチャ名
+#define FIREBOOTS_BULLET_WIDTH		50.0f
+#define FIREBOOTS_BULLET_HEIGHT		50.0f
+#define FIREBOOTS_BULLET_SIZE		D3DXVECTOR2(FIREBOOTS_BULLET_WIDTH, FIREBOOTS_BULLET_HEIGHT)	// 弾のサイズ
+#define FIREBOOTS_BULLET_SPEED		(13.0f)		// ファイヤーブーツから出すバレットの速度
 
 //------------------- その他ゲーム内で使用するパラメータ
 #define DEFAULT_GRAVITY_WAIT	(0.55f)		// 重力の値(デフォルトの時)

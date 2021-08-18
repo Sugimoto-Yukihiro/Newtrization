@@ -75,9 +75,11 @@ CPlayer::~CPlayer()	// デストラクタ
 //=============================================================================
 // 初期化処理
 //=============================================================================
-void CPlayer::Init()
+void CPlayer::Init(char* FireBootsTexName)
 {
 	//------------------- プレイヤークラスのメンバ変数をデフォルトの値でセット
+	m_FireBoots.Init(FireBootsTexName);	// ファイヤーブーツの初期化
+	m_Position = ZERO_VECTOR2;
 	m_fJumpForce = 0.0f;	// ジャンプ力を初期化
 	m_fHitPointMAX = m_fCurrentHP = HP_DEFAULT;	// プレイヤーのHPをセット
 	m_nTexNo = 0;			// 使うテクスチャ番号を指定
@@ -100,6 +102,7 @@ void CPlayer::Init()
 void CPlayer::Uninit()
 {
 	//------------------- プレイヤークラスのメンバ変数をゼロクリア
+	m_FireBoots.Uninit();	// ファイヤーブーツの終了処理
 	m_fJumpForce = 0.0f;	// ジャンプ力
 	m_fHitPointMAX = 0.0f;	// プレイヤーのHPのMAX値
 	m_fCurrentHP = 0.0f;	// プレイヤーの現在のHP
@@ -139,12 +142,15 @@ void CPlayer::Update()
 
 
 		// プレイヤーの移動処理（入力処理）
-		InputControllPlayer(GetPosition());
+		InputControllPlayer();
 		CollisionMapchip(Mapchip, OldPosPlayer);	// マップチップとの当たり判定をとって、入力処理移動後の座標をセット
 
 		// 重力処理
 		OldPosPlayer = GetPosition();	//移動前座標のセット
 		CGravity::Update();				// プレイヤー座標の更新も自動的に行ってる
+
+		// ファイヤーブーツ処理
+		m_FireBoots.Update(GetGame()->GetMapchip()->GetMapChipSize());
 
 		// マップチップと当たり判定を取って、最終的な座標をセット
 		CollisionMapchip(Mapchip, OldPosPlayer);
@@ -199,8 +205,11 @@ void CPlayer::Draw()
 		// プレイヤーの表示座標を算出
 		SetTexPos( GetPosition() - GetGame()->GetScrollPosition() );		// 表示座標系をセット
 
-		// 描画
+		// プレイヤーの描画
 		DrawTexture(g_Texture[m_nTexNo]);
+
+		// ファイヤーブーツの描画
+		m_FireBoots.Draw(GetGame()->GetScrollPosition());
 	}
 
 }
@@ -220,8 +229,8 @@ void CPlayer::SetPlayer(D3DXVECTOR2 Pos)
 // プレイヤーの座標をセット
 void CPlayer::SetPosition(D3DXVECTOR2 Pos)
 {
-//	SetTexPos(Pos);	// プレイヤーテクスチャの座標 ＝ プレイヤーの座標
 	SetGravityObjectPos(Pos);	// ワールド座標系
+	m_Position = Pos;			// メンバ変数の方も変更
 }
 
 // プレイヤーのサイズを取得
@@ -289,10 +298,11 @@ D3DXVECTOR2 CPlayer::GetSize()
 // メンバ関数(private)
 //=============================================================================
 // プレイヤーを キーまたはゲームパッド入力 で動かす
-void CPlayer::InputControllPlayer(D3DXVECTOR2 NowPosition)
+void CPlayer::InputControllPlayer()
 {
-	// 移動値の倍率
-	float fMagnification = 1.0f;
+	D3DXVECTOR2 NowPosition = GetPosition();	// 現在の座標を取得
+	float fMagnification = 1.0f;	// 移動値の倍率
+
 
 	// ダッシュ処理
 	{
@@ -309,7 +319,7 @@ void CPlayer::InputControllPlayer(D3DXVECTOR2 NowPosition)
 
 	// キー入力
 	{
-		// プレイヤーを操作
+		// 移動処理
 		m_bIsMove = false;		// 動いてない
 		if (GetGravityObjectDirection() == GRAVITY_DEFAULT)		// デフォルトの重力方向（y軸方向）の時
 		{
@@ -341,14 +351,38 @@ void CPlayer::InputControllPlayer(D3DXVECTOR2 NowPosition)
 		}
 
 		// ジャンプ処理
-		if (KEY_MOVE_PLAYER_JUMP || PAD_MOVE_PLAYER_JUMP)	// ジャンプ操作のキーまたはボタンが押されたとき
+		if (m_bOnGround)	// 接地しているときのみ、ジャンプ処理実行
 		{
-			if (m_bOnGround)	// 接地しているときのみ、ジャンプ処理実行
+			if (KEY_MOVE_PLAYER_JUMP || PAD_MOVE_PLAYER_JUMP)	// ジャンプ操作のキーまたはボタンが押されたとき
 			{
 				m_bIsJump = true;			// ジャンプのフラグをtrueにする
 				m_fJumpForce = JUMP_VALUE;	// ジャンプ力のセット
 			}
 		}
+
+		// ファイヤーブーツの起動
+		if (!m_bOnGround)	// 接地していない（空中にいる）時に実行する
+		{
+			if (KEY_ACTIVATE_PLAYER_FIREBOOTS || PAD_ACTIVATE_PLAYER_FIREBOOTS)	// ファイヤーブーツのキーが押されていたら実行
+			{
+				D3DXVECTOR2 bulletMove;	// バレットの移動量
+
+				// 現在の重力方向によってバレットの移動量をセット
+				if (GetGravityObjectDirection() == GRAVITY_DEFAULT) bulletMove = D3DXVECTOR2(0.0f, 1.0f) * FIREBOOTS_BULLET_SPEED;
+				else if (GetGravityObjectDirection() == GRAVITY_LEFT) bulletMove = D3DXVECTOR2(-1.0f, 0.0f) * FIREBOOTS_BULLET_SPEED;
+
+				// ファイヤーブーツ起動
+				if (m_FireBoots.ActivateFireBoots(m_Position, bulletMove, FIREBOOTS_BULLET_SIZE))
+				{	// ファイヤーブーツが起動できた時　→　キャラクターを少しだけ浮かせる
+					// 重力処理のリセット
+					SetGravityFlag(false);
+					SetGravityFlag(true);
+					m_fJumpForce *= 0.75f;	// ジャンプ力を半分にする
+				}
+			}
+
+		}
+
 	}
 
 	// ジャンプ処理実行

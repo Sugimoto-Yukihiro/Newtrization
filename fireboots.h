@@ -29,7 +29,7 @@ public:
 	void Draw(D3DXVECTOR2 ScrollPos);	// 描画処理
 
 	//------------------- メンバ関数
-	bool ActivateFireBoots(D3DXVECTOR2 Pos, D3DXVECTOR2 BulletMove, D3DXVECTOR2 BulletSize, float Attack = 0.0f, float HP = 0.0f);	// ファイヤーブーツの起動
+	bool ActivateFireBoots(D3DXVECTOR2 BulletPos, D3DXVECTOR2 BulletMove, D3DXVECTOR2 BulletSize, float Attack = 0.0f, float HP = 0.0f);	// ファイヤーブーツの起動
 
 	//------------------- セッター関数
 

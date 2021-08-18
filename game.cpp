@@ -56,7 +56,7 @@ void CModeGame::Init()
 
 	// プレイヤーの初期化
 	CreatePlayerTexture();	// テクスチャ・頂点バッファ生成
-	m_Player.Init();		// 初期化処理実行
+	m_Player.Init(FIREBOOTS_BULLET_TEXNAME);		// 初期化処理実行
 
 	// マップチップの初期化
 	CreateMapchipTexture(TEXTURE_NAME_MAPCHIP);	// テクスチャ生成

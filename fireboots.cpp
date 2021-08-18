@@ -67,8 +67,6 @@ void CFireBoots::Update(D3DXVECTOR2 StageSize)
 	// バレットの更新
 	for (int i = 0; i < BOOTS_BULLET_NUM; i++)
 	{
-		// このバレットが使用されていないなら終了
-		if (!m_Bullet[i].GetUseFlag) return;
 		m_Bullet[i].Update();	// 更新
 
 		// ステージ外にいったら、このバレットを解放
