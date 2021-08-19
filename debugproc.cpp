@@ -1,12 +1,14 @@
 //=============================================================================
 //
 // デバッグ表示処理 [debugproc.cpp]
-// Author : 稲垣佑二郎
+// Author : 稲垣佑二郎, 杉本幸宏
 //
 //=============================================================================
 #include <stdio.h>
-#include "debugproc.h"
+
+#include "main.h"
 #include "renderer.h"
+#include "debugproc.h"
 
 #include "game.h"
 
@@ -122,18 +124,18 @@ void SetDebugString(void)
 
 	{
 		PrintDebugProc("スクロール座標 X: %f  Y: %f\n", GameInf.GetScrollPosition().x, GameInf.GetScrollPosition().y);
+		PrintDebugProc("Player座標　X:%f Y:%f\n", PlayerInf.GetPosition().x, PlayerInf.GetPosition().y);
+		PrintDebugProc("【プレイヤーの各真偽値】動作： %d　ダッシュ： %d　ジャンプ： %d　接地： %d　毒： %d　\n",
+						PlayerInf.GetIsMove(), PlayerInf.GetIsDush(), PlayerInf.GetIsJump(), PlayerInf.GetIsGround(), PlayerInf.GetIsPoison());
 
 		PrintDebugProc("　重力の方向 :");
-		if (GameInf.GetGravityDirection() == GRAVITY_DEFAULT) 	PrintDebugProc("　下方向\n");
-		if (GameInf.GetGravityDirection() == GRAVITY_LEFT)		PrintDebugProc("　左方向\n");
+		if (GameInf.GetGravityDirection() == GRAVITY_DEFAULT) 	PrintDebugProc("　下方向　");
+		if (GameInf.GetGravityDirection() == GRAVITY_LEFT)		PrintDebugProc("　左方向　");
+		PrintDebugProc("重力値： %f　　プレイヤーのジャンプ値： %f\n", PlayerInf.GetGravitySpeed(), PlayerInf.GetJumpForce());
 
+		PrintDebugProc("プレイヤー座標のマップチップ : %d\n", GameInf.GetMapchip()->GetMapchipNo(PlayerInf.GetLegPos()) );
 		PrintDebugProc("playerAnimIdx : %d\n", PlayerInf.GetCurrentAnim());
-		PrintDebugProc("Player座標　X:%f Y:%f\n", PlayerInf.GetPosition().x, PlayerInf.GetPosition().y);
-		PrintDebugProc("プレイヤー座標のマップチップ : %d\n", GameInf.GetMapchip()->GetMapchipNo(PlayerInf.GetPosition()) );
 
-		PrintDebugProc("プレイヤーのジャンプ値： %f　　重力値： %f\n", PlayerInf.GetJumpForce(), PlayerInf.GetGravitySpeed());
-		PrintDebugProc("【プレイヤーの各真偽値】動作： %d　ダッシュ： %d　ジャンプ： %d　接地： %d　\n",
-						PlayerInf.GetIsMove(), PlayerInf.GetIsDush(), PlayerInf.GetIsJump(), PlayerInf.GetIsGround()  );
 	}
 
 

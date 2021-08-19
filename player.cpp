@@ -55,11 +55,6 @@ static char *g_TextureName[] = {	// ここに新しいファイル名を追加�
 	"data/TEXTURE/player/player01_Back_Not_Invisible.png",	// TexNo : 1
 };
 
-
-
-//=============================================================================
-// コンストラクタ・デストラクタ
-//=============================================================================
 CPlayer::CPlayer()	// コンストラクタ
 {
 	Init();	// 初期化処理を行う
@@ -70,27 +65,27 @@ CPlayer::~CPlayer()	// デストラクタ
 
 }
 
-
-
 //=============================================================================
 // 初期化処理
 //=============================================================================
 void CPlayer::Init(char* FireBootsTexName)
 {
 	//------------------- プレイヤークラスのメンバ変数をデフォルトの値でセット
-	m_FireBoots.Init(FireBootsTexName);	// ファイヤーブーツの初期化
-	m_Position = ZERO_VECTOR2;
-	m_fJumpForce = 0.0f;	// ジャンプ力を初期化
-	m_fHitPointMAX = m_fCurrentHP = HP_DEFAULT;	// プレイヤーのHPをセット
-	m_nTexNo = 0;			// 使うテクスチャ番号を指定
-	m_bUse = true;			// 使用
-	m_bDush = false;		// ダッシュフラグはfalseで初期化
-	m_bIsJump = false;		// ジャンプフラグはfalseで初期化
-	m_bIsMove = false;		// 動作フラグはfalseで初期化
+	m_FireBoots.Init(FireBootsTexName);				// ファイヤーブーツの初期化
+	m_Poison.Init(&m_LegPosition, &m_fCurrentHP, POISON_ATTACK_VALUE, POISON_FLAME_WAIT);	// 毒処理の初期化
+	m_LegPosition = ZERO_VECTOR2;					// 座標を初期化
+	m_fJumpForce = 0.0f;							// ジャンプ力を初期化
+	m_fHitPointMAX = m_fCurrentHP = HP_DEFAULT;		// プレイヤーのHPをセット
+	m_nTexNo = 0;									// 使うテクスチャ番号を指定
+	m_bUse = false;									// 未使用
+	m_bDush = false;								// ダッシュフラグはfalseで初期化
+	m_bIsJump = false;								// ジャンプフラグはfalseで初期化
+	m_bIsMove = false;								// 動作フラグはfalseで初期化
+	m_bPoison = false;								// 毒状態はfalseで初期化
 
 	//------------------- ベースクラスの初期化
 	CTexture::Init(SCREEN_CENTER, TEXTURE_SIZE, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 0.0f);	// テクスチャ
-	CAnimation::Init(TEXTURE_DIVIDE_X, TEXTURE_DIVIDE_Y, ANIM_WAIT_DEFAULT);	// アニメーション（デフォルトでセット）
+	CAnimation::Init(TEXTURE_DIVIDE_X, TEXTURE_DIVIDE_Y, ANIM_WAIT_DEFAULT);				// アニメーション（デフォルトでセット）
 	CGravity::Init(SCREEN_CENTER, TEXTURE_SIZE, DEFAULT_GRAVITY_WAIT, GRAVITY_DEFAULT);		// 重力処理
 }
 
@@ -103,14 +98,16 @@ void CPlayer::Uninit()
 {
 	//------------------- プレイヤークラスのメンバ変数をゼロクリア
 	m_FireBoots.Uninit();	// ファイヤーブーツの終了処理
+	m_Poison.Uninit();		// 毒処理の終了処理
 	m_fJumpForce = 0.0f;	// ジャンプ力
 	m_fHitPointMAX = 0.0f;	// プレイヤーのHPのMAX値
 	m_fCurrentHP = 0.0f;	// プレイヤーの現在のHP
 	m_nTexNo = 1;			// 使うテクスチャ番号を指定
-	m_bUse = true;			// 使用
+	m_bUse = false;			// 未使用
 	m_bDush = false;		// ダッシュフラグはfalseで初期化
 	m_bIsJump = false;		// ジャンプフラグはfalseで初期化
 	m_bIsMove = false;		// 動作フラグはfalseで初期化
+	m_bPoison = false;		// 毒状態はfalseで初期化
 
 	//------------------- ベースクラスの初期化
 	CTexture::Uninit();		// テクスチャ
@@ -123,7 +120,7 @@ void CPlayer::Uninit()
 //=============================================================================
 // 更新処理
 //=============================================================================
-void CPlayer::Update()
+void CPlayer::Update(int FalmeCnt)
 {
 	// このプレイヤーが使われていたら更新処理実行
 	if (m_bUse == true)
@@ -140,7 +137,6 @@ void CPlayer::Update()
 			UpdateAnimIndex(0, 5);	// 0-5番目の間をアニメーションする
 		}
 
-
 		// プレイヤーの移動処理（入力処理）
 		InputControllPlayer();
 		CollisionMapchip(Mapchip, OldPosPlayer);	// マップチップとの当たり判定をとって、入力処理移動後の座標をセット
@@ -154,6 +150,32 @@ void CPlayer::Update()
 
 		// マップチップと当たり判定を取って、最終的な座標をセット
 		CollisionMapchip(Mapchip, OldPosPlayer);
+
+		// 毒処理
+		if (m_bPoison)
+		{
+			m_Poison.Update();	// 毒処理実行
+
+			// プレイヤーの色を変えて、毒状態とわかりやすくする
+			{
+				// 現在の色情報を取得
+				D3DXCOLOR color = GetTexColor();
+
+				// プレイヤーを赤くする
+				color.r = 1.0f;	// 赤
+				color.g = 0.0f;	// 緑
+				color.b = 0.0f;	// 青
+
+				// 色情報のセット
+				SetTexColor(color);
+			}
+
+
+		}
+		else
+		{
+			SetTexColor(DEFAULT_COLOR);	// 色情報をリセット
+		}
 
 		//=================== スクロール座標の更新
 		{
@@ -197,20 +219,35 @@ void CPlayer::Update()
 //=============================================================================
 // 描画処理
 //=============================================================================
-void CPlayer::Draw()
+void CPlayer::Draw(D3DXVECTOR2 ScrollPos)
 {
 	// このプレイヤーが生きていたら描画
 	if (m_bUse == true)
 	{
 		// プレイヤーの表示座標を算出
-		SetTexPos( GetPosition() - GetGame()->GetScrollPosition() );		// 表示座標系をセット
+		SetTexPos( GetPosition() - ScrollPos );	// 表示座標系をセット
 
 		// プレイヤーの描画
 		DrawTexture(g_Texture[m_nTexNo]);
 
 		// ファイヤーブーツの描画
-		m_FireBoots.Draw(GetGame()->GetScrollPosition());
+		m_FireBoots.Draw(ScrollPos);
 	}
+
+}
+
+
+
+//=============================================================================
+// その他メンバ関数
+//=============================================================================
+// プレイヤーを殺す処理
+void CPlayer::KillPlayer()
+{
+	// プレイヤーのuseフラグを折る
+	SetUseFlag(false);
+
+	/* プレイヤーが死んだ後に何か処理を行う場合はここに記入 */
 
 }
 
@@ -230,72 +267,19 @@ void CPlayer::SetPlayer(D3DXVECTOR2 Pos)
 void CPlayer::SetPosition(D3DXVECTOR2 Pos)
 {
 	SetGravityObjectPos(Pos);	// ワールド座標系
-	m_Position = Pos;			// メンバ変数の方も変更
-}
 
-// プレイヤーのサイズを取得
-void CPlayer::SetSize(D3DXVECTOR2 Size)
-{
-	SetGravityObjectSize(Size);	// プレイヤーのサイズをセット
-}
+	// メンバ変数の方も変更
+	m_LegPosition = Pos;
 
-// プレイヤーのジャンプ力をセット
-void CPlayer::SetJumpForce(float Force)
-{
-	m_fJumpForce = Force;		// ジャンプ力をセット
-}
-
-// プレイヤーのHPをセット
-void CPlayer::SetHP(float HP)
-{
-	m_fHitPointMAX = HP;
-}
-
-// プレイヤーの現在のHPをセット
-void CPlayer::SetCurrentHP(float CurHP)
-{
-	m_fCurrentHP = CurHP;
-}
-
-// プレイヤーのuseフラグのセット
-void CPlayer::SetUseFlag(bool Use)
-{
-	m_bUse = Use;
-}
-
-// プレイヤーを殺す処理
-void CPlayer::KillPlayer()
-{
-	// プレイヤーのuseフラグを折る
-	SetUseFlag(false);
-
-	/* プレイヤーが死んだ後に何か処理を行う場合はここに記入 */
-
+	// 足の場所に座標値をセット
+	if (GetGravityObjectDirection() == GRAVITY_DEFAULT)		m_LegPosition.y += GetSize().y * 0.5f;
+	else if (GetGravityObjectDirection() == GRAVITY_LEFT)	m_LegPosition.x -= GetSize().x * 0.5f;
 }
 
 
 
 //=============================================================================
-// ゲッター関数
-//=============================================================================
-// プレイヤーの座標を取得
-D3DXVECTOR2 CPlayer::GetPosition()
-{
-//	return GetTexPos();				// プレイヤーテクスチャの座標 ＝ プレイヤーの座標 ってこと
-	return GetGravityObjectPos();	// ワールド座標系
-}
-
-// プレイヤーのサイズを取得
-D3DXVECTOR2 CPlayer::GetSize()
-{
-//	return GetTexSize();			// プレイヤーテクスチャのサイズを返す
-	return GetGravityObjectSize();	// プレイヤーのサイズを返す
-}
-
-
-
-//=============================================================================
-// メンバ関数(private)
+// メンバ関数【private】
 //=============================================================================
 // プレイヤーを キーまたはゲームパッド入力 で動かす
 void CPlayer::InputControllPlayer()
@@ -372,7 +356,7 @@ void CPlayer::InputControllPlayer()
 				else if (GetGravityObjectDirection() == GRAVITY_LEFT) bulletMove = D3DXVECTOR2(-1.0f, 0.0f) * FIREBOOTS_BULLET_SPEED;
 
 				// ファイヤーブーツ起動
-				if (m_FireBoots.ActivateFireBoots(m_Position, bulletMove, FIREBOOTS_BULLET_SIZE))
+				if (m_FireBoots.ActivateFireBoots(m_LegPosition, bulletMove, FIREBOOTS_BULLET_SIZE))
 				{	// ファイヤーブーツが起動できた時　→　キャラクターを少しだけ浮かせる
 					// 重力処理のリセット
 					SetGravityFlag(false);
@@ -420,21 +404,16 @@ void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 	{
 		// （重力方向が左のとき）左側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
 		if (GetGame()->GetGravityDirection() == GRAVITY_LEFT) 
-		{
-			m_bOnGround = false;	// 空中にいる
-			SetGravityFlag(true);	// 重力処理フラグ "true" にセット
+		{	// 空中にいる時の処理
+			NotOnGround();
 		}
 	}
 	else
 	{	// （重力方向が左のとき）左側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
 		if (GetGame()->GetGravityDirection() == GRAVITY_LEFT)
 		{	// 着地時の処理
-			m_bOnGround = true;		// 接地してる
-			SetGravityFlag(false);	// 重力方向が下向きなら実行
-			m_bIsJump = false;		// ジャンプフラグもfalseにする
-			m_fJumpForce = 0.0f;	// ジャンプ力を初期化
+			OnGround();
 		}
-
 	}
 	CurrentPosPlayer.x += HalfPlayer.x;	// ずらした分を元に戻す
 
@@ -454,9 +433,8 @@ void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 	if (HitCheckMapchip(Mapchip, &CurrentPosPlayer, PlayerOldPos, false, true ) == -1)	// 当たっていない時
 	{	// （重力方向が下のとき）下側に当たっていない ＝ 空中にいるってことだから、重力処理のフラグはそのまま(true)
 		if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT)
-		{
-			m_bOnGround = false;	// 空中にいる
-			SetGravityFlag(true);	// 重力処理フラグ "true" にセット
+		{	// 空中にいる時の処理
+			NotOnGround();
 		}
 	}
 	else
@@ -464,10 +442,7 @@ void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 		// （重力方向が下のとき）下側に当たっている ＝ 着地しているってことだから、重力処理のフラグを折る
 		if (GetGame()->GetGravityDirection() == GRAVITY_DEFAULT)
 		{	// 着地時の処理
-			m_bOnGround = true;		// 接地してる
-			SetGravityFlag(false);	// 重力方向が下向きなら実行
-			m_bIsJump = false;		// ジャンプフラグもfalseにする
-			m_fJumpForce = 0.0f;	// ジャンプ力を初期化
+			OnGround();
 		}
 
 	}
@@ -477,9 +452,25 @@ void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 	SetPosition(CurrentPosPlayer);
 }
 
+// 着地した時の処理
+void CPlayer::OnGround()
+{
+	m_bOnGround = true;		// 接地してる
+	SetGravityFlag(false);	// 重力方向が下向きなら実行
+	m_bIsJump = false;		// ジャンプフラグもfalseにする
+	m_fJumpForce = 0.0f;	// ジャンプ力を初期化
+
+}
+
+// 空中にいる時の処理
+void CPlayer::NotOnGround()
+{
+	m_bOnGround = false;	// 空中にいる
+	SetGravityFlag(true);	// 重力処理フラグ "true" にセット
+}
 
 
-
+// プレイヤーのテクスチャを生成
 void CreatePlayerTexture(void)
 {
 	// テクスチャ生成
@@ -489,6 +480,7 @@ void CreatePlayerTexture(void)
 	}
 }
 
+// プレイヤーのテクスチャを解放
 void ReleasePlayerTexture(void)
 {
 	// テクスチャ解放

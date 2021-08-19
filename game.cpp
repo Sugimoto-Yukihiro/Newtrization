@@ -56,7 +56,7 @@ void CModeGame::Init()
 
 	// プレイヤーの初期化
 	CreatePlayerTexture();	// テクスチャ・頂点バッファ生成
-	m_Player.Init(FIREBOOTS_BULLET_TEXNAME);		// 初期化処理実行
+	m_Player.Init(FIREBOOTS_BULLET_TEXNAME);	// 初期化処理実行
 
 	// マップチップの初期化
 	CreateMapchipTexture(TEXTURE_NAME_MAPCHIP);	// テクスチャ生成
@@ -210,7 +210,12 @@ void CModeGame::Update(void)
 	// UIの更新処理
 	m_GameUI.Update();
 
+	// プレイヤーのHPが0以下になったら終了
+	if (m_Player.GetCurrentHP() < 0.0f) SetFade(FADE_OUT, NEXT_MODE);
+
 }
+
+
 
 //=============================================================================
 // 描画処理
@@ -230,7 +235,7 @@ void CModeGame::Draw()
 //	DrawEnemy();
 
 	// プレイヤーの描画処理
-	m_Player.Draw();
+	m_Player.Draw(m_vScrollPos);
 
 	// 弾の描画処理
 //	DrawBullet();
@@ -257,11 +262,16 @@ void CModeGame::CollisionCheck()
 {
 	// プレイヤーとマップチップの当たり判定
 	{
-		// プレイヤー座標のマップチップを取得して、その値によって処理を変える
-		switch ( m_Mapchip.GetMapchipNo(m_Player.GetPosition()) )	// プレイヤー座標のマップチップを取得
-		{
-			// 重力変更エンジンに触れたとき
-		CASE_CANGE_GRAVITY_NO
+		// プレイヤー座標のマップチップ番号を取得
+		int nChip_Id = m_Mapchip.GetMapchipNo(m_Player.GetLegPos());
+
+		// その番号によって処理を変える
+		if (MAPCHIP_POISON_min <= nChip_Id && nChip_Id <= MAPCHIP_POISON_MAX)
+		{	// 毒判定のマップチップ番号に当たっていた時
+			m_Player.SetPoisonFlag(true);	// 毒状態をtrueにする
+		}
+		else if (MAPCHIP_CANGE_GRAVITY_min <= nChip_Id && nChip_Id <= MAPCHIP_CANGE_GRAVITY_MAX)
+		{	// 重力変更判定
 			// 重力方向の変更
 			if (!m_bIsTouchGrvityChange)	// 初めて重力装置に触れた時の一回だけ行う
 			{
@@ -270,18 +280,43 @@ void CModeGame::CollisionCheck()
 
 				m_bIsTouchGrvityChange = true;	// 重力装置に触れていますよ
 			}
-			break;
 
-			// ゴールに着いたとき
-		CASE_GOAL_NO
-			SetFade(FADE_OUT, NEXT_MODE);		// フェードして次のモード（リザルト画面）へ
-			break;
-
-		default:
-			// 重力装置に触れていません
-			m_bIsTouchGrvityChange = false;		// フラグを"false"にセット
-			break;
 		}
+		else if (MAPCHIP_GOAL_min <= nChip_Id && nChip_Id <= MAPCHIP_GOAL_MAX)
+		{	// ゴール判定
+			SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモード（リザルト画面）へ
+		}
+		else
+		{	// なにも当たっていない時
+			m_bIsTouchGrvityChange = false;	// フラグを"false"にセット
+			m_Player.SetPoisonFlag(false);	// 毒状態をfalseにする
+		}
+
+		//// プレイヤー座標のマップチップを取得して、その値によって処理を変える
+		//switch ( m_Mapchip.GetMapchipNo(m_Player.GetLegPos()) )	// プレイヤー座標のマップチップを取得
+		//{
+		//	// 重力変更エンジンに触れたとき
+		//CASE_CANGE_GRAVITY_NO
+		//	// 重力方向の変更
+		//	if (!m_bIsTouchGrvityChange)	// 初めて重力装置に触れた時の一回だけ行う
+		//	{
+		//		m_GravityDirection = (m_GravityDirection + 1) % GRAVITY_DIRECTION_MAX;	// 重力の方向を変更
+		//		ChangeGravityDirection(m_GravityDirection);	// 重力方向セット
+
+		//		m_bIsTouchGrvityChange = true;	// 重力装置に触れていますよ
+		//	}
+		//	break;
+
+		//	// ゴールに着いたとき
+		//CASE_GOAL_NO
+		//	SetFade(FADE_OUT, NEXT_MODE);		// フェードして次のモード（リザルト画面）へ
+		//	break;
+
+		//default:
+		//	// 重力装置に触れていません
+		//	m_bIsTouchGrvityChange = false;		// フラグを"false"にセット
+		//	break;
+		//}
 
 	}
 
@@ -468,6 +503,8 @@ int CModeGame::GetGravityDirection()
 	return m_GravityDirection;	// ゲーム全体の重力方向の情報を返す
 }
 
+
+
 //=============================================================================
 // セッター関数
 //=============================================================================
@@ -477,28 +514,28 @@ void CModeGame::SetScrollPosition(D3DXVECTOR2 Pos)
 	m_vScrollPos = Pos;
 }
 
+
+
 // ゲーム全体の重力の方向をセット
 void CModeGame::ChangeGravityDirection(int Direction)
 {
 	/* 重力処理クラスを継承している全てのオブジェクトの、重力方向の向きを変更 */
 	// プレイヤー
-//	for (int i = 0; i < PLAYER_MAX; i++)	// 複数いるとき → このfor文のコメントを外して m_Player[i]に変える
 	{
-		//if (!m_Player.GetUseFlag()) return;			// プレイヤーが未使用なら行わない
 		m_Player.SetGravityObjectDirection(Direction);	// プレイヤーの重力方向をセット
 		m_Player.SetSize(D3DXVECTOR2(m_Player.GetSize().y, m_Player.GetSize().x));	// サイズ値を入れ替え
-	}
 	
-	// 変わった方向によって処理変える
-	if (m_GravityDirection == GRAVITY_LEFT)			// 左向きへ変わった時の処理
-	{
-		m_Player.SetTexRotation(D3DXToRadian(0));	// 回転値をいったんリセット
-		m_Player.SetTexRotation(D3DXToRadian(90));	// プレイヤーテクスチャを90°回転
-	//	m_Player.SetSize(D3DXVECTOR2(m_Player->GetSize().y, m_Player->GetSize().x));	// サイズも入れ替え
-	}
-	else if (m_GravityDirection == GRAVITY_DEFAULT)	// デフォルトへ変わった時の処理
-	{
-		m_Player.SetTexRotation(D3DXToRadian(0));	// 回転値をリセット
+		// 変わった方向によって処理変える
+		if (m_GravityDirection == GRAVITY_LEFT)			// 左向きへ変わった時の処理
+		{
+			m_Player.SetTexRotation(D3DXToRadian(0));	// 回転値をいったんリセット
+			m_Player.SetTexRotation(D3DXToRadian(90));	// プレイヤーテクスチャを90°回転
+		}
+		else if (m_GravityDirection == GRAVITY_DEFAULT)	// デフォルトへ変わった時の処理
+		{
+			m_Player.SetTexRotation(D3DXToRadian(0));	// 回転値をリセット
+		}
+
 	}
 
 

@@ -10,6 +10,7 @@
 #include "gravity.h"	// 重力処理
 #include "mapchip.h"	// マップチップ
 #include "fireboots.h"	// ファイヤーブーツ
+#include "poison.h"		// 毒処理
 
 //*****************************************************************************
 // マクロ定義
@@ -26,35 +27,37 @@ public:
 
 	//------------------- メンバ関数
 	void Init(char* FireBootsTexName = NULL);		// 初期化
-	void Uninit();		// 終了処理
-	void Update();		// 更新処理
-	void Draw();		// 描画処理
+	void Uninit();						// 終了処理
+	void Update(int FalmeCnt = 0);		// 更新処理
+	void Draw(D3DXVECTOR2 ScrollPos);	// 描画処理
 
+	//------------------- その他メンバ関数
 	void KillPlayer();	// このプレイヤーを殺す処理
 
 	//------------------- セッター関数
 	void SetPlayer(D3DXVECTOR2 Pos);	// プレイヤーを出現させる
-
 	void SetPosition(D3DXVECTOR2 Pos);	// プレイヤーの座標をセット
-	void SetSize(D3DXVECTOR2 Size);		// プレイヤーのサイズをセット
 
-	void SetJumpForce(float Force);		// プレイヤーのジャンプベクトルを取得
-	void SetHP(float HP);				// プレイヤーのHPをセット
-	void SetCurrentHP(float CurHP);		// プレイヤーの現在のHPをセット
-	void SetUseFlag(bool Use);			// プレイヤーのuseフラグのセット
+	void SetSize(D3DXVECTOR2 Size) { SetGravityObjectSize(Size); };	// プレイヤーのサイズをセット
+	void SetJumpForce(float Force) { m_fJumpForce = Force; };		// プレイヤーのジャンプベクトルを取得
+	void SetHPMax(float MaxHP) { m_fHitPointMAX = MaxHP; };			// プレイヤーのHPのMAX値をセット
+	void SetCurrentHP(float CurHP) { m_fCurrentHP = CurHP; };		// プレイヤーの現在のHPをセット
+	void SetUseFlag(bool Use) { m_bUse = Use; };					// プレイヤーのuseフラグのセット
+	void SetPoisonFlag(bool Poison) { m_bPoison = Poison; };		// プレイヤーのuseフラグのセット
 
 	//------------------- ゲッター関数
-	D3DXVECTOR2 GetPosition();	// プレイヤーの座標を取得
-	D3DXVECTOR2 GetSize();		// プレイヤーの大きさを取得
-
-	float GetJumpForce() { return m_fJumpForce; };	// プレイヤーのジャンプ力を取得
-	float GetHP() { return m_fHitPointMAX; };		// プレイヤーのHPを取得
-	float GetCurrentHP() { return m_fCurrentHP; };	// プレイヤーの現在のHPを取得
-	bool GetUseFlag() { return m_bUse; };			// プレイヤーのuseフラグの取得
-	bool GetIsDush() { return m_bDush; };			// プレイヤーのダッシュフラグを取得
-	bool GetIsGround() { return m_bOnGround; };		// プレイヤーの接地フラグを取得
-	bool GetIsJump() { return m_bIsJump; };			// プレイヤーのジャンプフラグを取得
-	bool GetIsMove() { return m_bIsMove; };			// プレイヤーのジャンプフラグを取得
+	D3DXVECTOR2 GetPosition() { return GetGravityObjectPos(); };	// プレイヤーの座標を取得
+	D3DXVECTOR2 GetSize() { return GetGravityObjectSize(); };		// プレイヤーの大きさを取得
+	D3DXVECTOR2 GetLegPos() { return m_LegPosition; };	// プレイヤーの足の位置を取得
+	float GetJumpForce() { return m_fJumpForce; };		// プレイヤーのジャンプ力を取得
+	float GetHP() { return m_fHitPointMAX; };			// プレイヤーのHPを取得
+	float GetCurrentHP() { return m_fCurrentHP; };		// プレイヤーの現在のHPを取得
+	bool GetUseFlag() { return m_bUse; };				// プレイヤーのuseフラグの取得
+	bool GetIsDush() { return m_bDush; };				// プレイヤーのダッシュフラグを取得
+	bool GetIsGround() { return m_bOnGround; };			// プレイヤーの接地フラグを取得
+	bool GetIsJump() { return m_bIsJump; };				// プレイヤーのジャンプフラグを取得
+	bool GetIsMove() { return m_bIsMove; };				// プレイヤーのジャンプフラグを取得
+	bool GetIsPoison() { return m_bPoison; };			// プレイヤーの毒状態フラグを取得
 
 
 	//------------------- マクロ定義
@@ -72,7 +75,8 @@ private:
 
 	//------------------- メンバ変数
 	CFireBoots	m_FireBoots;				// ファイヤーブーツ
-	D3DXVECTOR2	m_Position;					// プレイヤーの座標
+	CPoison		m_Poison;					// 毒処理
+	D3DXVECTOR2	m_LegPosition;				// プレイヤーの足の座標
 	float		m_fJumpForce;				// プレイヤーのジャンプ力
 	float		m_fHitPointMAX;				// プレイヤーのHPのMAX値
 	float		m_fCurrentHP;				// プレイヤーの現在のHP
@@ -84,7 +88,10 @@ private:
 	bool		m_bOnGround;				// プレイヤーが接地しているかどうか  true:足が地面についている  false:空中にいる
 	bool		m_bIsJump;					// プレイヤーがジャンプ中かどうか
 	bool		m_bIsMove;					// プレイヤーの動作フラグ   true:動いてる false:停止中
+	bool		m_bPoison;					// プレイヤーの毒状態フラグ   true:毒状態 false:毒状態じゃない
 };
+
+
 
 //*****************************************************************************
 // プロトタイプ宣言
