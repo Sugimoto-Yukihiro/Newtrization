@@ -34,6 +34,8 @@ public:
 	void SetTexDivideX(int DivX) { m_nDivideX = DivX; };	// 横の分割数を格納
 	void SetTexDivideY(int DivY) { m_nDivideY = DivY; };	// 縦の分割数を格納
 	void SetAnimWait(int Wait) { m_nAnimWait = Wait; };		// アニメーションのWait値をセット
+	void SetCurrentAnim(int Num) { m_nCurrentAnimIndex = Num; };	// 現在のアニメーション番号をセット
+
 
 	//------------------- ゲッター関数
 	int GetTexDivideX() { return m_nDivideX; };				// 横の分割数を取得

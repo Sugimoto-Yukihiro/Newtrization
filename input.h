@@ -83,11 +83,13 @@ BOOL IsButtonTriggered(int padNo,DWORD button);
 
 // デバッグ時
 #ifdef _DEBUG
-	#define KEY_MODE_CHANGE			GetKeyboardTrigger(DIK_RETURN)
-	#define KEY_CHANGE_DRAW_DEBUG	GetKeyboardTrigger(DIK_3)
-	#define KEY_PAUSE				GetKeyboardTrigger(DIK_0)
+	#define KEY_MODE_CHANGE			GetKeyboardTrigger(DIK_RETURN)	// 強制シーン遷移
+	#define KEY_PAUSE				GetKeyboardTrigger(DIK_0)		// ゲームの一時停止
 	#define KEY_RESTART_GAMEMODE	GetKeyboardTrigger(DIK_1)		// ゲームモードのリセット
-	#define KEY_CHANGE_GRAVITY		GetKeyboardTrigger(DIK_2)
+	#define KEY_CHANGE_GRAVITY		GetKeyboardTrigger(DIK_2)		// 重力方向の変更
+	#define KEY_CHANGE_DRAW_DEBUG	GetKeyboardTrigger(DIK_3)		// デバッグ表示
+	#define KEY_MAPCHIP_DEBUG		GetKeyboardTrigger(DIK_4)		// マップチップのデバッグ表示
+
 #endif // _DEBUG
 
 

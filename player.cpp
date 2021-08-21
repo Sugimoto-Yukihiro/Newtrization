@@ -196,21 +196,19 @@ void CPlayer::Update(int FalmeCnt)
 	}
 
 #ifdef _DEBUG	// デバッグ情報を表示する
-	char *str = GetDebugStr();
-	wsprintf(&str[strlen(str)]," PX:%f PY:%f", GetPosition().x, GetPosition().y);
 
-	// プレイヤーのHPをテストで上げ下げしてみる
-	if (GetKeyboardTrigger(DIK_DOWN))
-	{
-		m_fCurrentHP -= 10.0f;
-		if (m_fCurrentHP < 0) m_fCurrentHP = 0.0f;	// ０以下にしないようにする
-	}
-	if ( GetKeyboardTrigger(DIK_UP) )
-	{
-		m_fCurrentHP += 10.0f;
-		if (m_fCurrentHP > m_fHitPointMAX) m_fCurrentHP = m_fHitPointMAX;	// MAX値以上にしないようにする
-	}
-	PrintDebugProc("現在のHP: %f\n", m_fCurrentHP);
+//	// プレイヤーのHPをテストで上げ下げしてみる
+//	if (GetKeyboardTrigger(DIK_DOWN))
+//	{
+//		m_fCurrentHP -= 10.0f;
+//		if (m_fCurrentHP < 0) m_fCurrentHP = 0.0f;	// ０以下にしないようにする
+//	}
+//	if ( GetKeyboardTrigger(DIK_UP) )
+//	{
+//		m_fCurrentHP += 10.0f;
+//		if (m_fCurrentHP > m_fHitPointMAX) m_fCurrentHP = m_fHitPointMAX;	// MAX値以上にしないようにする
+//	}
+//	PrintDebugProc("現在のHP: %f\n", m_fCurrentHP);
 #endif
 }
 

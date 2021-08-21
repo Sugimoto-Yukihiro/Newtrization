@@ -32,10 +32,10 @@ public:
 
 	//------------------- メンバ関数
 	// 初期化（引数に何も指定しなくても動く）
-	void Init(char* pMapFileName = NULL, int TexDivX = 0, int TexDivY = 0, D3DXVECTOR2 Size = MAPCHIP_SIZE_DEFAULT);
+	void Init(char* pTextureFileName, char* pMapFileName = NULL, int TexDivX = 0, int TexDivY = 0, D3DXVECTOR2 Size = MAPCHIP_SIZE_DEFAULT);
 
 	void Uninit();	// 終了処理
-	void Draw();	// 描画処理
+	void Draw(D3DXVECTOR2 ScrollPos);	// 描画処理
 	void Update();	// 更新処理
 
 	int LoadMapchipData(char* pFileName);		// マップチップ情報のファイル読み込み
@@ -92,8 +92,8 @@ private:
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
-void CreateMapchipTexture(char* FileName);	// マップチップテクスチャの生成
-void ReleaseMapchipTexture(void);			// マップチップテクスチャの解放
+//void CreateMapchipTexture(char* FileName);	// マップチップテクスチャの生成
+//void ReleaseMapchipTexture(void);			// マップチップテクスチャの解放
 
 
 //*****************************************************************************

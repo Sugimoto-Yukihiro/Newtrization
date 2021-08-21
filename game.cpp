@@ -44,7 +44,8 @@ void CModeGame::Init()
 	m_bIsTouchGrvityChange = false;			// "false"（エンジンに触れていない）で初期化
 #ifdef _DEBUG
 	// ポーズフラグの初期化
-	m_bPauseFlag = false;	// "false"（ボーズ無効）で初期化
+	m_bPauseFlag = false;		// "false"（ボーズ無効）で初期化
+	m_bMapchipDebug = false;	// "false"（マップチップのデバッグ表示無効）で初期化
 #endif // _DEBUG
 
 	//------------------- 以降、ゲームモードクラス内のインスタンスの初期化
@@ -59,8 +60,13 @@ void CModeGame::Init()
 	m_Player.Init(FIREBOOTS_BULLET_TEXNAME);	// 初期化処理実行
 
 	// マップチップの初期化
-	CreateMapchipTexture(TEXTURE_NAME_MAPCHIP);	// テクスチャ生成
-	m_Mapchip.Init(NULL, MAPCHIP_TEXTURE_DIVIDE_X, MAPCHIP_TEXTURE_DIVIDE_Y, MAPCHIP_SIZE_DEFAULT);		// 初期化処理実行
+	m_Mapchip.Init(TEXTURE_NAME_MAPCHIP, NULL, MAPCHIP_TEXTURE_DIVIDE_X, MAPCHIP_TEXTURE_DIVIDE_Y, MAPCHIP_SIZE_DEFAULT);		// 初期化処理実行
+
+#ifdef _DEBUG
+	// デバッグ表示用マップチップの初期化
+	m_DebugMapchip.Init(TEXTURE_NAME_MAPCHIP_DEBUG, NULL, MAPCHIP_DEBUG_TEXTURE_DIVIDE_X, MAPCHIP_DEBUG_TEXTURE_DIVIDE_Y, MAPCHIP_SIZE_DEFAULT);		// 初期化処理実行
+#endif // _DEBUG
+
 
 	// エネミーの初期化
 	InitEnemy();
@@ -115,9 +121,13 @@ void CModeGame::Uninit(void)
 	// 弾の終了処理
 //	UninitBullet();
 
+#ifdef _DEBUG
+	// デバッグ表示用マップチップの終了処理
+	m_DebugMapchip.Uninit();
+#endif // _DEBUG
+
 	// マップチップの終了処理
-	ReleaseMapchipTexture();	// テクスチャ解放
-	m_Mapchip.Uninit();			// 終了処理実行
+	m_Mapchip.Uninit();		// 終了処理実行
 
 	// エネミーの終了処理
 	UninitEnemy();
@@ -147,6 +157,9 @@ void CModeGame::Update(void)
 								//  m_bPauseFlagは？  "true"なら"false" に  :  "false"なら"true" に  セットする
 	// ポーズフラグがtrueなら処理を行わない。
 	if (m_bPauseFlag) return;
+
+	// マップチップのデバッグ表示キーが押されたとき
+	if (KEY_MAPCHIP_DEBUG) m_bMapchipDebug = (m_bMapchipDebug) ? false : true;
 
 	// リスタートのキーが押されたとき
 	if (KEY_RESTART_GAMEMODE)
@@ -180,6 +193,12 @@ void CModeGame::Update(void)
 
 	// マップチップの更新処理
 	m_Mapchip.Update();
+
+#ifdef _DEBUG
+	// デバッグ表示用マップチップの更新処理
+	if (m_bMapchipDebug) m_DebugMapchip.Update();
+#endif // _DEBUG
+
 
 	// プレイヤーの更新処理
 	m_Player.Update();	// プレイヤーの更新処理実行
@@ -228,8 +247,13 @@ void CModeGame::Draw()
 	// 背景の描画処理
 	DrawBg();
 
-	// マップチップの描画
-	m_Mapchip.Draw();
+	// マップチップの描画処理
+	m_Mapchip.Draw(m_vScrollPos);
+
+#ifdef _DEBUG
+	// デバッグ表示用マップチップ描画処理
+	if (m_bMapchipDebug) m_DebugMapchip.Draw(m_vScrollPos);
+#endif // _DEBUG
 
 	// エネミーの描画処理
 //	DrawEnemy();
@@ -401,6 +425,7 @@ int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPo
 引数		:	マップ配列の先頭アドレス
 戻り値	:	成功→1		失敗→0
 説明		:	全てのオブジェクトのセット
+			【マップチップデータもここでセットしている】
 			【注意】この関数を呼び出す前に、全てのオブジェクトの初期化処理を行うこと！
 *******************************************************************************/
 int CModeGame::PutAllObject(const char* pCsvMapFile)
@@ -420,6 +445,10 @@ int CModeGame::PutAllObject(const char* pCsvMapFile)
 
 	// マップチップデータをセット
 	m_Mapchip.SetMapChipData(pLoadedMapData);
+#ifdef _DEBUG
+	m_DebugMapchip.SetMapChipData(pLoadedMapData);	// デバッグ表示用マップチップ
+#endif // _DEBUG
+
 
 	// 全てのオブジェクトをセット
 	{

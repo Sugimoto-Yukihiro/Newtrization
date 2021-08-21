@@ -23,10 +23,15 @@
 
 //------------------- マップチップに関する定義
 #define TEXTURE_NAME_MAPCHIP		"data/TEXTURE/mapchip/Mapchip.png"
+#define TEXTURE_NAME_MAPCHIP_DEBUG	"data/TEXTURE/mapchip/number.png"
 
 /* マップチップテクスチャの分割数　→　固定値とする */
 #define MAPCHIP_TEXTURE_DIVIDE_X	(5)		// 横方向の分割数
 #define MAPCHIP_TEXTURE_DIVIDE_Y	(16)	// 縦方向の分割数
+
+#define MAPCHIP_DEBUG_TEXTURE_DIVIDE_X	(5)	// 横方向の分割数
+#define MAPCHIP_DEBUG_TEXTURE_DIVIDE_Y	(6)	// 縦方向の分割数
+
 
 // 壁判定のマップチップ番号
 /* "MAPCHIP_HIT_min" ~ "MAPCHIP_HIT_MAX" の番号が当たり判定属性を持つマップチップ */
@@ -35,19 +40,19 @@
 
 // 毒のマップチップ番号
 /* "MAPCHIP_POISON_min" ~ "MAPCHIP_POISON_MAX" の番号が毒判定属性を持つマップチップ */
-#define MAPCHIP_POISON_min			(10)	// 毒判定属性のマップチップ番号の最小値
-#define MAPCHIP_POISON_MAX			(11)	// 毒判定属性のマップチップ番号の最大値
+#define MAPCHIP_POISON_min			(18)	// 毒判定属性のマップチップ番号の最小値
+#define MAPCHIP_POISON_MAX			(19)	// 毒判定属性のマップチップ番号の最大値
 
 // エンジンのマップチップ番号
 /* "MAPCHIP_CANGE_GRAVITY_min" ~ "MAPCHIP_CANGE_GRAVITY_MAX" の番号が重力変更判定属性を持つマップチップ */
-#define MAPCHIP_CANGE_GRAVITY_min	(12)	// 重力変更判定属性のマップチップ番号の最小値
-#define MAPCHIP_CANGE_GRAVITY_MAX	(12)	// 重力変更判定属性のマップチップ番号の最大値
+#define MAPCHIP_CANGE_GRAVITY_min	(10)	// 重力変更判定属性のマップチップ番号の最小値
+#define MAPCHIP_CANGE_GRAVITY_MAX	(17)	// 重力変更判定属性のマップチップ番号の最大値
 //#define CASE_CANGE_GRAVITY_NO		case 12:
 
 // ゴールのマップチップ番号
 /* "MAPCHIP_GOAL_min" ~ "MAPCHIP_GOAL_MAX" の番号がゴール判定属性を持つマップチップ */
-#define MAPCHIP_GOAL_min			(13)	// ゴール判定属性のマップチップ番号の最小値
-#define MAPCHIP_GOAL_MAX			(13)	// ゴール判定属性のマップチップ番号の最大値
+#define MAPCHIP_GOAL_min			(20)	// ゴール判定属性のマップチップ番号の最小値
+#define MAPCHIP_GOAL_MAX			(20)	// ゴール判定属性のマップチップ番号の最大値
 //#define CASE_GOAL_NO				case 13:
 
 //------------------- スクロール座標に関する定義
@@ -111,6 +116,12 @@ public:
 	CPlayer* GetPlayer();			// プレイヤーのインスタンスへのアクセス
 	int GetGravityDirection();		// 重力の方向を取得
 
+#ifdef _DEBUG
+	bool GetPauseFlag() { return m_bPauseFlag; };			// ポーズON/OFF
+	bool GetMapchipDebugFlag() { return m_bMapchipDebug; };	// マップチップのデバッグ表示
+#endif // _DEBUG
+
+
 	//------------------- セッター関数
 	void SetScrollPosition(D3DXVECTOR2 Pos);	// スクロール座標のセット
 
@@ -121,8 +132,13 @@ private:
 	//------------------- 各インスタンス
 	CGameUI m_GameUI;				// ゲームUI
 	CPlayer	m_Player;				// プレイヤーのインスタンス
-	CMapchip m_Mapchip;				// マップチップのサンプル
+	CMapchip m_Mapchip;				// マップチップ
 	CSideBlack m_SideBlack;			// 画面端の黒くするやつ
+
+#ifdef _DEBUG
+	CMapchip m_DebugMapchip;				// デバッグ表示用マップチップ
+#endif // _DEBUG
+
 
 	//------------------- メンバ変数
 	D3DXVECTOR2 m_vScrollPos;		// スクロール座標
@@ -132,6 +148,7 @@ private:
 
 #ifdef _DEBUG
 	bool	m_bPauseFlag;			// ポーズON/OFF
+	bool	m_bMapchipDebug;		// マップチップのデバッグ表示
 #endif // _DEBUG
 };
 
