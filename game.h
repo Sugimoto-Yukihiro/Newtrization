@@ -10,14 +10,15 @@
 #include "mapchip.h"		// マップチップ
 #include "userInterface.h"	// UI
 #include "sideblack.h"		// 画面端処理
+#include "buoyant.h"		// 浮力加速
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
 //------------------- ファイルに関する定義
 #define GAME_MAP_DATA_TEST			"data/MAPCHIP/alpha_MAP.csv"	// マップ情報のファイル名
-//#define GAME_MAP_DATA_1				"data/MAPCHIP/alpha_MAP.csv"	// マップ情報のファイル名
-#define GAME_MAP_DATA_1				"data/MAPCHIP/MAP.csv"	// マップ情報のファイル名
+//#define GAME_MAP_DATA_1			"data/MAPCHIP/alpha_MAP.csv"	// マップ情報のファイル名
+#define GAME_MAP_DATA_1				"data/MAPCHIP/MAP.csv"			// マップ情報のファイル名
 #define PLAYER_SYMBOL				'P'		// プレイヤーの記号
 #define ENEMY_SYMBOL				'E'		// エネミーの記号
 
@@ -63,7 +64,6 @@
 #define PLAYER_MAX					(1)			// プレイヤーのMax人数
 #define PLAYER_TEXTURE_NAME			"data/TEXTURE/player/player01.png"		// プレイヤーのテクスチャのファイル名
 
-
 //------------------- シネマチック処理
 #define TEXTURE_NAME_SIDEBLACK		"data/TEXTURE/SideBlack/CinemaScope.png"	// テクスチャのファイル名
 
@@ -78,6 +78,9 @@
 #define POISON_ATTACK_VALUE			(3.0f)		// 毒の一回あたりの攻撃力
 #define POISON_FLAME_WAIT			(6)			// 何フレームあたり毒の攻撃を行うか
 #define POISON_PLAYER_CHANGE_ALPHA	(0.03f)		// 毒状態時の、プレイヤーの透明度を変える値
+
+//------------------- 浮力加速
+#define FURYOKU_TEX_NAME			"data/TEXTURE/buoyant/area.jpg"	// 浮力エリアのテクスチャ名
 
 //------------------- その他ゲーム内で使用するパラメータ
 #define DEFAULT_GRAVITY_WAIT	(0.55f)		// 重力の値(デフォルトの時)
@@ -130,13 +133,14 @@ private:
 
 
 	//------------------- 各インスタンス
-	CGameUI m_GameUI;				// ゲームUI
-	CPlayer	m_Player;				// プレイヤーのインスタンス
-	CMapchip m_Mapchip;				// マップチップ
-	CSideBlack m_SideBlack;			// 画面端の黒くするやつ
+	CGameUI m_GameUI;			// ゲームUI
+	CPlayer	m_Player;			// プレイヤーのインスタンス
+	CMapchip m_Mapchip;			// マップチップ
+	CSideBlack m_SideBlack;		// 画面端の黒くするやつ
+	CBuoyant m_BuoyantArea[16];	// 浮力加速エリア（一時的に16個用意。動的管理したい）
 
 #ifdef _DEBUG
-	CMapchip m_DebugMapchip;				// デバッグ表示用マップチップ
+	CMapchip m_DebugMapchip;	// デバッグ表示用マップチップ
 #endif // _DEBUG
 
 

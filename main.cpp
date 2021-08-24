@@ -188,8 +188,16 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 				// マウス座標の表示
 				wsprintf(&g_DebugStr[strlen(g_DebugStr)], " MX:%d MY:%d", GetMousePosX(), GetMousePosY());
 				// 現在のモードの表示
-				wsprintf(&g_DebugStr[strlen(g_DebugStr)], "  CurrentMode:%d", g_aMode.GetMode());
-			
+				wsprintf(&g_DebugStr[strlen(g_DebugStr)], "  CurrentMode: ");
+				{
+					if (g_aMode.GetMode() == MODE_TITLE) wsprintf(&g_DebugStr[strlen(g_DebugStr)], "TITLE");
+					else if (g_aMode.GetMode() == MODE_OPENING) wsprintf(&g_DebugStr[strlen(g_DebugStr)], "OPENING");
+					else if (g_aMode.GetMode() == MODE_TUTORIAL) wsprintf(&g_DebugStr[strlen(g_DebugStr)], "TUTORIAL");
+					else if (g_aMode.GetMode() == MODE_GAME) wsprintf(&g_DebugStr[strlen(g_DebugStr)], "GAME");
+					else if (g_aMode.GetMode() == MODE_RESULT) wsprintf(&g_DebugStr[strlen(g_DebugStr)], "RESULT");
+				}
+
+
 				// テキストのセット
 				SetWindowText(hWnd, g_DebugStr);
 #else
