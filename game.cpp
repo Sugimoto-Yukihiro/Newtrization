@@ -83,6 +83,22 @@ void CModeGame::Init()
 	// オブジェクトの配置 & マップチップのセット
 	PutAllObject(GAME_MAP_DATA_1);
 
+	// 浮力加速のテスト
+	{
+		for (int i = 0; i < 16; i++)
+		{
+			// 初期化
+			m_BuoyantArea[i].Init(FURYOKU_TEX_NAME);
+		}
+
+		// 適当にセットする
+		m_BuoyantArea[0].SetBuoyandErea(m_Mapchip.GetMapchipPosition(m_Mapchip.GetMapchipNumX() * 8 + 12),	// 中心位置
+										m_Mapchip.GetChipSize() * 3.0f,	// サイズ
+										D3DXVECTOR2(0.0f, -1.0f),
+										14.0f);	// 浮力の大きさ
+	}
+
+
 	//------------------- プレイヤーの位置が決まったから、スクロール座標をセット
 	{
 		D3DXVECTOR2 pos = ZERO_VECTOR2;	// 一時的な変数
@@ -111,6 +127,12 @@ void CModeGame::Uninit(void)
 {
 	// BGM停止
 //	StopSound();
+
+	// 浮力加速エリアの終了処理
+	for (int i = 0; i < 16; i++)
+	{
+		m_BuoyantArea[i].Uninit();	// 終了
+	}
 
 	// 画面端の終了処理
 	m_SideBlack.Uninit();
@@ -215,6 +237,12 @@ void CModeGame::Update(void)
 	// 画面端の更新処理
 	m_SideBlack.Update();
 
+	// 浮力加速の更新処理
+	for (int i = 0; i < 16; i++)
+	{
+		m_BuoyantArea[i].Update();
+	}
+
 	//-------------------  当たり判定処理
 	CollisionCheck();
 
@@ -258,14 +286,14 @@ void CModeGame::Draw()
 	// エネミーの描画処理
 //	DrawEnemy();
 
+	// 浮力加速エリアの描画処理
+	for (int i = 0; i < 16; i++)
+	{
+		m_BuoyantArea[i].Draw(m_vScrollPos);
+	}
+
 	// プレイヤーの描画処理
 	m_Player.Draw(m_vScrollPos);
-
-	// 弾の描画処理
-//	DrawBullet();
-
-	// パーティクルの描画処理
-//	DrawParticle();
 
 	// スコアの描画処理
 //	DrawScore();
@@ -316,32 +344,26 @@ void CModeGame::CollisionCheck()
 			m_Player.SetPoisonFlag(false);	// 毒状態をfalseにする
 		}
 
-		//// プレイヤー座標のマップチップを取得して、その値によって処理を変える
-		//switch ( m_Mapchip.GetMapchipNo(m_Player.GetLegPos()) )	// プレイヤー座標のマップチップを取得
-		//{
-		//	// 重力変更エンジンに触れたとき
-		//CASE_CANGE_GRAVITY_NO
-		//	// 重力方向の変更
-		//	if (!m_bIsTouchGrvityChange)	// 初めて重力装置に触れた時の一回だけ行う
-		//	{
-		//		m_GravityDirection = (m_GravityDirection + 1) % GRAVITY_DIRECTION_MAX;	// 重力の方向を変更
-		//		ChangeGravityDirection(m_GravityDirection);	// 重力方向セット
+	}
 
-		//		m_bIsTouchGrvityChange = true;	// 重力装置に触れていますよ
-		//	}
-		//	break;
+	// プレイヤーと浮力加速エリアの当たり判定
+	for (int i = 0; i < 16; i++)
+	{
+		// 未使用なら行わない
+		if (!m_BuoyantArea[i].GetUseFlag()) return;
 
-		//	// ゴールに着いたとき
-		//CASE_GOAL_NO
-		//	SetFade(FADE_OUT, NEXT_MODE);		// フェードして次のモード（リザルト画面）へ
-		//	break;
+		// プレイヤーの現在の座標を取得
+		D3DXVECTOR2 PlayerPos = m_Player.GetPosition();
 
-		//default:
-		//	// 重力装置に触れていません
-		//	m_bIsTouchGrvityChange = false;		// フラグを"false"にセット
-		//	break;
-		//}
+		// 当たり判定実行
+		if ( m_BuoyantArea[i].HitCheck(&PlayerPos, m_Player.GetSize() * 0.5f) )
+		{	// 当たっていた時
+			// 重力処理フラグを折る
+			m_Player.SetGravityFlag(false);
+		}
 
+		// 浮力後の座標をセット
+		m_Player.SetPosition(PlayerPos);
 	}
 
 }

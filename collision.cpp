@@ -34,6 +34,10 @@ bool CollisionBB(D3DXVECTOR2 pos1, D3DXVECTOR2 pos2, D3DXVECTOR2 size1, D3DXVECT
 	D3DXVECTOR2 min1, max1;
 	D3DXVECTOR2 min2, max2;
 
+	// ”¼•ª‚ÌƒTƒCƒY‚É‚·‚é
+	size1 *= 0.5f;
+	size2 *= 0.5f;
+
 	min1.x = pos1.x - size1.x;
 	min1.y = pos1.y - size1.y;
 	max1.x = pos1.x + size1.x;
