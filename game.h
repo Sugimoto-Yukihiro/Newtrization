@@ -7,20 +7,22 @@
 #pragma once
 
 #include "player.h"			// プレイヤー
+#include "enemy.h"			// エネミー
 #include "mapchip.h"		// マップチップ
 #include "userInterface.h"	// UI
 #include "sideblack.h"		// 画面端処理
-#include "buoyant.h"		// 浮力加速
+#include "floatforce.h"		// 浮力加速
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
 //------------------- ファイルに関する定義
-#define GAME_MAP_DATA_TEST			"data/MAPCHIP/alpha_MAP.csv"	// マップ情報のファイル名
+//#define GAME_MAP_DATA_TEST			"data/MAPCHIP/alpha_MAP.csv"	// マップ情報のファイル名
 //#define GAME_MAP_DATA_1			"data/MAPCHIP/alpha_MAP.csv"	// マップ情報のファイル名
 #define GAME_MAP_DATA_1				"data/MAPCHIP/MAP.csv"			// マップ情報のファイル名
 #define PLAYER_SYMBOL				'P'		// プレイヤーの記号
 #define ENEMY_SYMBOL				'E'		// エネミーの記号
+#define FURYOKU_SYMBOL				'F'		// 浮力加速エリアの記号
 
 //------------------- マップチップに関する定義
 #define TEXTURE_NAME_MAPCHIP		"data/TEXTURE/mapchip/Mapchip.png"
@@ -60,9 +62,12 @@
 #define SCROLL_SET_X	(SCREEN_CENTER_X * 0.5f)	// スクロール座標のセット位置
 #define SCROLL_SET_Y	(SCREEN_CENTER_Y)			// スクロール座標のセット位置
 
-//------------------- ゲーム内オブジェクトに関する定義
+//------------------- プレイヤー
 #define PLAYER_MAX					(1)			// プレイヤーのMax人数
 #define PLAYER_TEXTURE_NAME			"data/TEXTURE/player/player01.png"		// プレイヤーのテクスチャのファイル名
+
+//------------------- エネミー
+#define ENEMY_MAX					(16)		// エネミーの最大数
 
 //------------------- シネマチック処理
 #define TEXTURE_NAME_SIDEBLACK		"data/TEXTURE/SideBlack/CinemaScope.png"	// テクスチャのファイル名
@@ -81,10 +86,14 @@
 
 //------------------- 浮力加速
 #define FURYOKU_TEX_NAME			"data/TEXTURE/buoyant/area.jpg"	// 浮力エリアのテクスチャ名
+#define FURYOKU_TEX_COLOR			D3DXCOLOR(0.0f, 1.0f, 0.0f, 0.85f)	// 浮力エリアのテクスチャの頂点色
+#define FURYOKU_MAX					(32)							// 浮力エリアの最大数
+#define FURYOKU_DIRECTION			D3DXVECTOR2(0.0, -1.0f)			// 浮力エリアの最大値
+#define FURYOKU_FORCE				(10.0f)							// 
 
 //------------------- その他ゲーム内で使用するパラメータ
-#define DEFAULT_GRAVITY_WAIT	(0.55f)		// 重力の値(デフォルトの時)
-#define LEFT_GRAVITY_WAIT		(0.55f)		// 重力の値(左方向の時)
+#define DEFAULT_GRAVITY_WAIT		(0.55f)		// 重力の値(デフォルトの時)
+#define LEFT_GRAVITY_WAIT			(0.55f)		// 重力の値(左方向の時)
 
 
 //*****************************************************************************
@@ -130,14 +139,16 @@ public:
 
 private:
 	//------------------- メンバ関数(private)
-
+	bool PutFloatForceArea(D3DXVECTOR2 Pos);	// 浮力加速エリアのセット（単位はマップチップ）
+	bool PutEnemy(D3DXVECTOR2 Pos);				// エネミーのセット（単位はマップチップ）
 
 	//------------------- 各インスタンス
 	CGameUI m_GameUI;			// ゲームUI
 	CPlayer	m_Player;			// プレイヤーのインスタンス
+	CEnemy	m_Enemy[ENEMY_MAX];			// エネミー
 	CMapchip m_Mapchip;			// マップチップ
 	CSideBlack m_SideBlack;		// 画面端の黒くするやつ
-	CBuoyant m_BuoyantArea[16];	// 浮力加速エリア（一時的に16個用意。動的管理したい）
+	CFloatForce m_FloatForceArea[FURYOKU_MAX];	// 浮力加速エリア（一時的に16個用意。動的管理したい）
 
 #ifdef _DEBUG
 	CMapchip m_DebugMapchip;	// デバッグ表示用マップチップ

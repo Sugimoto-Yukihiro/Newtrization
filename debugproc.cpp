@@ -118,23 +118,24 @@ void PrintDebugProc(char *fmt,...)
 //=============================================================================
 void SetDebugString(void)
 {
+#ifdef _DEBUG
 	// ゲームモードの情報を取得
 	CModeGame GameInf = *GetGame();				// ゲームモードクラスの情報を取得
 	CPlayer PlayerInf = *GameInf.GetPlayer();	// プレイヤーの情報を取得
 
 	{
-	//	PrintDebugProc("スクロール座標 X: %f  Y: %f", GameInf.GetScrollPosition().x, GameInf.GetScrollPosition().y);
+		//	PrintDebugProc("スクロール座標 X: %f  Y: %f", GameInf.GetScrollPosition().x, GameInf.GetScrollPosition().y);
 
-		// マップチップのデバック表示
+			// マップチップのデバック表示
 		PrintDebugProc("【MapChipDebug】");
 		if (GameInf.GetMapchipDebugFlag()) PrintDebugProc("ON\n");
 		if (!GameInf.GetMapchipDebugFlag()) PrintDebugProc("OFF\n");
 
 		// プレイヤ―情報の表示
 		PrintDebugProc("【プレイヤー】X:%f  Y:%f   HP:%f   ", PlayerInf.GetPosition().x, PlayerInf.GetPosition().y, PlayerInf.GetCurrentHP());
-		PrintDebugProc("MapchipNo : %d\n", GameInf.GetMapchip()->GetMapchipNo(PlayerInf.GetLegPos()) );
+		PrintDebugProc("MapchipNo : %d\n", GameInf.GetMapchip()->GetMapchipNo(PlayerInf.GetLegPos()));
 		PrintDebugProc("　動作： %d　ダッシュ： %d　ジャンプ： %d　接地： %d　毒： %d　\n",
-						PlayerInf.GetIsMove(), PlayerInf.GetIsDush(), PlayerInf.GetIsJump(), PlayerInf.GetIsGround(), PlayerInf.GetIsPoison());
+			PlayerInf.GetIsMove(), PlayerInf.GetIsDush(), PlayerInf.GetIsJump(), PlayerInf.GetIsGround(), PlayerInf.GetIsPoison());
 
 		// 重力方向の変更
 		PrintDebugProc("　重力の方向 :");
@@ -145,8 +146,11 @@ void SetDebugString(void)
 	}
 
 
-//	char *str = GetDebugStr();
-//	sprintf(&str[strlen(str)], " PX:%f PY:%f", GameInf.GetPlayer()->GetPosition().x, GameInf.GetPlayer()->GetPosition().y);
+	//	char *str = GetDebugStr();
+	//	sprintf(&str[strlen(str)], " PX:%f PY:%f", GameInf.GetPlayer()->GetPosition().x, GameInf.GetPlayer()->GetPosition().y);
+
+#endif // _DEBUG
+
 
 }
 

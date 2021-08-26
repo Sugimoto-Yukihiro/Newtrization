@@ -74,6 +74,7 @@ void CPlayer::Init(char* FireBootsTexName)
 	m_FireBoots.Init(FireBootsTexName);				// ファイヤーブーツの初期化
 	m_Poison.Init(&m_LegPosition, &m_fCurrentHP, POISON_ATTACK_VALUE, POISON_FLAME_WAIT);	// 毒処理の初期化
 	m_LegPosition = ZERO_VECTOR2;					// 座標を初期化
+	m_fBouyant = ZERO_VECTOR2;						// 浮力を初期化
 	m_fJumpForce = 0.0f;							// ジャンプ力を初期化
 	m_fHitPointMAX = m_fCurrentHP = HP_DEFAULT;		// プレイヤーのHPをセット
 	m_nTexNo = 0;									// 使うテクスチャ番号を指定
@@ -98,18 +99,18 @@ void CPlayer::Uninit()
 {
 	//------------------- プレイヤークラスのメンバ変数をゼロクリア
 	m_FireBoots.Uninit();	// ファイヤーブーツの終了処理
-	m_Poison.Uninit();		// 毒処理の終了処理
-	m_fJumpForce = 0.0f;	// ジャンプ力
-	m_fHitPointMAX = 0.0f;	// プレイヤーのHPのMAX値
-	m_fCurrentHP = 0.0f;	// プレイヤーの現在のHP
-	m_nTexNo = 1;			// 使うテクスチャ番号を指定
-	m_bUse = false;			// 未使用
-	m_bDush = false;		// ダッシュフラグはfalseで初期化
-	m_bIsJump = false;		// ジャンプフラグはfalseで初期化
-	m_bIsMove = false;		// 動作フラグはfalseで初期化
-	m_bPoison = false;		// 毒状態はfalseで初期化
+//	m_Poison.Uninit();		// 毒処理の終了処理
+//	m_fJumpForce = 0.0f;	// ジャンプ力
+//	m_fHitPointMAX = 0.0f;	// プレイヤーのHPのMAX値
+//	m_fCurrentHP = 0.0f;	// プレイヤーの現在のHP
+//	m_nTexNo = 1;			// 使うテクスチャ番号を指定
+//	m_bUse = false;			// 未使用
+//	m_bDush = false;		// ダッシュフラグはfalseで初期化
+//	m_bIsJump = false;		// ジャンプフラグはfalseで初期化
+//	m_bIsMove = false;		// 動作フラグはfalseで初期化
+//	m_bPoison = false;		// 毒状態はfalseで初期化
 
-	//------------------- ベースクラスの初期化
+	//------------------- ベースクラスの終了
 	CTexture::Uninit();		// テクスチャ
 	CAnimation::Uninit();	// アニメーション
 	CGravity::Uninit();		// 重力処理
@@ -453,10 +454,11 @@ void CPlayer::CollisionMapchip(CMapchip Mapchip, D3DXVECTOR2 PlayerOldPos)
 // 着地した時の処理
 void CPlayer::OnGround()
 {
-	m_bOnGround = true;		// 接地してる
-	SetGravityFlag(false);	// 重力方向が下向きなら実行
-	m_bIsJump = false;		// ジャンプフラグもfalseにする
-	m_fJumpForce = 0.0f;	// ジャンプ力を初期化
+	m_bOnGround = true;			// 接地してる
+	SetGravityFlag(false);		// 重力方向が下向きなら実行
+	m_bIsJump = false;			// ジャンプフラグもfalseにする
+	m_fJumpForce = 0.0f;		// ジャンプ力を初期化
+	m_fBouyant = ZERO_VECTOR2;	// 浮力を初期化
 
 }
 

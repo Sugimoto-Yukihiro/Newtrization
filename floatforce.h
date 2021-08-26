@@ -1,6 +1,6 @@
 //==================================================================
 //
-// 浮力加速処理 [buoyant.h]
+// 浮力加速処理 [floatforce.h]
 // Auther : 杉本幸宏
 //
 //==================================================================
@@ -11,22 +11,22 @@
 //*****************************************************************************
 // クラス定義
 //*****************************************************************************
-class CBuoyant		// 浮力加速クラス
+class CFloatForce		// 浮力加速クラス
 {
 public:
-	CBuoyant();		// コンストラクタ
-	~CBuoyant();	// デストラクタ
+	CFloatForce();		// コンストラクタ
+	~CFloatForce();	// デストラクタ
 
 	void Init(char* TextureName = NULL);	// 初期化処理
 	void Uninit();	// 終了処理
 	void Update();	// 更新処理
 	void Draw(D3DXVECTOR2 ScrollPos);	// 描画処理
 
-	void AddBuoyandForce(D3DXVECTOR2 *Pos);				// 浮力を加えて移動させる
+	void AddFloatForce(D3DXVECTOR2 *Pos);				// 浮力を加えて移動させる
 	bool HitCheck(D3DXVECTOR2 *Pos, D3DXVECTOR2 Size);	// 当たり判定
 
 	//------------------- セッター関数
-	bool SetBuoyandErea(D3DXVECTOR2 Pos, D3DXVECTOR2 Size, D3DXVECTOR2 Dir, float Force);	// 浮力加速エリアのセット
+	bool SetFloatForceErea(D3DXVECTOR2 Pos, D3DXVECTOR2 Size, D3DXVECTOR2 Dir, float Force, D3DXCOLOR Color);	// 浮力加速エリアのセット
 
 	void SetAreaSize(D3DXVECTOR2 Size) { m_Area = Size; };		// エリアの大きさを取得
 	void SetDirection(D3DXVECTOR2 Dir);							// 浮力の方向を取得

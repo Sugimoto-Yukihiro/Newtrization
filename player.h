@@ -39,6 +39,7 @@ public:
 	void SetPosition(D3DXVECTOR2 Pos);	// プレイヤーの座標をセット
 
 	void SetSize(D3DXVECTOR2 Size) { SetGravityObjectSize(Size); };	// プレイヤーのサイズをセット
+	void SetBouyant(D3DXVECTOR2 Bouyant) { m_fBouyant = Bouyant; };	// プレイヤーの浮力をセット
 	void SetJumpForce(float Force) { m_fJumpForce = Force; };		// プレイヤーのジャンプベクトルを取得
 	void SetHPMax(float MaxHP) { m_fHitPointMAX = MaxHP; };			// プレイヤーのHPのMAX値をセット
 	void SetCurrentHP(float CurHP) { m_fCurrentHP = CurHP; };		// プレイヤーの現在のHPをセット
@@ -49,6 +50,7 @@ public:
 	D3DXVECTOR2 GetPosition() { return GetGravityObjectPos(); };	// プレイヤーの座標を取得
 	D3DXVECTOR2 GetSize() { return GetGravityObjectSize(); };		// プレイヤーの大きさを取得
 	D3DXVECTOR2 GetLegPos() { return m_LegPosition; };	// プレイヤーの足の位置を取得
+	D3DXVECTOR2 GetBouyant() { return m_fBouyant; };	// プレイヤーの浮力を取得
 	float GetJumpForce() { return m_fJumpForce; };		// プレイヤーのジャンプ力を取得
 	float GetHP() { return m_fHitPointMAX; };			// プレイヤーのHPを取得
 	float GetCurrentHP() { return m_fCurrentHP; };		// プレイヤーの現在のHPを取得
@@ -77,6 +79,7 @@ private:
 	CFireBoots	m_FireBoots;				// ファイヤーブーツ
 	CPoison		m_Poison;					// 毒処理
 	D3DXVECTOR2	m_LegPosition;				// プレイヤーの足の座標
+	D3DXVECTOR2	m_fBouyant;					// 浮力加速エリアにぶつかった時の力を保存する変数
 	float		m_fJumpForce;				// プレイヤーのジャンプ力
 	float		m_fHitPointMAX;				// プレイヤーのHPのMAX値
 	float		m_fCurrentHP;				// プレイヤーの現在のHP

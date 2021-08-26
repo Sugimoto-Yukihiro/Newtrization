@@ -9,15 +9,11 @@
 #include "game.h"
 
 #include "bg.h"			// 背景
-//#include "bullet.h"	// バレット
 #include "camera.h"		// カメラ処理
 #include "collision.h"	// 衝突判定
-#include "enemy.h"		// エネミー
 #include "fade.h"		// フェード
 #include "input.h"		// キー・ゲームパッド入力処理
-//#include "particle.h"	// パーティクル
 
-//#include "score.h"	// スコア
 #include "sound.h"		// サウンド
 
 #include "debugproc.h"	// デバッグ表示
@@ -61,15 +57,17 @@ void CModeGame::Init()
 
 	// マップチップの初期化
 	m_Mapchip.Init(TEXTURE_NAME_MAPCHIP, NULL, MAPCHIP_TEXTURE_DIVIDE_X, MAPCHIP_TEXTURE_DIVIDE_Y, MAPCHIP_SIZE_DEFAULT);		// 初期化処理実行
-
 #ifdef _DEBUG
 	// デバッグ表示用マップチップの初期化
 	m_DebugMapchip.Init(TEXTURE_NAME_MAPCHIP_DEBUG, NULL, MAPCHIP_DEBUG_TEXTURE_DIVIDE_X, MAPCHIP_DEBUG_TEXTURE_DIVIDE_Y, MAPCHIP_SIZE_DEFAULT);		// 初期化処理実行
 #endif // _DEBUG
 
-
 	// エネミーの初期化
-	InitEnemy();
+	InitEnemy();	// テクスチャ生成
+	for (int i = 0; i < ENEMY_MAX; i++)
+	{
+		m_Enemy[i].Init();		// エネミーの数だけ呼び出すマン
+	}
 
 	// 弾の初期化
 //	InitBullet();
@@ -80,23 +78,16 @@ void CModeGame::Init()
 	// 画面端の初期化
 	m_SideBlack.Init(TEXTURE_NAME_SIDEBLACK);
 
+	// 浮力加速の初期化
+	for (int i = 0; i < FURYOKU_MAX; i++)
+	{
+		// 初期化
+		m_FloatForceArea[i].Init(FURYOKU_TEX_NAME);
+	}
+
 	// オブジェクトの配置 & マップチップのセット
 	PutAllObject(GAME_MAP_DATA_1);
 
-	// 浮力加速のテスト
-	{
-		for (int i = 0; i < 16; i++)
-		{
-			// 初期化
-			m_BuoyantArea[i].Init(FURYOKU_TEX_NAME);
-		}
-
-		// 適当にセットする
-		m_BuoyantArea[0].SetBuoyandErea(m_Mapchip.GetMapchipPosition(m_Mapchip.GetMapchipNumX() * 8 + 12),	// 中心位置
-										m_Mapchip.GetChipSize() * 3.0f,	// サイズ
-										D3DXVECTOR2(0.0f, -1.0f),
-										14.0f);	// 浮力の大きさ
-	}
 
 
 	//------------------- プレイヤーの位置が決まったから、スクロール座標をセット
@@ -129,9 +120,9 @@ void CModeGame::Uninit(void)
 //	StopSound();
 
 	// 浮力加速エリアの終了処理
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < FURYOKU_MAX; i++)
 	{
-		m_BuoyantArea[i].Uninit();	// 終了
+		m_FloatForceArea[i].Uninit();	// 終了
 	}
 
 	// 画面端の終了処理
@@ -152,6 +143,10 @@ void CModeGame::Uninit(void)
 	m_Mapchip.Uninit();		// 終了処理実行
 
 	// エネミーの終了処理
+	for (int i = 0; i < ENEMY_MAX; i++)
+	{
+		m_Enemy[i].Uninit();		// エネミーの数だけ呼び出すマン
+	}
 	UninitEnemy();
 
 	// プレイヤーの終了処理
@@ -226,21 +221,18 @@ void CModeGame::Update(void)
 	m_Player.Update();	// プレイヤーの更新処理実行
 
 	// エネミーの更新処理
-	UpdateEnemy();
-
-	// 弾の更新処理
-//	UpdateBullet();
-
-	// パーティクルの更新処理
-//	UpdateParticle();
+	for (int i = 0; i < ENEMY_MAX; i++)
+	{
+		m_Enemy[i].Update();		// エネミーの数だけ呼び出すマン
+	}
 
 	// 画面端の更新処理
 	m_SideBlack.Update();
 
 	// 浮力加速の更新処理
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < FURYOKU_MAX; i++)
 	{
-		m_BuoyantArea[i].Update();
+		m_FloatForceArea[i].Update();
 	}
 
 	//-------------------  当たり判定処理
@@ -284,12 +276,15 @@ void CModeGame::Draw()
 #endif // _DEBUG
 
 	// エネミーの描画処理
-//	DrawEnemy();
+	for (int i = 0; i < ENEMY_MAX; i++)
+	{
+		m_Enemy[i].Draw(m_vScrollPos);		// エネミーの数だけ呼び出すマン
+	}
 
 	// 浮力加速エリアの描画処理
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < FURYOKU_MAX; i++)
 	{
-		m_BuoyantArea[i].Draw(m_vScrollPos);
+		m_FloatForceArea[i].Draw(m_vScrollPos);
 	}
 
 	// プレイヤーの描画処理
@@ -319,11 +314,11 @@ void CModeGame::CollisionCheck()
 
 		// その番号によって処理を変える
 		if (MAPCHIP_POISON_min <= nChip_Id && nChip_Id <= MAPCHIP_POISON_MAX)
-		{	// 毒判定のマップチップ番号に当たっていた時
+		{	// 【毒判定のマップチップ番号に当たっていた時】
 			m_Player.SetPoisonFlag(true);	// 毒状態をtrueにする
 		}
 		else if (MAPCHIP_CANGE_GRAVITY_min <= nChip_Id && nChip_Id <= MAPCHIP_CANGE_GRAVITY_MAX)
-		{	// 重力変更判定
+		{	// 【重力変更判定】
 			// 重力方向の変更
 			if (!m_bIsTouchGrvityChange)	// 初めて重力装置に触れた時の一回だけ行う
 			{
@@ -335,11 +330,11 @@ void CModeGame::CollisionCheck()
 
 		}
 		else if (MAPCHIP_GOAL_min <= nChip_Id && nChip_Id <= MAPCHIP_GOAL_MAX)
-		{	// ゴール判定
+		{	// 【ゴール判定】
 			SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモード（リザルト画面）へ
 		}
 		else
-		{	// なにも当たっていない時
+		{	// 【なにも当たっていない時】
 			m_bIsTouchGrvityChange = false;	// フラグを"false"にセット
 			m_Player.SetPoisonFlag(false);	// 毒状態をfalseにする
 		}
@@ -347,26 +342,77 @@ void CModeGame::CollisionCheck()
 	}
 
 	// プレイヤーと浮力加速エリアの当たり判定
-	for (int i = 0; i < 16; i++)
 	{
-		// 未使用なら行わない
-		if (!m_BuoyantArea[i].GetUseFlag()) return;
+		bool Hit = false;
+		for (int i = 0; i < FURYOKU_MAX, !Hit; i++)
+		{
+			// 未使用なら行わない
+			if (!m_FloatForceArea[i].GetUseFlag()) return;
 
-		// プレイヤーの現在の座標を取得
-		D3DXVECTOR2 PlayerPos = m_Player.GetPosition();
+			// プレイヤーの現在の座標を取得
+			D3DXVECTOR2 PlayerPos = m_Player.GetPosition();
 
-		// 当たり判定実行
-		if ( m_BuoyantArea[i].HitCheck(&PlayerPos, m_Player.GetSize() * 0.5f) )
-		{	// 当たっていた時
-			// 重力処理フラグを折る
-			m_Player.SetGravityFlag(false);
+			// 当たり判定実行
+			if (m_FloatForceArea[i].HitCheck(&PlayerPos, m_Player.GetSize() * 0.5f))
+			{	// 当たっていた時
+				// 重力処理フラグを折る
+				m_Player.SetGravityFlag(false);
+				m_Player.SetBouyant(m_FloatForceArea[i].GetForceValue() * m_FloatForceArea[i].GetDirection());	// 浮力をセット
+				Hit = true;	// 当たっている
+			}
+
+			// 浮力移動後の座標をセット
+			m_Player.SetPosition(PlayerPos);
 		}
 
-		// 浮力後の座標をセット
-		m_Player.SetPosition(PlayerPos);
+		// どれも当たっていない時
+		if (!Hit)
+		{
+			// プレイヤーの現在の座標を取得
+			D3DXVECTOR2 PlayerPos = m_Player.GetPosition();
+
+			// 浮力移動させる
+			PlayerPos += m_Player.GetBouyant();
+
+			// 浮力移動後の座標をセット
+			m_Player.SetPosition(PlayerPos);
+		}
+
 	}
 
+
 }
+
+//****************************************************
+// 説明		： ゲーム全体の重力の方向をセット
+// 引数		： 重力方向
+// 戻り値	： void
+//****************************************************
+void CModeGame::ChangeGravityDirection(int Direction)
+{
+	/* 重力処理クラスを継承している全てのオブジェクトの、重力方向の向きを変更 */
+	// プレイヤー
+	{
+		m_Player.SetGravityObjectDirection(Direction);	// プレイヤーの重力方向をセット
+		m_Player.SetSize(D3DXVECTOR2(m_Player.GetSize().y, m_Player.GetSize().x));	// サイズ値を入れ替え
+
+		// 変わった方向によって処理変える
+		if (m_GravityDirection == GRAVITY_LEFT)			// 左向きへ変わった時の処理
+		{
+			m_Player.SetTexRotation(D3DXToRadian(0));	// 回転値をいったんリセット
+			m_Player.SetTexRotation(D3DXToRadian(90));	// プレイヤーテクスチャを90°回転
+		}
+		else if (m_GravityDirection == GRAVITY_DEFAULT)	// デフォルトへ変わった時の処理
+		{
+			m_Player.SetTexRotation(D3DXToRadian(0));	// 回転値をリセット
+		}
+
+	}
+
+
+
+}
+
 
 //****************************************************
 // 説明		： マップチップとの当たり判定をとり、座標の調整も行う
@@ -486,7 +532,12 @@ int CModeGame::PutAllObject(const char* pCsvMapFile)
 			else if (strrchr(pToken, ENEMY_SYMBOL) != NULL)	// エネミーの設置記号が存在するか調べる
 			{
 				// エネミーを設置
-
+				PutEnemy(m_Mapchip.GetMapchipPosition(nTokenCnt));	// 'E'の存在するチップの中心に浮力加速エリアをセット
+			}
+			else if (strrchr(pToken, FURYOKU_SYMBOL) != NULL)	// 浮力加速の設置記号が存在するか調べる
+			{
+				// 浮力加速エリアを設置
+				PutFloatForceArea( m_Mapchip.GetMapchipPosition(nTokenCnt) );	// 'F'の存在するチップの中心に浮力加速エリアをセット
 			}
 			else {	// 何もない時
 
@@ -554,8 +605,6 @@ int CModeGame::GetGravityDirection()
 	return m_GravityDirection;	// ゲーム全体の重力方向の情報を返す
 }
 
-
-
 //=============================================================================
 // セッター関数
 //=============================================================================
@@ -565,30 +614,43 @@ void CModeGame::SetScrollPosition(D3DXVECTOR2 Pos)
 	m_vScrollPos = Pos;
 }
 
-
-
-// ゲーム全体の重力の方向をセット
-void CModeGame::ChangeGravityDirection(int Direction)
+//=============================================================================
+// メンバ関数（private）
+//=============================================================================
+bool CModeGame::PutFloatForceArea(D3DXVECTOR2 Pos)
 {
-	/* 重力処理クラスを継承している全てのオブジェクトの、重力方向の向きを変更 */
-	// プレイヤー
-	{
-		m_Player.SetGravityObjectDirection(Direction);	// プレイヤーの重力方向をセット
-		m_Player.SetSize(D3DXVECTOR2(m_Player.GetSize().y, m_Player.GetSize().x));	// サイズ値を入れ替え
-	
-		// 変わった方向によって処理変える
-		if (m_GravityDirection == GRAVITY_LEFT)			// 左向きへ変わった時の処理
-		{
-			m_Player.SetTexRotation(D3DXToRadian(0));	// 回転値をいったんリセット
-			m_Player.SetTexRotation(D3DXToRadian(90));	// プレイヤーテクスチャを90°回転
-		}
-		else if (m_GravityDirection == GRAVITY_DEFAULT)	// デフォルトへ変わった時の処理
-		{
-			m_Player.SetTexRotation(D3DXToRadian(0));	// 回転値をリセット
-		}
+	bool bRet = false;	// 戻り値
 
+	for (int i = 0; i < FURYOKU_MAX; i++)
+	{
+		// 浮力エリアのセット
+		if (m_FloatForceArea[i].SetFloatForceErea(Pos, m_Mapchip.GetChipSize(), FURYOKU_DIRECTION, FURYOKU_FORCE, FURYOKU_TEX_COLOR))
+		{	// セットできた時
+			bRet = true;	// 成功をセット
+			break;			// このループから抜ける
+		}
 	}
 
+	// セットできた時 → true
+	// できなかった時 → false
+	return bRet;
+}
 
+bool CModeGame::PutEnemy(D3DXVECTOR2 Pos)
+{
+	bool bRet = false;	// 戻り値
 
+	for (int i = 0; i < ENEMY_MAX; i++)
+	{
+		// エネミーのセット
+		if ( m_Enemy[i].SetEnemy(Pos) )
+		{	// セットできた時
+			bRet = true;	// 成功をセット
+			break;			// このループから抜ける
+		}
+	}
+
+	// セットできた時 → true
+	// できなかった時 → false
+	return bRet;
 }
