@@ -223,7 +223,7 @@ void CModeGame::Update(void)
 	// エネミーの更新処理
 	for (int i = 0; i < ENEMY_MAX; i++)
 	{
-		m_Enemy[i].Update();		// エネミーの数だけ呼び出すマン
+		m_Enemy[i].Update(m_Mapchip);		// エネミーの数だけ呼び出すマン
 	}
 
 	// 画面端の更新処理
@@ -643,7 +643,7 @@ bool CModeGame::PutEnemy(D3DXVECTOR2 Pos)
 	for (int i = 0; i < ENEMY_MAX; i++)
 	{
 		// エネミーのセット
-		if ( m_Enemy[i].SetEnemy(Pos) )
+		if ( m_Enemy[i].SetEnemy(Pos, false) )
 		{	// セットできた時
 			bRet = true;	// 成功をセット
 			break;			// このループから抜ける

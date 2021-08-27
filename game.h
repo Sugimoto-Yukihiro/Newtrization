@@ -12,6 +12,7 @@
 #include "userInterface.h"	// UI
 #include "sideblack.h"		// 画面端処理
 #include "floatforce.h"		// 浮力加速
+#include "score.h"			// スコア
 
 //*****************************************************************************
 // マクロ定義
@@ -91,6 +92,10 @@
 #define FURYOKU_DIRECTION			D3DXVECTOR2(0.0, -1.0f)			// 浮力エリアの最大値
 #define FURYOKU_FORCE				(10.0f)							// 
 
+//------------------- スコア表示
+#define SCORE_DRAW_POS_RIGHT		D3DXVECTOR2(0.0, 15.0f)
+
+
 //------------------- その他ゲーム内で使用するパラメータ
 #define DEFAULT_GRAVITY_WAIT		(0.55f)		// 重力の値(デフォルトの時)
 #define LEFT_GRAVITY_WAIT			(0.55f)		// 重力の値(左方向の時)
@@ -106,10 +111,10 @@ public:
 //	~CModeGame();
 
 	//------------------- メンバ関数
-	void Init();
-	void Uninit();
-	void Update();
-	void Draw();
+	void Init();	// 初期化
+	void Uninit();	// 終了処理
+	void Update();	// 更新処理
+	void Draw();	// 描画処理
 
 	void CollisionCheck();	// 当たり判定
 	void ChangeGravityDirection(int Direction);	// ゲーム全体の重力の方向を変える
@@ -145,10 +150,11 @@ private:
 	//------------------- 各インスタンス
 	CGameUI m_GameUI;			// ゲームUI
 	CPlayer	m_Player;			// プレイヤーのインスタンス
-	CEnemy	m_Enemy[ENEMY_MAX];			// エネミー
+	CEnemy	m_Enemy[ENEMY_MAX];	// エネミー
 	CMapchip m_Mapchip;			// マップチップ
 	CSideBlack m_SideBlack;		// 画面端の黒くするやつ
 	CFloatForce m_FloatForceArea[FURYOKU_MAX];	// 浮力加速エリア（一時的に16個用意。動的管理したい）
+	CScore	m_Score;			// スコア
 
 #ifdef _DEBUG
 	CMapchip m_DebugMapchip;	// デバッグ表示用マップチップ

@@ -9,6 +9,7 @@
 #include "renderer.h"
 
 #include "enemy.h"
+#include "game.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -37,8 +38,8 @@
 static ID3D11ShaderResourceView	*g_Texture[ENEMY_TEX_PATTARN_MAX] = { NULL };	// テクスチャ情報
 
 static char *g_TextureName[] = {
-	"data/TEXTURE/enemy/0813_CHARACTER_警備員左.PNG",	// ENEMY_TEX_01
 	"data/TEXTURE/enemy/0813_CHARACTER_警備員.PNG",	// ENEMY_TEX_01
+	"data/TEXTURE/enemy/0813_CHARACTER_警備員左.PNG",	// ENEMY_TEX_01
 };
 
 //CEnemy g_Enemy[ENEMY_MAX];							// エネミー構造体
@@ -152,7 +153,7 @@ void UninitEnemy()
 //=============================================================================
 // 更新処理
 //=============================================================================
-void CEnemy::Update(void)
+void CEnemy::Update(CMapchip Mapchip)
 {
 	if (m_use == true)	// このエネミーが使われている？
 	{					// Yes
@@ -169,20 +170,37 @@ void CEnemy::Update(void)
 			条件：
 				まずは右向きに "VALUE_MOVE"だけ右向きに移動させる。
 				エネミーの右端の部分のマップチップ番号を調べて壁判定の番号の時は進行方向を逆（左向き）にする
+
+				壁判定の番号　→　MAPCHIP_HIT_min と MAPCHIP_HIT_MAXの間の数字（つまり1~9番）【game.h 42行目】
+
+				マップチップ番号を調べて、その値が
+						" MAPCHIP_HIT_min <= 調べたマップチップ番号 && 調べたマップチップ番号 <= MAPCHIP_HIT_MAX "
+							だったら進行方向を逆にする！！
 		*/
 
 		// 左向きに動かす
-		if (m_left)	// 左向きフラグが trueのとき
 		{
-			m_pos.x += VALUE_MOVE;	// x軸方向に動かす
+
 		}
 
 		// 右向きに動かす
+		if (m_left == false)		// 左向きフラグが falseのとき（つまり、右向き移動）
 		{
-
+			m_pos.x += VALUE_MOVE;	// x軸の方向に動かす（右向き）
 		}
 
+		// マップチップの番号を調べる
+		{
+			/* Mapchip.GetMapchip( 調べたい座標 )　→　マップチップ番号わかる 
+				右向きの時は、エネミー右端の座標
+				左向きの時は、エネミー左端の座標
 
+				右端の場合、（エネミーの中心座標 + エネミーの幅の半分の大きさ）＝ エネミーの右端
+												GetTexSize().x / 2
+			*/
+	
+
+		}
 
 	}
 
@@ -238,15 +256,15 @@ void CEnemy::Draw(D3DXVECTOR2 ScrollPos)
 
 
 // エネミーのセット
-bool CEnemy::SetEnemy(D3DXVECTOR2 Pos)
+bool CEnemy::SetEnemy(D3DXVECTOR2 Pos, bool LeftFlag)
 {
 	// 既に使用中だったら失敗を返す
 	if (m_use) return(false);
 
 	// 使用中の時　→　使用フラグをtrueにしてエネミーを指定座標にセット
-	m_pos = Pos;	// 座標セット
-	m_left = true;	// 最初は左向きに動かす
-	m_use = true;	// 使用フラグをセット
+	m_pos = Pos;		// 座標セット
+	m_left = LeftFlag;	// 動かす向きを指定
+	m_use = true;		// 使用フラグをセット
 
 	// 成功を返す
 	return (true);

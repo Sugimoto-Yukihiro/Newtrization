@@ -35,12 +35,12 @@ public:
 	~CEnemy();
 
 	void Init();
-	void Update();
+	void Update(CMapchip Mapchip);
 	void Draw(D3DXVECTOR2 ScrollPos);
 //	void Uninit();
 
 	// 指定の位置にエネミーを置く処理
-	bool SetEnemy(D3DXVECTOR2 Pos);	// 引数：このエネミーを置きたい場所
+	bool SetEnemy(D3DXVECTOR2 Pos, bool LeftFlag);	// 引数：このエネミーを置きたい場所
 
 	void KillEnemy();	// このエネミーを殺す処理
 
