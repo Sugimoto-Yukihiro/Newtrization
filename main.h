@@ -47,6 +47,7 @@
 //*****************************************************************************
 #define SCREEN_WIDTH	(960)				// ウインドウの幅
 #define SCREEN_HEIGHT	(540)				// ウインドウの高さ
+#define SCREEN_SIZE		D3DXVECTOR2((float)SCREEN_WIDTH, (float)SCREEN_HEIGHT)	// スクリーンのサイズ
 #define SCREEN_CENTER_X	(SCREEN_WIDTH / 2)	// ウインドウの中心Ｘ座標
 #define SCREEN_CENTER_Y	(SCREEN_HEIGHT / 2)	// ウインドウの中心Ｙ座標
 #define SCREEN_CENTER	D3DXVECTOR2((float)SCREEN_CENTER_X, (float)SCREEN_CENTER_Y)	// ウィンドウの中心座標

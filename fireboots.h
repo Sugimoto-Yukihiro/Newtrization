@@ -34,9 +34,12 @@ public:
 	//------------------- セッター関数
 
 	//------------------- ゲッター関数
-
+	CBullet GetBulletInf(int IdxNo) { return m_Bullet[IdxNo]; };	// バレットの情報を取得
+	int GetUsedBulletNum() { return m_nUsedBulletNum; };			// 発射したバレットの数を取得
 
 private:
 	CBullet m_Bullet[BOOTS_BULLET_NUM];	// ファイヤーブーツで下方向に飛ばすバレット
-	int m_nUsedBulletNum;			// 既に発射したバレットの数
+	int m_nFlameCnt[BOOTS_BULLET_NUM];	// バレットの経過フレーム数
+	int m_nCoolTime[BOOTS_BULLET_NUM];	// 何フレーム後にバレットを解放するのか
+	int m_nUsedBulletNum;				// 既に発射したバレットの数
 };

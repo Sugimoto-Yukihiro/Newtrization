@@ -1,7 +1,7 @@
 //=============================================================================
 //
 // サウンド処理 [sound.cpp]
-// Author : 稲垣佑二郎
+// Author : 稲垣佑二郎, 杉本幸宏
 //
 //=============================================================================
 #include "sound.h"
@@ -30,10 +30,14 @@ IXAudio2SourceVoice *g_apSourceVoice[SOUND_LABEL_MAX] = {};	// ソースボイス
 BYTE *g_apDataAudio[SOUND_LABEL_MAX] = {};					// オーディオデータ
 DWORD g_aSizeAudio[SOUND_LABEL_MAX] = {};					// オーディオデータサイズ
 
-// 各音素材のパラメータ
+// 各音素材のパラメータ( -1 は永久ループ → BGM、0 はループなし → SE(効果音) )
 SOUNDPARAM g_aParam[SOUND_LABEL_MAX] =
 {
-	{ (char*)"data/BGM/sample000.wav", -1 },	// BGM0
+	{ (char*)"data/SOUND/BGM/title_BGM_01.wav", -1 },			// SOUND_LABEL_BGM_title_01
+	{ (char*)"data/SOUND/BGM/game_BGM_01.wav", -1 },			// SOUND_LABEL_BGM_game_01
+	{ (char*)"data/SOUND/BGM/result_BGM_gameclear.wav", -1 },	// SOUND_LABEL_BGM_result_CLEAR
+	{ (char*)"data/SOUND/BGM/result_BGM_gameover.wav", -1 },	// SOUND_LABEL_BGM_result_FAILED
+
 };
 
 //=============================================================================

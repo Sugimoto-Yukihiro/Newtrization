@@ -33,6 +33,8 @@ void CFireBoots::Init(char* pBulletTextureName, int TexDivX, int TexDivY, int An
 	for (int i = 0; i < BOOTS_BULLET_NUM; i++)
 	{
 		m_Bullet[i].Init(pBulletTextureName, TexDivX, TexDivY, AnimWait);
+		m_nFlameCnt[i] = 0;	// フレームカウントを初期化
+		m_nCoolTime[i] = 0;	// クールタイムを初期化
 	}
 
 	// メンバ変数の初期化
@@ -67,7 +69,12 @@ void CFireBoots::Update(D3DXVECTOR2 StageSize)
 	// バレットの更新
 	for (int i = 0; i < BOOTS_BULLET_NUM; i++)
 	{
+		// このバレットが使われていなかったら終了
+		if (!m_Bullet[i].GetUseFlag()) continue;
 		m_Bullet[i].Update();	// 更新
+
+		// フレーム数をカウント
+		m_nFlameCnt[i]++;
 
 		// ステージ外にいったら、このバレットを解放
 		if ((m_Bullet[i].GetPosition().x + (m_Bullet[i].GetSize().x * 0.5f)) < 0.0f ||			// 右端の点が、ステージ左端を超えたら解放
@@ -76,6 +83,7 @@ void CFireBoots::Update(D3DXVECTOR2 StageSize)
 			(m_Bullet[i].GetPosition().y - (m_Bullet[i].GetSize().y * 0.5f)) > StageSize.y	)	// 上端の点が、ステージ下端を超えたら解放
 		{
 			m_Bullet[i].UnsetBullet();	// バレット解放
+			m_nFlameCnt[i] = 0;			// 経過フレーム数のリセット
 			m_nUsedBulletNum--;			// 使用バレット数の減算
 		}
 

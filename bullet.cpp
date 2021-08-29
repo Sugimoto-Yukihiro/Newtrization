@@ -91,7 +91,7 @@ void CBullet::Uninit()
 void CBullet::Update()
 {
 	// このバレットが使われていないなら終了
-	if (!m_bUse) return;
+//	if (!m_bUse) return;
 
 	// アニメーション
 	m_TexBullet.UpdateAnimIndex(0, m_TexBullet.GetTexDivideX() * m_TexBullet.GetTexDivideY());	// 最初から最後まで一気にアニメーション

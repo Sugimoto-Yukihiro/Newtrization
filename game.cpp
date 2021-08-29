@@ -106,7 +106,7 @@ void CModeGame::Init()
 	}
 
 	// BGM再生
-//	PlaySound(SOUND_LABEL_BGM_sample001);
+	PlaySound(SOUND_LABEL_BGM_game_01);
 }
 
 
@@ -116,8 +116,8 @@ void CModeGame::Init()
 //=============================================================================
 void CModeGame::Uninit(void)
 {
-	// BGM停止
-//	StopSound();
+	// サウンド停止
+	StopSound();
 
 	// 浮力加速エリアの終了処理
 	for (int i = 0; i < FURYOKU_MAX; i++)
@@ -196,14 +196,16 @@ void CModeGame::Update(void)
 	//------------------- キー・ゲームパットでの入力で次のモードへ
 	if (KEY_MODE_CHANGE)
 	{// Enter押したら、ステージを切り替える
-		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
+	//	SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
 	//	SetMode(NEXT_MODE);				// 次のモードにシーン遷移
+		RequestGameOver();	// ゲームオーバー
 	}
 	// ゲームパッドで入力処理
 	else if (PAD_MODE_CHANGE)
 	{
-		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
+	//	SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
 	//	SetMode(NEXT_MODE);				// 次のモードにシーン遷移
+		RequestGameOver();	// ゲームオーバー
 	}
 #endif // KEY_MODE_CHANGE
 
@@ -252,8 +254,20 @@ void CModeGame::Update(void)
 	m_GameUI.Update();
 
 	// プレイヤーのHPが0以下になったら終了
-	if (m_Player.GetCurrentHP() < 0.0f) SetFade(FADE_OUT, NEXT_MODE);
+	if (m_Player.GetCurrentHP() < 0.0f) RequestGameOver();	// ゲームオーバー
 
+	// プレイヤーがステージ外にいったら終了
+	if (
+		// x軸
+		m_Player.GetPosition().x < 0.0f ||
+		m_Mapchip.GetMapChipSize().x < m_Player.GetPosition().x ||
+		// y軸
+		m_Player.GetPosition().x < 0.0f ||
+		m_Mapchip.GetMapChipSize().y < m_Player.GetPosition().y
+		)
+	{
+		RequestGameOver();	// ゲームオーバー
+	}
 }
 
 
@@ -387,6 +401,12 @@ void CModeGame::CollisionCheck()
 	}
 
 
+	// プレイヤーとエネミー
+
+
+	// ファイヤーブーツの弾とエネミー
+
+	
 }
 
 //****************************************************

@@ -29,14 +29,14 @@
 
 // 使用テクスチャのファイル名(ゲームクリア時)
 static char *g_TextureGameClear[TEXTURE_MAX_CLEAR] = {
-	"data/TEXTURE/Result/bg_result.png",	// TexNo：0
-	"data/TEXTURE/Result/result_logo.png",	// TexNo：1
+	"data/TEXTURE/Result/bg_result.png",
+	"data/TEXTURE/Result/0829_Resalt.png",
 };
 
 // 使用テクスチャのファイル名(ゲームオーバー時)
 static char *g_TextureGameOver[TEXTURE_MAX_GAMEOVER] = {
-	"data/TEXTURE/Result/bg_result.png",	// TexNo：0
-	"data/TEXTURE/Result/result_logo.png",	// TexNo：1
+	"data/TEXTURE/fade_black.png",	// 背景
+	"data/TEXTURE/Result/0829_GameOver.png",
 };
 
 //=============================================================================
@@ -49,11 +49,21 @@ void CModeResult::Init()
 	{
 		m_Texture[i].Init();	// テクスチャ
 	}
-	m_Score.Init(RESULT_TEX_NAME_SCORE, RESULT_TEX_SIZE_SCORE);	// スコア
-	m_CreaFlag = false;	// ゲームオーバーで初期化
 
-	// BGM再生
-//	PlaySound(SOUND_LABEL_BGM_sample002);
+//	m_Score.Init(RESULT_TEX_NAME_SCORE, RESULT_TEX_SIZE_SCORE);	// スコアの初期化
+
+	// ゲームのクリア状態によって処理を変える
+	if (m_CreaFlag)
+	{	// ゲームクリア
+		CreateTextureGameClear();					// 使用するテクスチャを生成
+		PlaySound(SOUND_LABEL_BGM_result_CLEAR);	// ゲームクリア時のBGM再生
+	}
+	else
+	{	// ゲームオーバー
+		CreateTextureGameOver();					// 使用するテクスチャを生成
+		PlaySound(SOUND_LABEL_BGM_result_FAILED);	// ゲームオーバー時のBGM再生
+	}
+
 }
 
 
@@ -63,13 +73,19 @@ void CModeResult::Init()
 //=============================================================================
 void CModeResult::Uninit()
 {
+	// サウンド停止
+	StopSound();
+
 	//------------------- メンバインスタンスの終了処理
+	// スコアの終了処理
+	m_Score.Uninit();
+
+	// テクスチャの終了処理
 	for (int i = 0; i < RESULT_TEXTURE_MAX; i++)
 	{
 		m_Texture[i].Uninit();				// テクスチャの終了処理
 		m_Texture[i].ReleaseTextureInf();	// テクスチャの解放
 	}
-	m_Score.Uninit();	// スコアの終了処理
 
 }
 
@@ -97,6 +113,9 @@ void CModeResult::Update()
 
 	/* 以下、各テクスチャごとに更新処理があれば記入 */
 
+#ifdef _DEBUG
+	
+#endif // _DEBUG
 
 
 }
@@ -117,6 +136,8 @@ void CModeResult::Draw()
 			m_Texture[i].DrawTexture();
 		}
 
+		// スコアの表示
+		m_Score.Draw(RESULT_TEX_POS_SCORE);
 	}
 	else
 	{	// ゲームオーバ時のテクスチャ描画
@@ -126,6 +147,7 @@ void CModeResult::Draw()
 		}
 
 	}
+
 
 }
 
@@ -139,6 +161,16 @@ void CModeResult::CreateTextureGameClear()
 		// テクスチャ生成
 		m_Texture[i].CreateTextureInf(g_TextureGameClear[i]);
 	}
+
+	// 個別にサイズ・位置を指定
+	//------------------- 背景
+	m_Texture[GAMECLEAR_TEX_bg].SetTexSize(SCREEN_SIZE);	// 大きさはスクリーンの大きさ
+	m_Texture[GAMECLEAR_TEX_bg].SetTexPos(SCREEN_CENTER);	// 座標はスクリーンの中心
+
+	//------------------- ロゴ("Result")
+	m_Texture[GAMECLEAR_TEX_logo].SetTexSize(RESULT_LOGO_SIZE);		// 大きさはスクリーンの大きさ
+	m_Texture[GAMECLEAR_TEX_logo].SetTexPos(RESULT_LOGO_POS);		// 座標はスクリーンの中心
+	m_Texture[GAMECLEAR_TEX_logo].SetTexColor(RESULT_LOGO_COLOR);	// 色を指定
 
 }
 
@@ -164,6 +196,16 @@ void CModeResult::CreateTextureGameOver()
 		// テクスチャ生成
 		m_Texture[i].CreateTextureInf(g_TextureGameOver[i]);
 	}
+
+	// 個別にサイズ・位置を指定
+	//------------------- 背景
+	m_Texture[GAMECLEAR_TEX_bg].SetTexSize( SCREEN_SIZE );	// 大きさはスクリーンの大きさ
+	m_Texture[GAMECLEAR_TEX_bg].SetTexPos( SCREEN_CENTER );	// 座標はスクリーンの中心
+
+	//------------------- ロゴ("GANEOVER")
+	m_Texture[GAMEOVER_TEX_logo].SetTexSize(RESULT_LOGO_GAMEOVER_SIZE);	// 大きさはスクリーンの大きさ
+	m_Texture[GAMEOVER_TEX_logo].SetTexPos(RESULT_LOGO_GAMEOVER_POS);		// 座標はスクリーンの中心
+	m_Texture[GAMEOVER_TEX_logo].SetTexColor(RESULT_LOGO_GAMEOVER_COLOR);	// 色を指定
 
 }
 

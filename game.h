@@ -26,12 +26,12 @@
 #define FURYOKU_SYMBOL				'F'		// 浮力加速エリアの記号
 
 //------------------- マップチップに関する定義
-#define TEXTURE_NAME_MAPCHIP		"data/TEXTURE/mapchip/Mapchip.png"
-#define TEXTURE_NAME_MAPCHIP_DEBUG	"data/TEXTURE/mapchip/number.png"
+#define TEXTURE_NAME_MAPCHIP		"data/TEXTURE/mapchip/0829_mapchip.png"
+#define TEXTURE_NAME_MAPCHIP_DEBUG	"data/TEXTURE/mapchip/0829_Number.png"
 
 /* マップチップテクスチャの分割数　→　固定値とする */
 #define MAPCHIP_TEXTURE_DIVIDE_X	(5)		// 横方向の分割数
-#define MAPCHIP_TEXTURE_DIVIDE_Y	(16)	// 縦方向の分割数
+#define MAPCHIP_TEXTURE_DIVIDE_Y	(5)	// 縦方向の分割数
 
 #define MAPCHIP_DEBUG_TEXTURE_DIVIDE_X	(5)	// 横方向の分割数
 #define MAPCHIP_DEBUG_TEXTURE_DIVIDE_Y	(6)	// 縦方向の分割数
@@ -93,7 +93,7 @@
 #define FURYOKU_FORCE				(10.0f)							// 
 
 //------------------- スコア表示
-#define SCORE_TEX_NAME				"data/TEXTURE/score/number.png"	// スコアのテクスチャ名
+#define SCORE_TEX_NAME				"data/TEXTURE/score/0829_Score_Number.png"	// スコアのテクスチャ名
 #define SCORE_DRAW_SIZE				D3DXVECTOR2(35.0f, 35.0f)		// スコアの表示サイズ
 #define SCORE_DRAW_POS_RIGHT		D3DXVECTOR2(930.0f, 35.0f)		// スコアの表示位置（最右の数字の位置）
 

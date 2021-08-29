@@ -509,8 +509,9 @@ void CMode::GameCrea(int Score)
 	SetFade(FADE_OUT, MODE_RESULT);
 
 	// ゲームクリア
-	m_Result.SetCreaFlag(true);
-	m_Result.CreateTextureGameClear();	// 使用するテクスチャを生成
+	m_Result.SetCreaFlag(true);		// ゲームクリアフラグをセット
+	m_Result.ScoreInit();			// スコアの初期化
+	m_Result.SetResultScore(Score);	// スコア値をセット
 }
 
 // ゲームクリア
@@ -520,8 +521,7 @@ void CMode::GameOver()
 	SetFade(FADE_OUT, MODE_RESULT);
 
 	// ゲームオーバー
-	m_Result.SetCreaFlag(false);
-	m_Result.CreateTextureGameOver();	// 使用するテクスチャを生成
+	m_Result.SetCreaFlag(false);	// ゲームオーバーフラグをセット
 }
 
 

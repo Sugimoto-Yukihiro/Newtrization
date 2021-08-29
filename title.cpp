@@ -11,7 +11,7 @@
 #include "renderer.h"
 #include "input.h"		// キー・ゲームパッド入力
 #include "fade.h"		// フェード
-//#include "sound.h"	// サウンド
+#include "sound.h"	// サウンド
 #include "texture.h"	// スプライト処理
 
 //*****************************************************************************
@@ -93,7 +93,7 @@ HRESULT InitTitle(void)
 	flag_alpha = true;
 
 	// BGM再生
-//	PlaySound(SOUND_LABEL_BGM_sample000);
+	PlaySound(SOUND_LABEL_BGM_title_01);
 
 	return S_OK;
 }
@@ -103,6 +103,9 @@ HRESULT InitTitle(void)
 //=============================================================================
 void UninitTitle(void)
 {
+	// サウンド停止
+	StopSound();
+
 	if (g_VertexBuffer)
 	{
 		g_VertexBuffer->Release();
@@ -139,30 +142,6 @@ void UpdateTitle(void)
 	//	SetMode(NEXT_MODE);				// 次のモードにシーン遷移
 	}
 #endif // KEY_MODE_CHANGE
-
-	if (flag_alpha == true)
-	{
-		alpha -= 0.02f;
-		if (alpha <= 0.0f)
-		{
-			alpha = 0.0f;
-			flag_alpha = false;
-		}
-	}
-	else
-	{
-		alpha += 0.02f;
-		if (alpha >= 1.0f)
-		{
-			alpha = 1.0f;
-			flag_alpha = true;
-		}
-	}
-
-#ifdef _DEBUG	// デバッグ情報を表示する
-	//char *str = GetDebugStr();
-	//sprintf(&str[strlen(str)], " PX:%.2f PY:%.2f", g_Pos.x, g_Pos.y);
-#endif
 }
 
 //=============================================================================
@@ -198,43 +177,6 @@ void DrawTitle(void)
 		// ポリゴン描画
 		GetDeviceContext()->Draw(4, 0);
 	}
-
-	//// タイトルのロゴを描画
-	//{
-	//	// テクスチャ設定
-	//	GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[1]);
-
-	//	// １枚のポリゴンの頂点とテクスチャ座標を設定
-	////	SetSprite(g_VertexBuffer, g_Pos.x, g_Pos.y, TEXTURE_WIDTH_LOGO, TEXTURE_HEIGHT_LOGO, 0.0f, 0.0f, 1.0f, 1.0f);
-	//	SetSpriteColor(g_VertexBuffer, g_Pos.x, g_Pos.y, TEXTURE_WIDTH_LOGO, TEXTURE_HEIGHT_LOGO, 0.0f, 0.0f, 1.0f, 1.0f,
-	//					D3DXCOLOR(1.0f, 1.0f, 1.0f, alpha));
-
-	//	// ポリゴン描画
-	//	GetDeviceContext()->Draw(4, 0);
-	//}
-
-//	// 加減算のテスト
-//	SetBlendState(BLEND_MODE_ADD);		// 加算合成
-////	SetBlendState(BLEND_MODE_SUBTRACT);	// 減算合成
-//	for(int i=0; i<30; i++)
-//	{
-//		// テクスチャ設定
-//		GetDeviceContext()->PSSetShaderResources(0, 1, &g_Texture[2]);
-//
-//		// １枚のポリゴンの頂点とテクスチャ座標を設定
-//		float dx = 100.0f;
-//		float dy = 100.0f;
-//		float sx = (float)(rand() % 100);
-//		float sy = (float)(rand() % 100);
-//
-//
-//		SetSpriteColor(g_VertexBuffer, dx+sx, dy+sy, 50, 50, 0.0f, 0.0f, 1.0f, 1.0f,
-//			D3DXCOLOR(0.3f, 0.3f, 1.0f, 0.5f));
-//
-//		// ポリゴン描画
-//		GetDeviceContext()->Draw(4, 0);
-//	}
-//	SetBlendState(BLEND_MODE_ALPHABLEND);	// 半透明処理を元に戻す
 
 }
 
