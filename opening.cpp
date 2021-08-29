@@ -23,7 +23,7 @@
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11ShaderResourceView	*g_Texture[RESULT_TEX_PATTARN_MAX] = { NULL };	// テクスチャ情報
+static ID3D11ShaderResourceView	*g_Texture[OPENING_TEX_PATTARN_MAX] = { NULL };	// テクスチャ情報
 
 
 static char *g_TexturName[] = {
@@ -97,7 +97,7 @@ void CModeOpening::Draw(void)
 	// 描画の前準備( PresetDraw2D() を呼び出そう！)
 
 	// 全てのテクスチャを描画
-	for (int i = 0; i < RESULT_TEX_PATTARN_MAX; i++)
+	for (int i = 0; i < OPENING_TEX_PATTARN_MAX; i++)
 	{
 		// 描画( DrawTexture() を呼び出そう！)
 

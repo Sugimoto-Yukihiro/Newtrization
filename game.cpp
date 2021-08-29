@@ -9,11 +9,10 @@
 #include "game.h"
 
 #include "bg.h"			// 背景
-#include "camera.h"		// カメラ処理
+//#include "camera.h"		// カメラ処理
 #include "collision.h"	// 衝突判定
 #include "fade.h"		// フェード
 #include "input.h"		// キー・ゲームパッド入力処理
-
 #include "sound.h"		// サウンド
 
 #include "debugproc.h"	// デバッグ表示
@@ -38,6 +37,7 @@ void CModeGame::Init()
 	m_vScrollPos = ZERO_VECTOR2;			// スクロール座標の初期化
 	m_GravityDirection = GRAVITY_DEFAULT;	// 重力方向の初期化
 	m_bIsTouchGrvityChange = false;			// "false"（エンジンに触れていない）で初期化
+	m_nFlameCnt = 0;						// 経過フレーム数を初期化
 #ifdef _DEBUG
 	// ポーズフラグの初期化
 	m_bPauseFlag = false;		// "false"（ボーズ無効）で初期化
@@ -73,7 +73,7 @@ void CModeGame::Init()
 //	InitBullet();
 
 	// スコアの初期化
-//	InitScore();
+	m_Score.Init(SCORE_TEX_NAME, SCORE_DRAW_SIZE);
 
 	// 画面端の初期化
 	m_SideBlack.Init(TEXTURE_NAME_SIDEBLACK);
@@ -129,7 +129,7 @@ void CModeGame::Uninit(void)
 	m_SideBlack.Uninit();
 
 	// スコアの終了処理
-//	UninitScore();
+	m_Score.Uninit();
 
 	// 弾の終了処理
 //	UninitBullet();
@@ -207,6 +207,8 @@ void CModeGame::Update(void)
 	}
 #endif // KEY_MODE_CHANGE
 
+	// 経過フレーム数をカウント
+	m_nFlameCnt++;
 
 	// マップチップの更新処理
 	m_Mapchip.Update();
@@ -241,7 +243,7 @@ void CModeGame::Update(void)
 	/* 当たり判定の結果によって内容が変わる更新処理はこれ以降に記載する！ */
 
 	// スコアの更新処理
-//	UpdateScore();
+	m_Score.Update(m_nFlameCnt);
 
 	// 背景の更新処理
 	UpdateBg();
@@ -267,6 +269,12 @@ void CModeGame::Draw()
 	// 背景の描画処理
 	DrawBg();
 
+	// 浮力加速エリアの描画処理
+	for (int i = 0; i < FURYOKU_MAX; i++)
+	{
+		m_FloatForceArea[i].Draw(m_vScrollPos);
+	}
+
 	// マップチップの描画処理
 	m_Mapchip.Draw(m_vScrollPos);
 
@@ -281,11 +289,6 @@ void CModeGame::Draw()
 		m_Enemy[i].Draw(m_vScrollPos);		// エネミーの数だけ呼び出すマン
 	}
 
-	// 浮力加速エリアの描画処理
-	for (int i = 0; i < FURYOKU_MAX; i++)
-	{
-		m_FloatForceArea[i].Draw(m_vScrollPos);
-	}
 
 	// プレイヤーの描画処理
 	m_Player.Draw(m_vScrollPos);
@@ -298,6 +301,9 @@ void CModeGame::Draw()
 
 	// UIの描画処理
 	m_GameUI.Draw();
+
+	// スコアの描画
+	m_Score.Draw(SCORE_DRAW_POS_RIGHT);
 }
 
 
@@ -331,7 +337,7 @@ void CModeGame::CollisionCheck()
 		}
 		else if (MAPCHIP_GOAL_min <= nChip_Id && nChip_Id <= MAPCHIP_GOAL_MAX)
 		{	// 【ゴール判定】
-			SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモード（リザルト画面）へ
+			RequestGameClear(m_Score.GetScore());	// ゲームクリア
 		}
 		else
 		{	// 【なにも当たっていない時】

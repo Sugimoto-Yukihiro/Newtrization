@@ -58,6 +58,9 @@
 #define ZERO_VECTOR2	D3DXVECTOR2(0.0f, 0.0f)
 #define DEFAULT_COLOR	D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)
 
+#define FlameToSecond(Flame) (Flame / FPS_RATE)		// フレームを秒数に変換
+#define SecondToFlame(Second) (Second * FPS_RATE)	// 秒数をフレームに変換
+
 //*****************************************************************************
 // enum
 //*****************************************************************************
@@ -89,11 +92,17 @@ public:
 	void Update();
 	void Draw();
 
+	// ゲームクリアでリザルトにシーン遷移
+	void GameCrea(int Score);
+
+	// ゲームオーバーでリザルトにシーン遷移
+	void GameOver();
+
 	//------------------- ゲッター関数
 	MODE GetMode();
 
 	//------------------- セッター関数
-	void SetMode(MODE mode);
+	void SetMode(MODE NextMode);
 
 	//------------------- 各モードのインスタンス
 	CModeOpening m_OpeningMode;	// オープニング画面
@@ -123,7 +132,6 @@ void RequestSetMode(MODE mode);					// セットモード
 //MODE RequestGetMode();
 //void RequestSetScrollPosition(D3DXVECTOR2 Pos);	// スクロール座標のセット
 
-
 //------------------- ファイル関数
 int LoadCsvFile(const char* pCsvFileName, char* &pFirst, int MaxCharCell, char* DivMark);
 int LoadCsvFile(const char* pCsvFileName, char** ppRet, bool Flag = true, int MaxLineChar = 1028, int RowNum = 64, char* Symbol = "#");
@@ -133,3 +141,8 @@ int SerchWordOffset(const char* String, const char SingleWord);
 //------------------- その他関数
 //int GetIndexFromCsv(char* CsvStr, char Character, int* retX = NULL, int* retY = NULL);	// CSVファイルから、指定された文字がある箇所の、行・列数を取得する
 
+// ゲームクリアでリザルト画面に移行する
+void RequestGameClear(int Score);
+
+// ゲームオーバーにしてリザルト画面に移行する
+void RequestGameOver();

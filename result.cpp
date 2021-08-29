@@ -10,52 +10,47 @@
 #include "fade.h"		// フェード処理
 #include "input.h"		// キー・ゲームパッド入力処理
 #include "renderer.h"	// レンダリング処理
-//#include "sound.h"	// サウンド
-#include "texture.h"		// スプライト
-//#include "score.h"	// スコア
+#include "sound.h"		// サウンド
+#include "texture.h"	// スプライト
 
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define NEXT_MODE					MODE_TITLE		// 次のモード
-
-#define TEXTURE_SIZE_BG				D3DXVECTOR2(SCREEN_WIDTH, SCREEN_HEIGHT)	// 背景サイズ
-
-#define TEXTURE_WIDTH_LOGO			(480)			// ロゴサイズ
-#define TEXTURE_HEIGHT_LOGO			(80)			// 
+#define NEXT_MODE		MODE_TITLE		// 次のモード
 
 //*****************************************************************************
 // プロトタイプ宣言
 //*****************************************************************************
 
-
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
-static ID3D11ShaderResourceView	*g_Texture[RESULT_TEX_PATTARN_MAX] = { NULL };	// テクスチャ情報
+//static ID3D11ShaderResourceView	*g_Texture[RESULT_TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
-static char *g_TexturName[] = {	// 使用テクスチャのファイル名
-	/* 【重要】ここの順番は、ヘッダーに記載されてるenumの順番と揃えること！！！！！ */
-	"data/TEXTURE/bg_result.png",	// TexNo：0
-	"data/TEXTURE/logo_result.png",	// TexNo：1
+// 使用テクスチャのファイル名(ゲームクリア時)
+static char *g_TextureGameClear[TEXTURE_MAX_CLEAR] = {
+	"data/TEXTURE/Result/bg_result.png",	// TexNo：0
+	"data/TEXTURE/Result/result_logo.png",	// TexNo：1
 };
 
-
+// 使用テクスチャのファイル名(ゲームオーバー時)
+static char *g_TextureGameOver[TEXTURE_MAX_GAMEOVER] = {
+	"data/TEXTURE/Result/bg_result.png",	// TexNo：0
+	"data/TEXTURE/Result/result_logo.png",	// TexNo：1
+};
 
 //=============================================================================
 // 初期化処理
 //=============================================================================
 void CModeResult::Init()
 {
-	//------------------- テクスチャ生成
-	for (int i = 0; i < RESULT_TEX_PATTARN_MAX; i++)
+	//------------------- メンバインスタンスの初期化
+	for (int i = 0; i < RESULT_TEXTURE_MAX; i++)
 	{
-		CreateTexture(g_TexturName[i], &g_Texture[i]);	// 生成
+		m_Texture[i].Init();	// テクスチャ
 	}
-
-	//------------------- メンバ変数の初期化
-	m_Tex[RESULT_TEX_Bg].SetTexSize( TEXTURE_SIZE_BG );	// 背景のサイズをセット
-	m_Tex[RESULT_TEX_Bg].SetTexPos( SCREEN_CENTER );	// 背景のサイズをセット
+	m_Score.Init(RESULT_TEX_NAME_SCORE, RESULT_TEX_SIZE_SCORE);	// スコア
+	m_CreaFlag = false;	// ゲームオーバーで初期化
 
 	// BGM再生
 //	PlaySound(SOUND_LABEL_BGM_sample002);
@@ -68,11 +63,13 @@ void CModeResult::Init()
 //=============================================================================
 void CModeResult::Uninit()
 {
-	//------------------- Init()で生成したテクスチャを解放
-	for (int i = 0; i < RESULT_TEX_PATTARN_MAX; i++)
+	//------------------- メンバインスタンスの終了処理
+	for (int i = 0; i < RESULT_TEXTURE_MAX; i++)
 	{
-		ReleaseTexture(&g_Texture[i]);	// 解放
+		m_Texture[i].Uninit();				// テクスチャの終了処理
+		m_Texture[i].ReleaseTextureInf();	// テクスチャの解放
 	}
+	m_Score.Uninit();	// スコアの終了処理
 
 }
 
@@ -113,9 +110,71 @@ void CModeResult::Draw()
 	PresetDraw2D();
 
 	// 全てのテクスチャの描画
-	for (int i = 0; i < RESULT_TEX_PATTARN_MAX; i++)
+	if (m_CreaFlag)
+	{	// ゲームクリア時のテクスチャ描画
+		for (int i = 0; i < TEXTURE_MAX_CLEAR; i++)
+		{
+			m_Texture[i].DrawTexture();
+		}
+
+	}
+	else
+	{	// ゲームオーバ時のテクスチャ描画
+		for (int i = 0; i < TEXTURE_MAX_GAMEOVER; i++)
+		{
+			m_Texture[i].DrawTexture();
+		}
+
+	}
+
+}
+
+
+// ゲームクリア時に使用するテクスチャの生成
+void CModeResult::CreateTextureGameClear()
+{
+	// 使用するテクスチャを一括生成
+	for (int i = 0; i < TEXTURE_MAX_CLEAR; i++)
 	{
-		m_Tex[i].DrawTexture(g_Texture[i]);	// 描画実行
+		// テクスチャ生成
+		m_Texture[i].CreateTextureInf(g_TextureGameClear[i]);
+	}
+
+}
+
+// ゲームクリア時に使用するテクスチャの解放
+void CModeResult::ReleaseTextureGameClear()
+{
+	// 使用したテクスチャを一括生成
+	for (int i = 0; i < TEXTURE_MAX_CLEAR; i++)
+	{
+		// テクスチャ解放
+		m_Texture[i].ReleaseTextureInf();
+	}
+
+}
+
+
+// ゲームオーバー時に使用するテクスチャの生成
+void CModeResult::CreateTextureGameOver()
+{
+	// 使用するテクスチャを一括生成
+	for (int i = 0; i < TEXTURE_MAX_GAMEOVER; i++)
+	{
+		// テクスチャ生成
+		m_Texture[i].CreateTextureInf(g_TextureGameOver[i]);
+	}
+
+}
+
+// ゲームオーバー時に使用するテクスチャの解放
+void CModeResult::ReleaseTextureGameOver()
+{
+	// 使用したテクスチャを一括生成
+	for (int i = 0; i < TEXTURE_MAX_GAMEOVER; i++)
+	{
+		// テクスチャ解放
+		m_Texture[i].ReleaseTextureInf();
 	}
 
 }

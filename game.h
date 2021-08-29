@@ -93,7 +93,9 @@
 #define FURYOKU_FORCE				(10.0f)							// 
 
 //------------------- スコア表示
-#define SCORE_DRAW_POS_RIGHT		D3DXVECTOR2(0.0, 15.0f)
+#define SCORE_TEX_NAME				"data/TEXTURE/score/number.png"	// スコアのテクスチャ名
+#define SCORE_DRAW_SIZE				D3DXVECTOR2(35.0f, 35.0f)		// スコアの表示サイズ
+#define SCORE_DRAW_POS_RIGHT		D3DXVECTOR2(930.0f, 35.0f)		// スコアの表示位置（最右の数字の位置）
 
 
 //------------------- その他ゲーム内で使用するパラメータ
@@ -164,6 +166,7 @@ private:
 	//------------------- メンバ変数
 	D3DXVECTOR2 m_vScrollPos;		// スクロール座標
 	int m_GravityDirection;			// 重力の方向
+	int m_nFlameCnt;				// フレーム数のカウント
 	bool m_bIsTouchGrvityChange;	// 重力変更エンジンに触れているかどうか
 
 

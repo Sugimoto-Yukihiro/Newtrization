@@ -453,12 +453,11 @@ void CMode::Draw(void)
 }
 
 
-
 //=============================================================================
 // セッター関数
 //=============================================================================
 // モードの設定
-void CMode::SetMode(MODE mode)
+void CMode::SetMode(MODE NextMode)
 {
 	//------------------- モードを変える前にメモリを解放
 	if(g_aMode.GetMode() == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
@@ -468,7 +467,7 @@ void CMode::SetMode(MODE mode)
 	else if(g_aMode.GetMode() == MODE_RESULT) m_Result.Uninit();		// リザルト画面の終了処理
 
 	//------------------- 次のモードのセット
-	m_Mode = mode;
+	m_Mode = NextMode;
 
 	//------------------- セットしたモードに応じた初期化処理を行う
 	switch (m_Mode)
@@ -503,6 +502,27 @@ void CMode::SetMode(MODE mode)
 	}
 }
 
+// ゲームクリア
+void CMode::GameCrea(int Score)
+{
+	// リザルトにシーン遷移
+	SetFade(FADE_OUT, MODE_RESULT);
+
+	// ゲームクリア
+	m_Result.SetCreaFlag(true);
+	m_Result.CreateTextureGameClear();	// 使用するテクスチャを生成
+}
+
+// ゲームクリア
+void CMode::GameOver()
+{
+	// リザルトにシーン遷移
+	SetFade(FADE_OUT, MODE_RESULT);
+
+	// ゲームオーバー
+	m_Result.SetCreaFlag(false);
+	m_Result.CreateTextureGameOver();	// 使用するテクスチャを生成
+}
 
 
 //=============================================================================
@@ -848,4 +868,27 @@ int GetDivideString(const char* String, int* retCol, int* retRow, char* DivMark)
 	if (Buf != NULL) delete[] Buf;
 
 	return 1;
+}
+
+
+/*******************************************************************************
+* 関数名		:	void RequestGameClear(int Score)
+* 引数		:	スコア
+* 返り値		:	void
+* 説明		:	ゲームクリアでリザルト画面にシーン遷移する
+********************************************************************************/
+void RequestGameClear(int Score)
+{
+	g_aMode.GameCrea(Score);	// ゲームクリア
+}
+
+/*******************************************************************************
+* 関数名		:	void RequestGameClear(int Score)
+* 引数		:	スコア
+* 返り値		:	void
+* 説明		:	ゲームクリアでリザルト画面にシーン遷移する
+********************************************************************************/
+void RequestGameOver()
+{
+	g_aMode.GameOver();	// ゲームオーバー
 }

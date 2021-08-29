@@ -272,8 +272,10 @@ void CTexture::CreateTextureInf(char* TextureFileName)
 ********************************************************************************/
 void CTexture::ReleaseTextureInf()
 {
-	ReleaseTexture(m_TextureData);	// テクスチャ情報の解放
-	m_TextureData = NULL;			// 解放したからNULLをセット
+	if (ReleaseTexture(m_TextureData))	// テクスチャ情報の解放
+	{	// 解放したらNULLをセット
+		m_TextureData = NULL;
+	}
 }
 #endif // TEXTURE
 
