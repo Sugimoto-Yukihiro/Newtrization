@@ -39,6 +39,7 @@
 
 // 各モードのインクルード
 #include "opening.h"	// オープニング
+#include "title.h"		// タイトル
 #include "game.h"		// ゲーム
 #include "result.h"		// リザルト
 
@@ -107,6 +108,7 @@ public:
 
 	//------------------- 各モードのインスタンス
 	CModeOpening m_OpeningMode;	// オープニング画面
+	CModeTitle m_Title;			// タイトル画面
 	CModeGame m_GameMode;		// ゲーム画面
 	CModeResult m_Result;		// リザルト画面
 

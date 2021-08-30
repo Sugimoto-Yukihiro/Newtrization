@@ -34,7 +34,7 @@ enum
 #define RESULT_TEXTURE_MAX		(TEXTURE_MAX_CLEAR)	// 使用するテクスチャの最大数
 
 //------------------- "Result"ロゴ
-#define RESULT_LOGO_SIZE		D3DXVECTOR2(700.0f, 200.0f)			// ロゴサイズ
+#define RESULT_LOGO_SIZE		D3DXVECTOR2(550.0f, 200.0f)			// ロゴサイズ
 #define RESULT_LOGO_POS			D3DXVECTOR2(480.0f, 150.0f)			// ロゴ位置
 #define RESULT_LOGO_COLOR		D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)	// ロゴの色
 

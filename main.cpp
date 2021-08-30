@@ -6,11 +6,11 @@
 //=============================================================================
 #include "main.h"
 
-#include "title.h"		// タイトル画面
-#include "opening.h"	// オープニング画面
+//#include "title.h"		// タイトル画面
+//#include "opening.h"	// オープニング画面
 #include "tutorial.h"	// チュートリアル画面
 //#include "game.h"		// ゲーム画面	【クラス化して、main.h の方でインクルードしてる】
-#include "result.h"		// リザルト画面
+//#include "result.h"		// リザルト画面
 
 #include "input.h"		// キー・ゲームパッド入力処理
 #include "renderer.h"	// レンダリング処理
@@ -31,11 +31,11 @@
 #ifndef _DEBUG	// こっちは製品版
 /* 最終的には上の方にする↓ */
 //	#define START_MODE		(MODE_OPENING)		// 起動時のモード	
-	#define START_MODE		(MODE_GAME)		// 起動時のモード
+	#define START_MODE		(MODE_TITLE)		// 起動時のモード
 #endif // !_DEBUG
 
 #ifdef _DEBUG	// デバック時
-#define START_MODE			(MODE_GAME)			// 起動時のモード
+#define START_MODE			(MODE_TITLE)			// 起動時のモード
 //#define START_MODE		(MODE_OPENING)		// 起動時のモード
 #endif // _DEBUG
 
@@ -317,11 +317,11 @@ HRESULT CMode::Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)
 void CMode::Uninit(void)
 {
 	//------------------- モードに応じたメモリ解放
-	if (g_aMode.GetMode() == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
-	if (g_aMode.GetMode() == MODE_OPENING) m_OpeningMode.Uninit();			// オープニング画面の終了処理
+	if (g_aMode.GetMode() == MODE_TITLE) m_Title.Uninit();			// タイトル画面の終了処理
+	if (g_aMode.GetMode() == MODE_OPENING) m_OpeningMode.Uninit();	// オープニング画面の終了処理
 	else if(g_aMode.GetMode() == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
 	else if (g_aMode.GetMode() == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
-	else if (g_aMode.GetMode() == MODE_RESULT) m_Result.Uninit();		// リザルト画面の終了処理
+	else if (g_aMode.GetMode() == MODE_RESULT) m_Result.Uninit();	// リザルト画面の終了処理
 
 	// 2Dの頂点バッファ解放
 	ReleaseVertexBuffer();
@@ -367,7 +367,7 @@ void CMode::Update(void)
 		break;
 
 	case MODE_TITLE:
-		UpdateTitle();
+		m_Title.Update();
 		break;
 
 	case MODE_TUTORIAL:
@@ -420,7 +420,7 @@ void CMode::Draw(void)
 		break;
 
 	case MODE_TITLE:
-		DrawTitle();
+		m_Title.Draw();
 		break;
 
 	case MODE_TUTORIAL:
@@ -460,11 +460,11 @@ void CMode::Draw(void)
 void CMode::SetMode(MODE NextMode)
 {
 	//------------------- モードを変える前にメモリを解放
-	if(g_aMode.GetMode() == MODE_TITLE) UninitTitle();				// タイトル画面の終了処理
-	if (g_aMode.GetMode() == MODE_OPENING) m_OpeningMode.Uninit();			// オープニング画面の終了処理
+	if(g_aMode.GetMode() == MODE_TITLE) m_Title.Uninit();			// タイトル画面の終了処理
+	if (g_aMode.GetMode() == MODE_OPENING) m_OpeningMode.Uninit();	// オープニング画面の終了処理
 	else if(g_aMode.GetMode() == MODE_TUTORIAL) UninitTutorial();	// チュートリアル画面の終了処理
 	else if(g_aMode.GetMode() == MODE_GAME) m_GameMode.Uninit();	// ゲーム画面の終了処理
-	else if(g_aMode.GetMode() == MODE_RESULT) m_Result.Uninit();		// リザルト画面の終了処理
+	else if(g_aMode.GetMode() == MODE_RESULT) m_Result.Uninit();	// リザルト画面の終了処理
 
 	//------------------- 次のモードのセット
 	m_Mode = NextMode;
@@ -479,7 +479,7 @@ void CMode::SetMode(MODE NextMode)
 
 	case MODE_TITLE:
 		// タイトル画面の初期化
-		InitTitle();
+		m_Title.Init();
 		break;
 
 	case MODE_TUTORIAL:
@@ -620,7 +620,7 @@ int LoadCsvFile(const char* pCsvFileName, char* &pFirst, int MaxCharCell, char* 
 	}
 
 	// 動的配列の生成
-	pTmpArray = (char*)malloc(MAX_SIZE(MaxCharCell) + NULL_SIZE);		// char型配列を使用する最大メモリ数分だけ確保<free記載済み>
+	pTmpArray = (char*)malloc(MAX_SIZE(MaxCharCell) + NULL_SIZE);	// char型配列を使用する最大メモリ数分だけ確保<free記載済み>
 	if (pTmpArray == NULL) {	// 確保できなかったら
 		fclose(csvFile);		// ファイルのクローズ
 		return -1;				// エラー出して終了

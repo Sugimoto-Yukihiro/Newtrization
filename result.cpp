@@ -30,7 +30,7 @@
 // 使用テクスチャのファイル名(ゲームクリア時)
 static char *g_TextureGameClear[TEXTURE_MAX_CLEAR] = {
 	"data/TEXTURE/Result/bg_result.png",
-	"data/TEXTURE/Result/0829_Resalt.png",
+	"data/TEXTURE/Result/0829_Result.png",
 };
 
 // 使用テクスチャのファイル名(ゲームオーバー時)
