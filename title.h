@@ -23,7 +23,7 @@ enum
 // É}ÉNÉçíËã`
 //*****************************************************************************
 //------------------- îwåi
-#define TITLE_BG_COLOR		D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f)	// îwåiÇÃêF
+#define TITLE_BG_COLOR		D3DXCOLOR(0.3f, 0.3f, 1.0f, 1.0f)	// îwåiÇÃêF
 
 //------------------- "Newtrization"ÉçÉS
 #define TITLE_LOGO_SIZE		D3DXVECTOR2(700.0f, 200.0f)			// ÉçÉSÉTÉCÉY

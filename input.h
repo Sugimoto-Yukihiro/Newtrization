@@ -77,13 +77,11 @@ BOOL IsButtonTriggered(int padNo,DWORD button);
 #define KEY_MOVE_PLAYER_DUSH			GetKeyboardPress(DIK_S)			// プレイヤーをダッシュさせるキー
 #define KEY_ACTIVATE_PLAYER_FIREBOOTS	KEY_MOVE_PLAYER_JUMP			// ファイヤーブーツを起動させるキー
 
-
-/* これは最終的なRelease時には、削除すること */
-#define KEY_MODE_CHANGE			GetKeyboardTrigger(DIK_RETURN)
+#define KEY_MODE_CHANGE			GetKeyboardTrigger(DIK_RETURN)		// シーン遷移
 
 // デバッグ時
 #ifdef _DEBUG
-	#define KEY_MODE_CHANGE			GetKeyboardTrigger(DIK_RETURN)	// 強制シーン遷移
+//	#define KEY_MODE_CHANGE			GetKeyboardTrigger(DIK_RETURN)	// 強制シーン遷移
 	#define KEY_PAUSE				GetKeyboardTrigger(DIK_0)		// ゲームの一時停止
 	#define KEY_RESTART_GAMEMODE	GetKeyboardTrigger(DIK_1)		// ゲームモードのリセット
 	#define KEY_CHANGE_GRAVITY		GetKeyboardTrigger(DIK_2)		// 重力方向の変更
@@ -100,13 +98,11 @@ BOOL IsButtonTriggered(int padNo,DWORD button);
 #define PAD_MOVE_PLAYER_DUSH			IsButtonPressed(0,BUTTON_B)		// プレイヤーをダッシュさせるキー
 #define PAD_ACTIVATE_PLAYER_FIREBOOTS	KEY_MOVE_PLAYER_JUMP			// ファイヤーブーツを起動させるキー
 
-
-/* これは最終的なReleaseには、削除すること */
-#define PAD_MODE_CHANGE			IsButtonTriggered(0, BUTTON_START) || IsButtonTriggered(0, BUTTON_B)
+#define PAD_MODE_CHANGE			IsButtonTriggered(0, BUTTON_START) || IsButtonTriggered(0, BUTTON_B)	// シーン遷移
 
 // デバッグ時
 #ifdef _DEBUG
-	#define PAD_MODE_CHANGE			IsButtonTriggered(0, BUTTON_START) || IsButtonTriggered(0, BUTTON_B)
+//	#define PAD_MODE_CHANGE			IsButtonTriggered(0, BUTTON_START) || IsButtonTriggered(0, BUTTON_B)
 #endif // _DEBUG
 
 

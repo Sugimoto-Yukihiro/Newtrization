@@ -20,13 +20,14 @@
 //------------------- ファイルに関する定義
 //#define GAME_MAP_DATA_TEST			"data/MAPCHIP/alpha_MAP.csv"	// マップ情報のファイル名
 //#define GAME_MAP_DATA_1			"data/MAPCHIP/alpha_MAP.csv"	// マップ情報のファイル名
-#define GAME_MAP_DATA_1				"data/MAPCHIP/MAP.csv"			// マップ情報のファイル名
+#define GAME_MAP_DATA_1				"data/MAPCHIP/MAP_01.csv"			// マップ情報のファイル名
+#define GAME_MAP_DATA_2				"data/MAPCHIP/MAP_02.csv"			// マップ情報のファイル名
 #define PLAYER_SYMBOL				'P'		// プレイヤーの記号
 #define ENEMY_SYMBOL				'E'		// エネミーの記号
 #define FURYOKU_SYMBOL				'F'		// 浮力加速エリアの記号
 
 //------------------- マップチップに関する定義
-#define TEXTURE_NAME_MAPCHIP		"data/TEXTURE/mapchip/0829_mapchip.png"
+#define TEXTURE_NAME_MAPCHIP		"data/TEXTURE/mapchip/0901_mapchip.png"
 #define TEXTURE_NAME_MAPCHIP_DEBUG	"data/TEXTURE/mapchip/0829_Number.png"
 
 /* マップチップテクスチャの分割数　→　固定値とする */
@@ -169,7 +170,6 @@ private:
 	int m_nFlameCnt;				// フレーム数のカウント
 	bool m_bIsTouchGrvityChange;	// 重力変更エンジンに触れているかどうか
 
-
 #ifdef _DEBUG
 	bool	m_bPauseFlag;			// ポーズON/OFF
 	bool	m_bMapchipDebug;		// マップチップのデバッグ表示
@@ -182,3 +182,6 @@ private:
 // プロトタイプ宣言
 //*****************************************************************************
 int HitCheckMapchip(CMapchip Mapchip, D3DXVECTOR2* CurrentPos, D3DXVECTOR2 OldPos, bool FlagX = true, bool FlagY = true);
+
+void SetGameCrea(bool CreaFlag);
+bool GetGameCrea(void);

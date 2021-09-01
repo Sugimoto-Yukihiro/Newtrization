@@ -26,10 +26,10 @@ public:
 	~CPlayer();	// デストラクタ
 
 	//------------------- メンバ関数
-	void Init(char* FireBootsTexName = NULL);		// 初期化
-	void Uninit();						// 終了処理
-	void Update(int FalmeCnt = 0);		// 更新処理
-	void Draw(D3DXVECTOR2 ScrollPos);	// 描画処理
+	void Init(char* FireBootsTexName = NULL);	// 初期化
+	void Uninit();								// 終了処理
+	void Update(int FalmeCnt = 0);				// 更新処理
+	void Draw(D3DXVECTOR2 ScrollPos);			// 描画処理
 
 	//------------------- その他メンバ関数
 	void KillPlayer();	// このプレイヤーを殺す処理
@@ -51,6 +51,7 @@ public:
 	D3DXVECTOR2 GetSize() { return GetGravityObjectSize(); };		// プレイヤーの大きさを取得
 	D3DXVECTOR2 GetLegPos() { return m_LegPosition; };	// プレイヤーの足の位置を取得
 	D3DXVECTOR2 GetBouyant() { return m_fBouyant; };	// プレイヤーの浮力を取得
+	CFireBoots GetFireboots() { return m_FireBoots; };	// ファイヤーブーツの情報を取得
 	float GetJumpForce() { return m_fJumpForce; };		// プレイヤーのジャンプ力を取得
 	float GetHP() { return m_fHitPointMAX; };			// プレイヤーのHPを取得
 	float GetCurrentHP() { return m_fCurrentHP; };		// プレイヤーの現在のHPを取得
@@ -92,6 +93,7 @@ private:
 	bool		m_bIsJump;					// プレイヤーがジャンプ中かどうか
 	bool		m_bIsMove;					// プレイヤーの動作フラグ   true:動いてる false:停止中
 	bool		m_bPoison;					// プレイヤーの毒状態フラグ   true:毒状態 false:毒状態じゃない
+	bool		m_bLeft;					// プレイヤーが向いている方向   true:左向き false:右向き
 };
 
 

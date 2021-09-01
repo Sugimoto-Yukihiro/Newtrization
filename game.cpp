@@ -25,8 +25,16 @@
 //*****************************************************************************
 // グローバル変数
 //*****************************************************************************
+static bool g_CreaedStage1 = false;		// 一度でもゲームクリアしたかどうか
 
-
+void SetGameCrea(bool CreaFlag)
+{
+	g_CreaedStage1 = CreaFlag;
+}
+bool GetGameCrea(void)
+{
+	return g_CreaedStage1;	// ステージ１のクリア状況を返す
+}
 
 //=============================================================================
 // 初期化処理
@@ -56,7 +64,7 @@ void CModeGame::Init()
 	m_Player.Init(FIREBOOTS_BULLET_TEXNAME);	// 初期化処理実行
 
 	// マップチップの初期化
-	m_Mapchip.Init(TEXTURE_NAME_MAPCHIP, NULL, MAPCHIP_TEXTURE_DIVIDE_X, MAPCHIP_TEXTURE_DIVIDE_Y, MAPCHIP_SIZE_DEFAULT);		// 初期化処理実行
+	m_Mapchip.Init(TEXTURE_NAME_MAPCHIP, NULL, MAPCHIP_TEXTURE_DIVIDE_X, MAPCHIP_TEXTURE_DIVIDE_Y, MAPCHIP_SIZE_DEFAULT);	// 初期化処理実行
 #ifdef _DEBUG
 	// デバッグ表示用マップチップの初期化
 	m_DebugMapchip.Init(TEXTURE_NAME_MAPCHIP_DEBUG, NULL, MAPCHIP_DEBUG_TEXTURE_DIVIDE_X, MAPCHIP_DEBUG_TEXTURE_DIVIDE_Y, MAPCHIP_SIZE_DEFAULT);		// 初期化処理実行
@@ -86,8 +94,16 @@ void CModeGame::Init()
 	}
 
 	// オブジェクトの配置 & マップチップのセット
-	PutAllObject(GAME_MAP_DATA_1);
-
+	if (GetGameCrea())	// 既にゲームを一回クリアしているかどうか（クリアしている時は、難しいステージ２をセット）
+	{
+		// ステージ２
+		PutAllObject(GAME_MAP_DATA_2);
+	}
+	else
+	{
+		// ステージ１
+		PutAllObject(GAME_MAP_DATA_1);
+	}
 
 
 	//------------------- プレイヤーの位置が決まったから、スクロール座標をセット
@@ -190,8 +206,6 @@ void CModeGame::Update(void)
 		m_GravityDirection = (m_GravityDirection + 1) % GRAVITY_DIRECTION_MAX;
 		ChangeGravityDirection(m_GravityDirection);
 	}
-#endif // _DEBUG
-
 #ifdef KEY_MODE_CHANGE
 	//------------------- キー・ゲームパットでの入力で次のモードへ
 	if (KEY_MODE_CHANGE)
@@ -208,6 +222,8 @@ void CModeGame::Update(void)
 		RequestGameOver();	// ゲームオーバー
 	}
 #endif // KEY_MODE_CHANGE
+#endif // _DEBUG
+
 
 	// 経過フレーム数をカウント
 	m_nFlameCnt++;
@@ -253,21 +269,24 @@ void CModeGame::Update(void)
 	// UIの更新処理
 	m_GameUI.Update();
 
-	// プレイヤーのHPが0以下になったら終了
-	if (m_Player.GetCurrentHP() < 0.0f) RequestGameOver();	// ゲームオーバー
+	// プレイヤーのHPが0以下になったらプレイヤーを殺す
+	if (m_Player.GetCurrentHP() < 0.0f) m_Player.KillPlayer();
 
-	// プレイヤーがステージ外にいったら終了
+	// プレイヤーがステージ外にいったらゲームオーバー
 	if (
 		// x軸
-		m_Player.GetPosition().x < 0.0f ||
-		m_Mapchip.GetMapChipSize().x < m_Player.GetPosition().x ||
+		m_Player.GetPosition().x + (m_Player.GetSize().x * 0.5f) < 0.0f ||
+		m_Mapchip.GetMapChipSize().x - (m_Player.GetSize().x * 0.5f) < m_Player.GetPosition().x ||
 		// y軸
-		m_Player.GetPosition().x < 0.0f ||
-		m_Mapchip.GetMapChipSize().y < m_Player.GetPosition().y
+		m_Player.GetPosition().y + (m_Player.GetSize().y * 0.5f) < 0.0f ||
+		m_Mapchip.GetMapChipSize().y - (m_Player.GetSize().y * 0.5f) < m_Player.GetPosition().y
 		)
 	{
 		RequestGameOver();	// ゲームオーバー
 	}
+
+	// プレイヤーが全員死んでいたらゲームオーバー
+	if (!m_Player.GetUseFlag()) RequestGameOver();
 }
 
 
@@ -346,6 +365,7 @@ void CModeGame::CollisionCheck()
 				ChangeGravityDirection(m_GravityDirection);	// 重力方向セット
 
 				m_bIsTouchGrvityChange = true;	// 重力装置に触れていますよ
+				PlaySound(SOUND_LABEL_SE_game_gravitychange);	// 効果音再生
 			}
 
 		}
@@ -364,10 +384,11 @@ void CModeGame::CollisionCheck()
 	// プレイヤーと浮力加速エリアの当たり判定
 	{
 		bool Hit = false;
-		for (int i = 0; i < FURYOKU_MAX, !Hit; i++)
+//		for (int i = 0; i < FURYOKU_MAX, !Hit; i++)	/* これだとi のカウンタがFURYOKU_MAXの値を超えてた */
+		for (int i = 0; i < FURYOKU_MAX && !Hit; i++)
 		{
 			// 未使用なら行わない
-			if (!m_FloatForceArea[i].GetUseFlag()) return;
+			if (!m_FloatForceArea[i].GetUseFlag()) continue;
 
 			// プレイヤーの現在の座標を取得
 			D3DXVECTOR2 PlayerPos = m_Player.GetPosition();
@@ -379,10 +400,12 @@ void CModeGame::CollisionCheck()
 				m_Player.SetGravityFlag(false);
 				m_Player.SetBouyant(m_FloatForceArea[i].GetForceValue() * m_FloatForceArea[i].GetDirection());	// 浮力をセット
 				Hit = true;	// 当たっている
+				PlaySound(SOUND_LABEL_SE_game_floatforce);	// 効果音再生
+
+				// 浮力移動後の座標をセット
+				m_Player.SetPosition(PlayerPos);
 			}
 
-			// 浮力移動後の座標をセット
-			m_Player.SetPosition(PlayerPos);
 		}
 
 		// どれも当たっていない時
@@ -402,10 +425,42 @@ void CModeGame::CollisionCheck()
 
 
 	// プレイヤーとエネミー
+	for (int i = 0; i < ENEMY_MAX; i++)
+	{
+		// エネミーの使用フラグが"false"なら飛ばす
+		if (!m_Enemy[i].GetUse()) continue;
+
+		// 当たり判定実行
+		if (CollisionBB(m_Player.GetPosition(), m_Enemy[i].GetPos(), m_Player.GetSize(), m_Enemy[i].GetTexSize()))
+		{	// 当たっていた時の処理
+			m_Player.KillPlayer();	// プレイヤーを一撃で殺す
+		}
+	}
 
 
 	// ファイヤーブーツの弾とエネミー
+	for (int ie = 0; ie < ENEMY_MAX; ie++)	// エネミーの数だけ繰り返す
+	{
+		// エネミーの使用フラグが"false"なら飛ばす
+		if (!m_Enemy[ie].GetUse()) continue;
 
+		for (int ib = 0; ib < BOOTS_BULLET_NUM; ib++)	// バレットの数だけ繰り返す
+		{
+			// ファイヤーブーツの弾の情報を取得
+			CBullet Bullet = m_Player.GetFireboots().GetBulletInf(ib);
+
+			// 弾の使用フラグが"false"なら飛ばす
+			if (!Bullet.GetUseFlag()) continue;
+
+			// 当たり判定実行
+			if (CollisionBB(Bullet.GetPosition(), m_Enemy[ie].GetPos(), Bullet.GetSize(), m_Enemy[ie].GetTexSize()))
+			{	// 当たっていた時の処理
+				m_Enemy[ie].Kill();	// エネミーを殺す
+				m_Player.GetFireboots().GetBulletInf(ib).UnsetBullet();	// バレットも消す
+			}
+		}
+
+	}
 	
 }
 

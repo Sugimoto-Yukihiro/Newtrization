@@ -33,10 +33,17 @@ DWORD g_aSizeAudio[SOUND_LABEL_MAX] = {};					// オーディオデータサイズ
 // 各音素材のパラメータ( -1 は永久ループ → BGM、0 はループなし → SE(効果音) )
 SOUNDPARAM g_aParam[SOUND_LABEL_MAX] =
 {
+	// BGM
 	{ (char*)"data/SOUND/BGM/title_BGM_01.wav", -1 },			// SOUND_LABEL_BGM_title_01
 	{ (char*)"data/SOUND/BGM/game_BGM_01.wav", -1 },			// SOUND_LABEL_BGM_game_01
 	{ (char*)"data/SOUND/BGM/result_BGM_gameclear.wav", -1 },	// SOUND_LABEL_BGM_result_CLEAR
 	{ (char*)"data/SOUND/BGM/result_BGM_gameover.wav", -1 },	// SOUND_LABEL_BGM_result_FAILED
+
+	// SE
+	{ (char*)"data/SOUND/SE/game_SE_enemykill.wav", 0 },		// SOUND_LABEL_SE_game_enemykill
+	{ (char*)"data/SOUND/SE/game_SE_floatforce.wav", 0 },		// SOUND_LABEL_SE_game_floatforce
+	{ (char*)"data/SOUND/SE/game_SE_gravitychange.wav", 0 },	// SOUND_LABEL_SE_game_gravitychange
+	{ (char*)"data/SOUND/SE/scene_SE_move01.wav", 0 },			// SOUND_LABEL_SE_scenemove
 
 };
 

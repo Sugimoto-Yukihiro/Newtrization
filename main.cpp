@@ -35,6 +35,7 @@
 #endif // !_DEBUG
 
 #ifdef _DEBUG	// デバック時
+//#define START_MODE			(MODE_GAME)			// 起動時のモード
 #define START_MODE			(MODE_TITLE)			// 起動時のモード
 //#define START_MODE		(MODE_OPENING)		// 起動時のモード
 #endif // _DEBUG
@@ -514,7 +515,7 @@ void CMode::GameCrea(int Score)
 	m_Result.SetResultScore(Score);	// スコア値をセット
 }
 
-// ゲームクリア
+// ゲームオーバー
 void CMode::GameOver()
 {
 	// リザルトにシーン遷移
@@ -880,6 +881,7 @@ int GetDivideString(const char* String, int* retCol, int* retRow, char* DivMark)
 void RequestGameClear(int Score)
 {
 	g_aMode.GameCrea(Score);	// ゲームクリア
+	SetGameCrea(true);			// 一回クリアしてる
 }
 
 /*******************************************************************************

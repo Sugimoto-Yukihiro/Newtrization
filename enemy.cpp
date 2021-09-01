@@ -10,6 +10,7 @@
 
 #include "enemy.h"
 #include "game.h"
+#include "sound.h"
 
 //*****************************************************************************
 // マクロ定義
@@ -179,8 +180,9 @@ void CEnemy::Update(CMapchip Mapchip)
 		*/
 
 		// 左向きに動かす
+		if (m_left == true)			// 左向きフラグが trueのとき（つまり、左向き移動）
 		{
-
+			m_pos.x -= VALUE_MOVE;	// x軸の方向に動かす（左向き）
 		}
 
 		// 右向きに動かす
@@ -199,6 +201,29 @@ void CEnemy::Update(CMapchip Mapchip)
 												GetTexSize().x / 2
 			*/
 	
+			// 右端と左端のポジションを設定している
+			D3DXVECTOR2 end_pos_r = D3DXVECTOR2(m_pos.x + GetTexSize().x * 0.5f, m_pos.y);
+			D3DXVECTOR2 end_pos_l = D3DXVECTOR2(m_pos.x - GetTexSize().x * 0.5f, m_pos.y);
+
+
+			// エネミーの右側のマップチップ番号を取得
+			int nChip_Id_r = Mapchip.GetMapchipNo(end_pos_r);
+
+			// エネミーの左側のマップチップ番号を取得
+			int nChip_Id_l = Mapchip.GetMapchipNo(end_pos_l);
+
+
+			// 右端当たったら進行方向を左にするよ
+			if (MAPCHIP_HIT_min <= nChip_Id_r && nChip_Id_r <= MAPCHIP_HIT_MAX)
+			{
+				m_left = true;
+			}
+
+			// 左端当たったら進行方向を右にするよ
+			if (MAPCHIP_HIT_min <= nChip_Id_l && nChip_Id_l <= MAPCHIP_HIT_MAX)
+			{
+				m_left = false;
+			}
 
 		}
 
@@ -270,9 +295,10 @@ bool CEnemy::SetEnemy(D3DXVECTOR2 Pos, bool LeftFlag)
 	return (true);
 }
 
-void CEnemy::KillEnemy()
+void CEnemy::Kill()
 {
-
+	m_use = false;	// 使用フラグをfalse
+	PlaySound(SOUND_LABEL_SE_game_enemykill);	// 効果音再生
 }
 
 

@@ -15,7 +15,7 @@
 //*****************************************************************************
 // マクロ定義
 //*****************************************************************************
-#define NEXT_MODE					MODE_TUTORIAL		// 次のモード
+#define NEXT_MODE					MODE_GAME		// 次のモード
 
 //*****************************************************************************
 // プロトタイプ宣言
@@ -26,7 +26,7 @@
 // グローバル変数
 //*****************************************************************************
 static char *g_TextureName[] = {
-	"data/TEXTURE/Title/bg_title.png",		// 背景
+	"data/TEXTURE/BG/0830_BG_1.png",		// 背景
 	"data/TEXTURE/Title/0829_Logo.png",		// ロゴ
 };
 
@@ -74,16 +74,11 @@ void CModeTitle::Update()
 {
 	//------------------- キー・ゲームパットでの入力で次のモードへ
 #ifdef KEY_MODE_CHANGE
-	if (KEY_MODE_CHANGE)
-	{// Enter押したら、ステージを切り替える
-		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
-	//	SetMode(NEXT_MODE);				// 次のモードにシーン遷移
-	}
-	// ゲームパッドで入力処理
-	else if (PAD_MODE_CHANGE)
+	if (KEY_MODE_CHANGE || PAD_MODE_CHANGE)
 	{
-		SetFade(FADE_OUT, NEXT_MODE);	// フェードして次のモードへ
-	//	SetMode(NEXT_MODE);				// 次のモードにシーン遷移
+		SetFade(FADE_OUT, NEXT_MODE);			// フェードして次のモードへ
+	//	SetMode(NEXT_MODE);						// 次のモードにシーン遷移
+		PlaySound(SOUND_LABEL_SE_scenemove);	// 効果音再生
 	}
 #endif // KEY_MODE_CHANGE
 

@@ -14,11 +14,17 @@
 //*****************************************************************************
 enum 
 {
-	SOUND_LABEL_BGM_title_01,		// タイトルBGM_その１
-	SOUND_LABEL_BGM_game_01,		// ゲームBGM_その１
-	SOUND_LABEL_BGM_result_CLEAR,	// リザルトBGM_ゲームクリア
-	SOUND_LABEL_BGM_result_FAILED,	// リザルトBGM_ゲームオーバー
+	// BGM
+	SOUND_LABEL_BGM_title_01,			// タイトルBGM_その１
+	SOUND_LABEL_BGM_game_01,			// ゲームBGM_その１
+	SOUND_LABEL_BGM_result_CLEAR,		// リザルトBGM_ゲームクリア
+	SOUND_LABEL_BGM_result_FAILED,		// リザルトBGM_ゲームオーバー
 
+	// SE
+	SOUND_LABEL_SE_game_enemykill,		// エネミーkill時のSE
+	SOUND_LABEL_SE_game_floatforce,		// 浮力加速時のSE
+	SOUND_LABEL_SE_game_gravitychange,	// 重力変更時のSE
+	SOUND_LABEL_SE_scenemove,			// シーン遷移時のSE
 
 	SOUND_LABEL_MAX,
 };

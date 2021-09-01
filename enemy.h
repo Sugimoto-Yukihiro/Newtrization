@@ -42,7 +42,8 @@ public:
 	// 指定の位置にエネミーを置く処理
 	bool SetEnemy(D3DXVECTOR2 Pos, bool LeftFlag);	// 引数：このエネミーを置きたい場所
 
-	void KillEnemy();	// このエネミーを殺す処理
+	// このエネミーを殺す処理
+	void Kill();
 
 	// メンバ変数へのアクセサー関数
 	void SetPos(D3DXVECTOR2 Pos) { m_pos = Pos; };

@@ -18,8 +18,8 @@
 // マクロ定義
 //*****************************************************************************
 //------------------- テクスチャ関連
-#define TEXTURE_WIDTH				(MAPCHIP_SIZE_DEFAULT.x)		// キャラサイズ	X
-#define TEXTURE_HEIGHT				(MAPCHIP_SIZE_DEFAULT.y * 2)	//				Y
+#define TEXTURE_WIDTH				(MAPCHIP_SIZE_DEFAULT.x)	// キャラサイズ	X
+#define TEXTURE_HEIGHT				(MAPCHIP_SIZE_DEFAULT.y * 1.5f)	//				Y
 #define TEXTURE_SIZE				D3DXVECTOR2(TEXTURE_WIDTH, TEXTURE_HEIGHT)	// キャラサイズ
 #define TEXTURE_MAX					(2)			// 使用するテクスチャの数
 //------------------- アニメーション
@@ -50,9 +50,10 @@
 static ID3D11ShaderResourceView	*g_Texture[TEXTURE_MAX] = { NULL };	// テクスチャ情報
 
 // テクスチャのファイル名
-static char *g_TextureName[] = {	// ここに新しいファイル名を追加したり、削除した場合は、上の"TEXTURE_MAX"の値も変える！！！
-	"data/TEXTURE/player/player01.png",		// TexNo : 0
-	"data/TEXTURE/player/player01_Back_Not_Invisible.png",	// TexNo : 1
+static char *g_TextureName[] = {		// ここに新しいファイル名を追加したり、削除した場合は、上の"TEXTURE_MAX"の値も変える！！！
+	"data/TEXTURE/player/player01_right.png",	// 右向き
+	"data/TEXTURE/player/player01_left.png",	// 左向き
+
 };
 
 CPlayer::CPlayer()	// コンストラクタ
@@ -83,6 +84,7 @@ void CPlayer::Init(char* FireBootsTexName)
 	m_bIsJump = false;								// ジャンプフラグはfalseで初期化
 	m_bIsMove = false;								// 動作フラグはfalseで初期化
 	m_bPoison = false;								// 毒状態はfalseで初期化
+	m_bLeft = false;								// 右向きで初期化
 
 	//------------------- ベースクラスの初期化
 	CTexture::Init(SCREEN_CENTER, TEXTURE_SIZE, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 0.0f);	// テクスチャ
@@ -226,6 +228,17 @@ void CPlayer::Draw(D3DXVECTOR2 ScrollPos)
 		// プレイヤーの表示座標を算出
 		SetTexPos( GetPosition() - ScrollPos );	// 表示座標系をセット
 
+		// プレイヤーの向きによって使用するテクスチャをセット
+		if (m_bLeft)
+		{
+			m_nTexNo = 1;	// 左向き
+		}
+		else
+		{
+			m_nTexNo = 0;	// 右向き
+		}
+
+
 		// プレイヤーの描画
 		DrawTexture(g_Texture[m_nTexNo]);
 
@@ -310,11 +323,14 @@ void CPlayer::InputControllPlayer()
 			{
 				NowPosition.x += MOVE_VALUE * fMagnification;	// x軸方向へ移動
 				m_bIsMove = true;	// 動いてた！
+				m_bLeft = false;	// 右向き
 			}
 			else if (KEY_MOVE_PLAYER_LEFT || PAD_MOVE_PLAYER_LEFT)	// 左方向移動
 			{
 				NowPosition.x -= MOVE_VALUE * fMagnification;	// x軸の負の方向へ移動
 				m_bIsMove = true;	// 動いてた！
+				m_bLeft = true;		// 左向き
+
 			}
 
 		}
@@ -324,11 +340,14 @@ void CPlayer::InputControllPlayer()
 			{
 				NowPosition.y += MOVE_VALUE * fMagnification;	// y軸方向へ移動
 				m_bIsMove = true;	// 動いてる
+				m_bLeft = false;	// 右向き
 			}
 			else if (KEY_MOVE_PLAYER_LEFT || PAD_MOVE_PLAYER_LEFT)	// 左方向移動
 			{
 				NowPosition.y -= MOVE_VALUE * fMagnification;	// y軸の負の方向へ移動
 				m_bIsMove = true;	// 動いてる
+				m_bLeft = true;		// 左向き
+
 			}
 
 		}
